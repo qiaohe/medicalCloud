@@ -1,0 +1,22 @@
+{
+  "name": "hisforce",
+  "version": "0.0.1",
+  "main": "server.js",
+  "description": "medical cloud service",
+  "author": "Johnson he",
+  "dependencies": {
+    "bluebird": "^2.10.2",
+    "body-parser": "^1.14.1",
+    "express": "^4.13.3",
+    "i18n": "^0.5.0",
+    "jpush-sdk": "^3.2.1",
+    "jsonwebtoken": "^5.4.0",
+    "lodash": "^3.10.1",
+    "md5": "^2.0.0",
+    "moment": "^2.10.6",
+    "mysql": "^2.9.0",
+    "redis": "^2.1.0",
+    "request": "^2.65.0",
+    "restify": "^4.0.3"
+  }
+}
