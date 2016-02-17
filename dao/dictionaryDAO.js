@@ -48,6 +48,18 @@ module.exports = {
         return db.query(sqlMapping.dict.deleteChargeItem, [item.item.id]);
     },
     findChargeItems: function (hospitalId, page) {
-        return db.query(sqlMapping.dict.findChargeItems, [hospitalId, page.from, page.size]);
+        return db.queryWithCount(sqlMapping.dict.findChargeItems, [hospitalId, page.from, page.size]);
+    },
+    findDrugs: function (hospitalId, page) {
+        return db.queryWithCount(sqlMapping.dict.findDrugs, [hospitalId, page.from, page.size]);
+    },
+    deleteDrug: function (id) {
+        return db.query(sqlMapping.dict.deleteDrug, id);
+    },
+    insertDrug: function (drug) {
+        return db.query(sqlMapping.dict.insertDrug, drug);
+    },
+    updateDrug: function (drug) {
+        return db.query(sqlMapping.dict.updateDrug, [drug, drug.id]);
     }
 }
