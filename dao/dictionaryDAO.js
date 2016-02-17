@@ -37,5 +37,17 @@ module.exports = {
     },
     updateMedicalTemplate: function (template) {
         return db.query(sqlMapping.dict.deleteMedicalTemplate, [template, template.id]);
+    },
+    insertChargeItem: function (item) {
+        return db.query(sqlMapping.dict.insertChargeItem, item);
+    },
+    deleteChargeItem: function (id) {
+        return db.query(sqlMapping.dict.deleteChargeItem, id);
+    },
+    updateChargeItem: function (item) {
+        return db.query(sqlMapping.dict.deleteChargeItem, [item.item.id]);
+    },
+    findChargeItems: function (hospitalId, page) {
+        return db.query(sqlMapping.dict.findChargeItems, [hospitalId, page.from, page.size]);
     }
 }

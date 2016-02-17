@@ -336,7 +336,43 @@ module.exports = {
             res.send({ret: 0, message: '更新成功'});
         });
         return next();
+    },
+    addChargeItem: function (req, res, next) {
+        var item = req.body;
+        item.hospitalId = req.user.hospitalId;
+        dictionaryDAO.insertChargeItem(item).then(function (result) {
+            item.id = result.insertId;
+            res.send({ret: 0, data: item});
+        });
+        return next();
+    },
+
+    removeChargeItem: function (req, res, next) {
+        dictionaryDAO.deleteChargeItem(req.params.id).then(function (result) {
+            res.send({ret: 0, message: '删除成功'});
+        });
+        return next();
+    },
+
+    updateChargeItem: function (req, res, next) {
+        req.body.hospitalId = req.user.hospitalId;
+        dictionaryDAO.updateChargeItem(req.body).then(function (result) {
+            res.send({ret: 0, message: '更新成功'});
+        });
+        return next();
+    },
+
+    getChargeItems: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        var hospitalId = req.user.hospitalId;
+        dictionaryDAO.findChargeItems(hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (items) {
+            items.pageIndex = pageIndex;
+            res.send({ret: 0, data: items});
+        });
+        return next();
     }
-
-
 }

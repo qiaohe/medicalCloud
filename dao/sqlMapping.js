@@ -167,6 +167,10 @@ module.exports = {
         findMedicalTemplates: 'select SQL_CALC_FOUND_ROWS m.*, d.`name`, d.departmentName, dic.`name` from MedicalTemplate m left JOIN DiseaseDic dic on dic.id=m.diseaseId left JOIN Doctor d on d.id=m.doctorId where m.hospitalId =? limit ?,?',
         insertMedicalTemplte: 'insert MedicalTemplate set ?',
         deleteMedicalTemplate: 'delete from MedicalTemplate where id=?',
-        updateMedicalTemplate: 'update MedicalTemplate set ? where id=?'
+        updateMedicalTemplate: 'update MedicalTemplate set ? where id=?',
+        insertChargeItem: 'insert ChargeItem set ?',
+        updateChargeItem: 'update ChargeItem set ? where id=?',
+        deleteChargeItem: 'delete from ChargeItem where id=?',
+        findChargeItems: 'select SQL_CALC_FOUND_ROWS c.*, d.`value` as categoryName from ChargeItem c left join Dictionary d on d.id = c.categoryId where c.hospitalId=? LIMIT ?, ?'
     }
 };

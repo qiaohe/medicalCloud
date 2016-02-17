@@ -615,5 +615,29 @@ module.exports = [
         path: "/api/medicalTemplates/:id",
         handler: dictController.removeMedicalTemplate,
         secured: 'user'
+    },
+    {
+        method: "del",
+        path: "/api/chargeItems/:id",
+        handler: dictController.removeChargeItem,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/chargeItems",
+        handler: dictController.addChargeItem,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/chargeItems",
+        handler: dictController.updateChargeItem,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/chargeItems",
+        handler: dictController.getChargeItems,
+        secured: 'user'
     }
 ];
