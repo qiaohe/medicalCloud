@@ -256,6 +256,7 @@ module.exports = {
 
     updateDiseaseDic: function (req, res, next) {
         req.body.hospitalId = req.user.hospitalId;
+        delete req.body.createDate;
         dictionaryDAO.updateDisease(req.body).then(function (result) {
             res.send({ret: 0, message: '更新成功'});
         });

@@ -159,7 +159,7 @@ module.exports = {
         insertDisease: 'insert DiseaseDic set ?',
         updateDisease: 'update DiseaseDic set ? where id=?',
         deleteDisease: 'delete from DiseaseDic where id = ?',
-        findDiseases: 'select SQL_CALC_FOUND_ROWS * from DiseaseDic where hospitalId = ? limit ?,?',
+        findDiseases: 'select SQL_CALC_FOUND_ROWS d.*, dep.`name` as departmentName, e.`name` as creatorName from DiseaseDic d left JOIN Department dep on dep.id=d.departmentId left JOIN Employee e on e.id = d.creator where d.hospitalId = ? limit ?,?',
         insertDictItem: 'insert Dictionary set ?',
         updateDictItem: 'update Dictionary set ? where id = ?',
         deleteDictItem: 'delete from Dictionary where id =?',
