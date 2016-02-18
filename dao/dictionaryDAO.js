@@ -45,7 +45,7 @@ module.exports = {
         return db.query(sqlMapping.dict.deleteChargeItem, id);
     },
     updateChargeItem: function (item) {
-        return db.query(sqlMapping.dict.deleteChargeItem, [item.item.id]);
+        return db.query(sqlMapping.dict.updateChargeItem, [item, item.id]);
     },
     findChargeItems: function (hospitalId, page) {
         return db.query(sqlMapping.dict.findChargeItems, [hospitalId, page.from, page.size]);
