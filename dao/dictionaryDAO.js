@@ -61,5 +61,8 @@ module.exports = {
     },
     updateDrug: function (drug) {
         return db.query(sqlMapping.dict.updateDrug, [drug, drug.id]);
+    },
+    findDrugById: function (id) {
+        return db.query(sqlMapping.dict.findDrugById, id);
     }
 }

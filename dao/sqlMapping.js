@@ -175,6 +175,7 @@ module.exports = {
         findDrugs: 'select * from Drug where hospitalId=? LIMIT ?, ?',
         insertDrug: 'insert Drug set ?',
         updateDrug: 'update Drug set ? where id = ?',
-        deleteDrug: 'delete from Drug where id=?'
+        deleteDrug: 'delete from Drug where id=?',
+        findDrugById: 'select * from Drug where id = ?'
     }
 };

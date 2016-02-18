@@ -663,5 +663,11 @@ module.exports = [
         path: "/api/drugs",
         handler: dictController.updateDrug,
         secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/drugs/:id",
+        handler: dictController.getDrugById,
+        secured: 'user'
     }
 ];

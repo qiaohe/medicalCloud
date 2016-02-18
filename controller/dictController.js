@@ -411,4 +411,11 @@ module.exports = {
         });
         return next();
     },
+
+    getDrugById: function (req, res, next) {
+        dictionaryDAO.findDrugById(req.params.id).then(function (drugs) {
+            res.send({ret: 0, data: drugs[0]});
+        });
+        return next();
+    }
 }
