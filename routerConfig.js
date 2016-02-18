@@ -639,5 +639,35 @@ module.exports = [
         path: "/api/chargeItems",
         handler: dictController.getChargeItems,
         secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/drugs",
+        handler: dictController.getDrugs,
+        secured: 'user'
+    },
+    {
+        method: "del",
+        path: "/api/drugs/:id",
+        handler: dictController.removeDrug,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/drugs",
+        handler: dictController.addDrug,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/drugs",
+        handler: dictController.updateDrug,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/drugs/:id",
+        handler: dictController.getDrugById,
+        secured: 'user'
     }
 ];

@@ -171,6 +171,11 @@ module.exports = {
         insertChargeItem: 'insert ChargeItem set ?',
         updateChargeItem: 'update ChargeItem set ? where id=?',
         deleteChargeItem: 'delete from ChargeItem where id=?',
-        findChargeItems: 'select SQL_CALC_FOUND_ROWS c.*, d.`value` as categoryName from ChargeItem c left join Dictionary d on d.id = c.categoryId where c.hospitalId=? LIMIT ?, ?'
+        findChargeItems: 'select SQL_CALC_FOUND_ROWS c.*, d.`value` as categoryName from ChargeItem c left join Dictionary d on d.id = c.categoryId where c.hospitalId=? LIMIT ?, ?',
+        findDrugs: 'select * from Drug where hospitalId=? LIMIT ?, ?',
+        insertDrug: 'insert Drug set ?',
+        updateDrug: 'update Drug set ? where id = ?',
+        deleteDrug: 'delete from Drug where id=?',
+        findDrugById: 'select * from Drug where id = ?'
     }
 };

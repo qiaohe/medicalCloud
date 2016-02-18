@@ -374,5 +374,48 @@ module.exports = {
             res.send({ret: 0, data: items});
         });
         return next();
+    },
+    getDrugs: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        var hospitalId = req.user.hospitalId;
+        dictionaryDAO.findDrugs(hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (items) {
+            items.pageIndex = pageIndex;
+            res.send({ret: 0, data: items});
+        });
+        return next();
+    },
+    addDrug: function (req, res, next) {
+        var item = req.body;
+        item.hospitalId = req.user.hospitalId;
+        dictionaryDAO.insertDrug(item).then(function (result) {
+            item.id = result.insertId;
+            res.send({ret: 0, data: item});
+        });
+        return next();
+    },
+    removeDrug: function (req, res, next) {
+        dictionaryDAO.deleteDrug(req.params.id).then(function (result) {
+            res.send({ret: 0, message: '删除成功'});
+        });
+        return next();
+    },
+
+    updateDrug: function (req, res, next) {
+        req.body.hospitalId = req.user.hospitalId;
+        dictionaryDAO.updateDrug(req.body).then(function (result) {
+            res.send({ret: 0, message: '更新成功'});
+        });
+        return next();
+    },
+
+    getDrugById: function (req, res, next) {
+        dictionaryDAO.findDrugById(req.params.id).then(function (drugs) {
+            res.send({ret: 0, data: drugs[0]});
+        });
+        return next();
     }
 }
