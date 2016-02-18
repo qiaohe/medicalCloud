@@ -312,7 +312,12 @@ module.exports = {
         });
         return next();
     },
-
+    getMedicalTemplateBy: function (req, res, next) {
+        dictionaryDAO.getMedicalTemplateBy(hospitalId, req.params.id).then(function (result) {
+            res.send({ret: 0, data: result});
+        });
+        return next();
+    },
     addMedicalTemplate: function (req, res, next) {
         var template = req.body;
         template.hospitalId = req.user.hospitalId;
@@ -332,6 +337,8 @@ module.exports = {
 
     updateMedicalTemplate: function (req, res, next) {
         req.body.hospitalId = req.user.hospitalId;
+        delete req.body.createDate;
+        delete req.body.departmentName;
         dictionaryDAO.updateMedicalTemplate(req.body).then(function (result) {
             res.send({ret: 0, message: '更新成功'});
         });
@@ -415,6 +422,42 @@ module.exports = {
     getDrugById: function (req, res, next) {
         dictionaryDAO.findDrugById(req.params.id).then(function (drugs) {
             res.send({ret: 0, data: drugs[0]});
+        });
+        return next();
+    },
+    getDrugInventory: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        var hospitalId = req.user.hospitalId;
+        dictionaryDAO.findDrugInventory(hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (items) {
+            res.send({ret: 0, data: items});
+        });
+        return next();
+    },
+    addDrugInventory: function (req, res, next) {
+        var item = req.body;
+        item.hospitalId = req.user.hospitalId;
+        item.putInDate = new Date();
+        item.createDate = new Date();
+        dictionaryDAO.insertDrugInventory(item).then(function (result) {
+            item.id = result.insertId;
+            res.send({ret: 0, data: item});
+        })
+    },
+
+    updateDrugInventory: function (req, res, next) {
+        var item = req.body;
+        item.hospitalId = req.user.hospitalId;
+        dictionaryDAO.updateDrugInventory(item).then(function (result) {
+            send().send({ret: 0, message: '更新成功'});
+        });
+    },
+    removeDrugInventory: function (req, res, next) {
+        dictionaryDAO.deleteDrugInventory(req.params.id).then(function (result) {
+            res.send({ret: 0, message: '删除成功'});
         });
         return next();
     }

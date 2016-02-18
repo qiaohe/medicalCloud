@@ -29,6 +29,10 @@ module.exports = {
     findMedicalTemplates: function (hospitalId, page) {
         return db.queryWithCount(sqlMapping.dict.findMedicalTemplates, [+hospitalId, page.from, page.size]);
     },
+    getMedicalTemplateBy: function (hospitalId, departmentId) {
+        return db.queryWithCount(sqlMapping.dict.getMedicalTemplateBy, [+hospitalId, departmentId]);
+    },
+
     insertMedicalTemplate: function (template) {
         return db.query(sqlMapping.dict.insertMedicalTemplte, template);
     },
@@ -36,7 +40,7 @@ module.exports = {
         return db.query(sqlMapping.dict.deleteMedicalTemplate, id);
     },
     updateMedicalTemplate: function (template) {
-        return db.query(sqlMapping.dict.deleteMedicalTemplate, [template, template.id]);
+        return db.query(sqlMapping.dict.updateMedicalTemplate, [template, template.id]);
     },
     insertChargeItem: function (item) {
         return db.query(sqlMapping.dict.insertChargeItem, item);
@@ -64,5 +68,17 @@ module.exports = {
     },
     findDrugById: function (id) {
         return db.query(sqlMapping.dict.findDrugById, id);
+    },
+    findDrugInventory: function (hospitalId, page) {
+        return db.queryWithCount(sqlMapping.dict.findDrugInventory, [hospitalId, page.from, page.size]);
+    },
+    insertDrugInventory: function (item) {
+        return db.query(sqlMapping.dict.insertDrugInventory, item);
+    },
+    updateDrugInventory: function (item) {
+        return db.query(sqlMapping.dict.updateDrugInventory, [item, item.id]);
+    },
+    deleteDrugInventory: function (id) {
+        return db.query(sqlMapping.dict.deleteDrugInventory, id);
     }
 }

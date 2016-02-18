@@ -166,6 +166,7 @@ module.exports = {
         findDictItems: 'select SQL_CALC_FOUND_ROWS * from Dictionary where hospitalId =? and type=? limit ?,?',
         findMedicalTemplates: 'select SQL_CALC_FOUND_ROWS m.*, d.`name`, d.departmentName, dic.`name` from MedicalTemplate m left JOIN DiseaseDic dic on dic.id=m.diseaseId left JOIN Doctor d on d.id=m.doctorId where m.hospitalId =? limit ?,?',
         insertMedicalTemplte: 'insert MedicalTemplate set ?',
+        getMedicalTemplateBy:'select id, name from MedicalTemplate where hospitalId=? and departmentId=?',
         deleteMedicalTemplate: 'delete from MedicalTemplate where id=?',
         updateMedicalTemplate: 'update MedicalTemplate set ? where id=?',
         insertChargeItem: 'insert ChargeItem set ?',
@@ -176,6 +177,13 @@ module.exports = {
         insertDrug: 'insert Drug set ?',
         updateDrug: 'update Drug set ? where id = ?',
         deleteDrug: 'delete from Drug where id=?',
-        findDrugById: 'select * from Drug where id = ?'
+        findDrugById: 'select * from Drug where id = ?',
+        findDrugInventory: 'select SQL_CALC_FOUND_ROWS * from DrugInventory di left JOIN Drug d on d.id = di.drugId where di.hospitalId = ? limit ?,?',
+        insertDrugInventory: 'insert DrugInventory set ?',
+        updateDrugInventory: 'update DrugInventory set ? where id=?',
+        deleteDrugInventory: 'delete DrugInventory where id=?'
+        /*
+         select SUM(di.restAmount) as inventory, d.*  FROM Drug d left join DrugInventory di on d.id = di.drugId group BY d.id
+         */
     }
 };

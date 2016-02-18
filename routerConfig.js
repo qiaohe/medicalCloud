@@ -599,6 +599,12 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "get",
+        path: "/api/departments/:id/medicalTemplates",
+        handler: dictController.getMedicalTemplateBy,
+        secured: 'user'
+    },
+    {
         method: "post",
         path: "/api/medicalTemplates",
         handler: dictController.addMedicalTemplate,
@@ -668,6 +674,30 @@ module.exports = [
         method: "get",
         path: "/api/drugs/:id",
         handler: dictController.getDrugById,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/drugInventory",
+        handler: dictController.getDrugInventory,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/drugInventory",
+        handler: dictController.addDrugInventory,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/drugInventory",
+        handler: dictController.updateDrugInventory,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/drugInventory/:id",
+        handler: dictController.removeDrugInventory,
         secured: 'user'
     }
 ];
