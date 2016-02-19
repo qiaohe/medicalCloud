@@ -32,7 +32,9 @@ module.exports = {
     getMedicalTemplateBy: function (hospitalId, departmentId) {
         return db.queryWithCount(sqlMapping.dict.getMedicalTemplateBy, [+hospitalId, departmentId]);
     },
-
+    findMedicalTemplateById: function (id) {
+        return db.query(sqlMapping.dict.findMedicalTemplateById, id);
+    },
     insertMedicalTemplate: function (template) {
         return db.query(sqlMapping.dict.insertMedicalTemplte, template);
     },
@@ -47,6 +49,9 @@ module.exports = {
     },
     deleteChargeItem: function (id) {
         return db.query(sqlMapping.dict.deleteChargeItem, id);
+    },
+    findChargeItemById: function (id) {
+        return db.query(sqlMapping.dict.findChargeItemById, id);
     },
     updateChargeItem: function (item) {
         return db.query(sqlMapping.dict.updateChargeItem, [item, item.id]);

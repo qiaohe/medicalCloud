@@ -6,6 +6,7 @@ var hospitalController = require('./controller/hospitalController');
 var registrationController = require('./controller/registrationController');
 var dictController = require('./controller/dictController');
 var patientController = require('./controller/patientController');
+var medicalHistoryController = require('./controller/medicalHistoryController');
 
 module.exports = [
     {
@@ -623,6 +624,12 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "get",
+        path: "/api/medicalTemplates/:id",
+        handler: dictController.getMedicalTemplateById,
+        secured: 'user'
+    },
+    {
         method: "del",
         path: "/api/chargeItems/:id",
         handler: dictController.removeChargeItem,
@@ -699,5 +706,31 @@ module.exports = [
         path: "/api/drugInventory/:id",
         handler: dictController.removeDrugInventory,
         secured: 'user'
-    }
+    },
+    {
+        method: "post",
+        path: "/api/drugInventory/:id",
+        handler: dictController.removeDrugInventory,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/medicalHistories",
+        handler: medicalHistoryController.saveMedicalHistory,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/recipes",
+        handler: medicalHistoryController.saveRecipe,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/prescriptions",
+        handler: medicalHistoryController.savePrescription,
+        secured: 'user'
+    },
+
+
 ];

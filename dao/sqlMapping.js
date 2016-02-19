@@ -166,12 +166,14 @@ module.exports = {
         findDictItems: 'select SQL_CALC_FOUND_ROWS * from Dictionary where hospitalId =? and type=? limit ?,?',
         findMedicalTemplates: 'select SQL_CALC_FOUND_ROWS m.*, d.`name`, d.departmentName, dic.`name` from MedicalTemplate m left JOIN DiseaseDic dic on dic.id=m.diseaseId left JOIN Doctor d on d.id=m.doctorId where m.hospitalId =? limit ?,?',
         insertMedicalTemplte: 'insert MedicalTemplate set ?',
-        getMedicalTemplateBy:'select id, name from MedicalTemplate where hospitalId=? and departmentId=?',
+        getMedicalTemplateBy: 'select id, name from MedicalTemplate where hospitalId=? and departmentId=?',
+        findMedicalTemplateById: 'select * from MedicalTemplate where id=?',
         deleteMedicalTemplate: 'delete from MedicalTemplate where id=?',
         updateMedicalTemplate: 'update MedicalTemplate set ? where id=?',
         insertChargeItem: 'insert ChargeItem set ?',
         updateChargeItem: 'update ChargeItem set ? where id=?',
         deleteChargeItem: 'delete from ChargeItem where id=?',
+        findChargeItemById: 'select * from ChargeItem where id=?',
         findChargeItems: 'select SQL_CALC_FOUND_ROWS c.*, d.`value` as categoryName from ChargeItem c left join Dictionary d on d.id = c.categoryId where c.hospitalId=? LIMIT ?, ?',
         findDrugs: 'select * from Drug where hospitalId=? LIMIT ?, ?',
         insertDrug: 'insert Drug set ?',
@@ -185,5 +187,12 @@ module.exports = {
         /*
          select SUM(di.restAmount) as inventory, d.*  FROM Drug d left join DrugInventory di on d.id = di.drugId group BY d.id
          */
+    },
+    medical: {
+        insertMedicalHistory: 'insert MedicalHistory set ?',
+        updateMedicalHistory: 'update MedicalHistory set ? where id=?',
+        findMedicalHistoryBy: 'select * from MedicalHistory where registrationId = ?',
+        insertRecipe: 'insert Recipe set ?',
+        insertPrescription: 'insert Prescription set ?'
     }
 };

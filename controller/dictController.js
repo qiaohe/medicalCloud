@@ -313,11 +313,13 @@ module.exports = {
         return next();
     },
     getMedicalTemplateBy: function (req, res, next) {
+        var hospitalId = req.user.hospitalId;
         dictionaryDAO.getMedicalTemplateBy(hospitalId, req.params.id).then(function (result) {
             res.send({ret: 0, data: result});
         });
         return next();
     },
+
     addMedicalTemplate: function (req, res, next) {
         var template = req.body;
         template.hospitalId = req.user.hospitalId;
@@ -334,7 +336,12 @@ module.exports = {
         });
         return next();
     },
-
+    getMedicalTemplateById: function (req, res, next) {
+        dictionaryDAO.findMedicalTemplateById(req.params.id).then(function (result) {
+            res.send({ret: 0, data: result[0]});
+        });
+        return next();
+    },
     updateMedicalTemplate: function (req, res, next) {
         req.body.hospitalId = req.user.hospitalId;
         delete req.body.createDate;

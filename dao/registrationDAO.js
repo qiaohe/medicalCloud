@@ -16,7 +16,7 @@ module.exports = {
         return db.query(sqlMapping.registration.updateRegistration, [reg, reg.id]);
     },
     findRegistrationsById: function (rid) {
-        return db.query(sqlMapping.registration.findRegistrationsById, rid);
+        return db.query(sqlMapping.registration.findRegistrationsById, +rid);
     },
     findRegistrationsByIdWithDetail: function (rid) {
         return db.query(sqlMapping.registration.findRegistrationsByIdWithDetail, rid);
