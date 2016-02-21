@@ -96,5 +96,27 @@ module.exports = {
             }
         );
         return next();
+    },
+    getMedicalHistories: function (req, res, next) {
+        var rid = req.params.id;
+        medicalDAO.findMedicalHistoryBy(rid).then(function (result) {
+            res.send({ret: 0, data: result[0]});
+        });
+        return next();
+    },
+    getRecipes: function (req, res, next) {
+        var rid = req.params.id;
+        medicalDAO.findRecipesBy(rid).thne(function (result) {
+            res.send({ret: 0, data: result});
+        });
+        return next();
+    },
+    getPrescriptions: function (req, res, next) {
+        var rid = req.params.id;
+        medicalDAO.findPrescriptionsBy(rid).thne(function (result) {
+            res.send({ret: 0, data: result});
+        });
+        return next();
     }
+
 }

@@ -193,6 +193,8 @@ module.exports = {
         updateMedicalHistory: 'update MedicalHistory set ? where id=?',
         findMedicalHistoryBy: 'select * from MedicalHistory where registrationId = ?',
         insertRecipe: 'insert Recipe set ?',
-        insertPrescription: 'insert Prescription set ?'
+        insertPrescription: 'insert Prescription set ?',
+        findPrescriptionsBy: 'select * from Prescription where registrationId = ?',
+        findRecipesBy: 'select * from Recipe where registrationId = ?'
     }
 };
