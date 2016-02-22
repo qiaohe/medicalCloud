@@ -732,19 +732,19 @@ module.exports = [
         secured: 'user'
     },
     {
-        method: "post",
+        method: "get",
         path: "/api/registrations/:id/recipes",
         handler: medicalHistoryController.getRecipes,
         secured: 'user'
     },
     {
-        method: "post",
+        method: "get",
         path: "/api/prescriptions",
         handler: medicalHistoryController.savePrescription,
         secured: 'user'
     },
     {
-        method: "post",
+        method: "get",
         path: "/api/registrations/:id/prescriptions",
         handler: medicalHistoryController.getPrescriptions,
         secured: 'user'

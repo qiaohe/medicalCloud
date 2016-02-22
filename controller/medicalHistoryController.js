@@ -106,7 +106,7 @@ module.exports = {
     },
     getRecipes: function (req, res, next) {
         var rid = req.params.id;
-        medicalDAO.findRecipesBy(rid).thne(function (result) {
+        medicalDAO.findRecipesBy(rid).then(function (result) {
             res.send({ret: 0, data: result});
         });
         return next();
