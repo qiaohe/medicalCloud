@@ -5,6 +5,7 @@ var i18n = require('../i18n/localeMessage');
 var registrationDAO = require('../dao/registrationDAO');
 var medicalDAO = require('../dao/medicalDAO');
 var dictionaryDAO = require('../dao/dictionaryDAO');
+var orderDAO = require('../dao/orderDAO');
 var Promise = require("bluebird");
 var _ = require('lodash');
 var moment = require('moment');
@@ -91,6 +92,15 @@ module.exports = {
                         return medicalDAO.insertPrescription(item);
                     });
                 }).then(function (result) {
+                    orderDAO.insert({
+                        orderNo: orderNo,
+                        registrationId: registrationId,
+                        hospitalId: hospitalId,
+                        amount: _.sumBy(chargeItems, function(item){
+                            return items[0].price * +item.quantity;
+                        }),
+                            paidAmount:0.00,
+                    })
                     res.send({ret: 0, data: '保存成功'});
                 });
             }
@@ -113,7 +123,7 @@ module.exports = {
     },
     getPrescriptions: function (req, res, next) {
         var rid = req.params.id;
-        medicalDAO.findPrescriptionsBy(rid).thne(function (result) {
+        medicalDAO.findPrescriptionsBy(rid).then(function (result) {
             res.send({ret: 0, data: result});
         });
         return next();

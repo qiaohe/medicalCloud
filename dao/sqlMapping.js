@@ -196,5 +196,8 @@ module.exports = {
         insertPrescription: 'insert Prescription set ?',
         findPrescriptionsBy: 'select * from Prescription where registrationId = ?',
         findRecipesBy: 'select * from Recipe where registrationId = ?'
+    },
+    order: {
+        insert: 'insert Order set ?'
     }
 };

@@ -738,7 +738,7 @@ module.exports = [
         secured: 'user'
     },
     {
-        method: "get",
+        method: "post",
         path: "/api/prescriptions",
         handler: medicalHistoryController.savePrescription,
         secured: 'user'
