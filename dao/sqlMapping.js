@@ -192,12 +192,15 @@ module.exports = {
         insertMedicalHistory: 'insert MedicalHistory set ?',
         updateMedicalHistory: 'update MedicalHistory set ? where id=?',
         findMedicalHistoryBy: 'select * from MedicalHistory where registrationId = ?',
+        findRecipesByOrderNo: 'select * from Recipe where orderNo = ?',
         insertRecipe: 'insert Recipe set ?',
         insertPrescription: 'insert Prescription set ?',
         findPrescriptionsBy: 'select * from Prescription where registrationId = ?',
         findRecipesBy: 'select * from Recipe where registrationId = ?'
     },
     order: {
-        insert: 'insert Order set ?'
+        insert: 'insert MedicalOrder set ?',
+        findOrdersByType: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.type=? limit ?,?',
+        findOrdersByTypeAndStatus: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.type=? and m.status=? limit ?,?'
     }
 };

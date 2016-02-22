@@ -44,6 +44,7 @@ module.exports = {
         var hospitalId = req.user.hospitalId;
         var registrationId = req.body.registrationId;
         var drugItems = req.body.drugs;
+        var items = [];
         redis.incrAsync('h:' + hospitalId + ':' + moment().format('YYYYMMDD') + ':1:incr').then(function (reply) {
                 var orderNo = hospitalId + '-' + moment().format('YYYYMMDD') + '-1-' + reply;
                 Promise.map(drugItems, function (item, index) {
@@ -59,7 +60,23 @@ module.exports = {
                             hospitalId: hospitalId,
                             orderNo: orderNo
                         });
+                        items.push(item);
                         return medicalDAO.insertRecipe(item);
+                    });
+                }).then(function (result) {
+                    var amount = _.sum(items, function (item) {
+                        return item.totalPrice;
+                    });
+                    return orderDAO.insert({
+                        orderNo: orderNo,
+                        registrationId: registrationId,
+                        hospitalId: hospitalId,
+                        amount: amount,
+                        paidAmount: 0.00,
+                        paymentAmount: amount,
+                        status: 0,
+                        createDate: new Date(),
+                        type: 1
                     });
                 }).then(function (result) {
                     res.send({ret: 0, data: '保存成功'});
@@ -92,15 +109,23 @@ module.exports = {
                         return medicalDAO.insertPrescription(item);
                     });
                 }).then(function (result) {
-                    orderDAO.insert({
+                    return orderDAO.insert({
                         orderNo: orderNo,
                         registrationId: registrationId,
                         hospitalId: hospitalId,
-                        amount: _.sumBy(chargeItems, function(item){
+                        amount: _.sum(chargeItems, function (item) {
                             return items[0].price * +item.quantity;
                         }),
-                            paidAmount:0.00,
-                    })
+                        paidAmount: 0.00,
+                        paymentAmount: _.sum(chargeItems, function (item) {
+                            return +items[0].price * +item.quantity * (item.discount ? +req.body.discountRate : 1.0)
+                        }),
+                        status: 0,
+                        referenceId: result.insertId,
+                        createDate: new Date(),
+                        type: 1
+                    });
+                }).then(function (result) {
                     res.send({ret: 0, data: '保存成功'});
                 });
             }
@@ -126,6 +151,38 @@ module.exports = {
         medicalDAO.findPrescriptionsBy(rid).then(function (result) {
             res.send({ret: 0, data: result});
         });
+        return next();
+    },
+    getOrdersBy: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        orderDAO.findOrdersByType(req.params.id, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (orders) {
+            if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            orders.pageIndex = pageSize;
+            res.send({ret: 0, data: orders});
+        });
+    },
+
+    getOrdersByAndStatus: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        orderDAO.findOrdersByTypeAndStatus(req.params.id,req.params.status, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (orders) {
+            if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            orders.pageIndex = pageSize;
+            res.send({ret: 0, data: orders});
+        });
+    },
+    getRecipesByOrderNo: function(req, res,next) {
+        medicalDAO.findRecipesByOrderNo(req.params.id).then(function (result) {
+            res.send({ret: 0, data: result});
+        });
+        return next();
         return next();
     }
 

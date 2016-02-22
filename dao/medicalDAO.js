@@ -13,6 +13,11 @@ module.exports = {
     findMedicalHistoryBy: function (rid) {
         return db.query(sqlMapping.medical.findMedicalHistoryBy, rid);
     },
+
+    findRecipesByOrderNo: function (orderNo) {
+        return db.query(sqlMapping.medical.findRecipesByOrderNo, orderNo);
+    },
+
     insertRecipe: function (recipe) {
         return db.query(sqlMapping.medical.insertRecipe, recipe);
     },
