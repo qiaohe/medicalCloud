@@ -8,7 +8,7 @@ module.exports = {
         updateJobTitle: 'update JobTitle set ? where id=?',
         insertJobTitle: 'insert JobTitle set ?',
         deleteJobTitle: 'delete from JobTitle where role=? and id= ?',
-        findByRole: 'select id, name from Employee where role=?',
+        findByRole: 'select id, name from Employee where role=? and hospitalId=?',
         findNoPlanBusinessPeople: 'select id, name from Employee where hospitalId = ? and role = 4 and id not in(select DISTINCT businessPeopleId from Performance where left(yearMonth, 4) =?)',
         updateEmployee: 'update Employee set ? where id = ?',
         findEmployees: 'select SQL_CALC_FOUND_ROWS e.id, e.`name`, d.`name` as department, e.mobile, e.gender, e.birthday, job.`name` as jobTitle, role.`name` as role, e.`status`, e.maxDiscountRate  from Employee e LEFT JOIN Department d on d.id = e.department left JOIN Role role on role.id = e.role left JOIN JobTitle job on job.id = e.jobTitle where e.hospitalId =? order by e.id desc limit ?,?',
@@ -200,6 +200,9 @@ module.exports = {
     },
     order: {
         insert: 'insert MedicalOrder set ?',
+        update: 'update MedicalOrder set ? where orderNo =?',
+        findOrdersByStatus: 'select * from MedicalOrder where hospitalId= ? and status=?',
+        findDrugUsageRecords: 'SELECT rp.*, rg.patientName, rg.doctorName, rg.departmentName, rg.patientMobile from Recipe rp left join Registration rg on rp.registrationId = rg.id where rp.hospitalId=? order by rp.createDate limit ?,?',
         findOrdersByType: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.type=? limit ?,?',
         findOrdersByTypeAndStatus: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.type=? and m.status=? limit ?,?'
     }

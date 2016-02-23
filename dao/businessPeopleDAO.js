@@ -75,7 +75,7 @@ module.exports = {
         if (name) {
             sql = sql + ' and name like \'%' + name + '%\'';
         }
-        return db.query(sql, 4);
+        return db.query(sql, [4, hospitalId]);
     },
     findNoPlanBusinessPeople: function (hospitalId, year) {
         return db.query(sqlMapping.employee.findNoPlanBusinessPeople, [hospitalId, year]);

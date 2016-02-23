@@ -147,7 +147,8 @@ module.exports = {
                                 audience: {registration_id: [tokens[0].token]},
                                 patientName: r.patientName,
                                 patientMobile: r.patientMobile,
-                                uid: r.patientBasicInfoId
+                                uid: r.patientBasicInfoId,
+                                hospitalId: req.user.hospitalId
                             }, function (err, result) {
                                 if (err) throw err;
                             });

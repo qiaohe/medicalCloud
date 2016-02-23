@@ -5,8 +5,8 @@ module.exports = {
     insert: function (notification) {
         return db.query(sqlMapping.notification.insert, notification);
     },
-    findAll: function (page) {
-        return db.queryWithCount(sqlMapping.notification.findAll, [page.from, page.size]);
+    findAll: function (hospitalId, page) {
+        return db.queryWithCount(sqlMapping.notification.findAll, [hospitalId, page.from, page.size]);
     },
     findPatientQueue: function (registerDate, roomid) {
         return db.query(sqlMapping.notification.findPatientQueue, [registerDate, roomid]);

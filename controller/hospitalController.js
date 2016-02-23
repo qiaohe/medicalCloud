@@ -395,6 +395,7 @@ module.exports = {
                                     patientName: registration.patientName,
                                     patientMobile: registration.patientMobile,
                                     title: '叫号提醒通知',
+                                    hospitalId: req.user.hospitalId,
                                     audience: {registration_id: [tokens[0].token]}
                                 }, function (err, result) {
                                     if (err) throw err;
@@ -445,6 +446,7 @@ module.exports = {
                     uid: registration.patientBasicInfoId,
                     patientName: registration.patientName,
                     patientMobile: registration.patientMobile,
+                    hospitalId: req.user.hospitalId,
                     title: '未到提醒通知',
                     audience: {registration_id: [tokens[0].token]}
                 }, function (err, result) {
@@ -460,7 +462,7 @@ module.exports = {
     getNotifications: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        notificationDAO.findAll({
+        notificationDAO.findAll(req.user.hospitalId, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (notifications) {

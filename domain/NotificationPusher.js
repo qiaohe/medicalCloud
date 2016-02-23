@@ -16,7 +16,8 @@ module.exports = {
                     createDate: new Date(), sendno: response.sendno, msg_id: response.msg_id,
                     uid: notification.uid,
                     patientName: notification.patientName,
-                    patientMobile: notification.patientMobile
+                    patientMobile: notification.patientMobile,
+                    hospitalId: notification.hospitalId
                 }).then(function (result) {
                     return callback(err, result);
                 })

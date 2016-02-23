@@ -169,7 +169,7 @@ module.exports = {
     getOrdersByAndStatus: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        orderDAO.findOrdersByTypeAndStatus(req.params.id,req.params.status, {
+        orderDAO.findOrdersByTypeAndStatus(req.params.id, req.params.status, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (orders) {
@@ -178,12 +178,44 @@ module.exports = {
             res.send({ret: 0, data: orders});
         });
     },
-    getRecipesByOrderNo: function(req, res,next) {
+    getOrdersByStatus: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        orderDAO.findOrdersByStatus(req.user.hospitalId, req.params.status, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (orders) {
+            if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            orders.pageIndex = pageSize;
+            res.send({ret: 0, data: orders});
+        });
+        return next();
+    },
+    getRecipesByOrderNo: function (req, res, next) {
         medicalDAO.findRecipesByOrderNo(req.params.id).then(function (result) {
             res.send({ret: 0, data: result});
         });
         return next();
+    },
+    changeOrderStatus: function (req, res, next) {
+        var orderNo = req.params.id;
+        var status = req.params.status;
+        orderDAO.update({orderNo: orderNo, status: status}).then(function (result) {
+            res.send({ret: 0, message: '更新订单状态成功'});
+        })
+        return next();
+    },
+    getDrugUsageRecords: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        orderDAO.findDrugUsageRecords(req.user.hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (records) {
+            if (!records.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            records.pageIndex = pageIndex;
+            res.send({ret: 0, data: records});
+        });
         return next();
     }
-
 }

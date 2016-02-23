@@ -28,7 +28,8 @@ module.exports = {
                 if (err) throw err;
                 notificationDAO.insert({
                     body: req.body.body, title: req.body.title, extra: JSON.stringify(req.body.extra),
-                    createDate: new Date(), sendno: response.sendno, msg_id: response.msg_id
+                    createDate: new Date(), sendno: response.sendno, msg_id: response.msg_id,
+                    hospitalId: req.user.hospitalId
                 }).then(function (result) {
                     res.send({ret: 0, message: i18n.get('notification.send.success')});
                 })

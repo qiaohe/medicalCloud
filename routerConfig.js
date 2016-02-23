@@ -763,8 +763,27 @@ module.exports = [
     },
     {
         method: "get",
+        path: "/api/orders/status/:status",
+        handler: medicalHistoryController.getOrdersByStatus,
+        secured: 'user'
+    },
+    {
+        method: "get",
         path: "/api/orders/:id/recipes",
         handler: medicalHistoryController.getRecipesByOrderNo,
         secured: 'user'
     },
+    {
+        method: "post",
+        path: "/api/orders/:id/status/:status",
+        handler: medicalHistoryController.changeOrderStatus,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/orders/usageRecords",
+        handler: medicalHistoryController.getDrugUsageRecords,
+        secured: 'user'
+    }
+
 ];
