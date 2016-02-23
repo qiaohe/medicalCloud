@@ -467,5 +467,13 @@ module.exports = {
             res.send({ret: 0, message: '删除成功'});
         });
         return next();
+    },
+    getDrugsBy: function (req, res, next) {
+        var name = req.query.name;
+        var code = req.query.code;
+        dictionaryDAO.findDrugsBy(req.user.hospitalId, {name: name, code: code}).then(function (result) {
+            res.send({ret: 0, data: result});
+        })
+        return next();
     }
 }

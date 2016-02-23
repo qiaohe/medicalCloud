@@ -660,6 +660,13 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "get",
+        path: "/api/drugs/search",
+        handler: dictController.getDrugsBy,
+        secured: 'user'
+    },
+
+    {
         method: "del",
         path: "/api/drugs/:id",
         handler: dictController.removeDrug,

@@ -85,5 +85,14 @@ module.exports = {
     },
     deleteDrugInventory: function (id) {
         return db.query(sqlMapping.dict.deleteDrugInventory, id);
+    },
+    findDrugsBy: function (hospitalId, condition) {
+        var sql = sqlMapping.dict.findDrugsBy;
+        if (condition.code) {
+            sql = sql  +' code like \'%' + condition.code + '%\'';
+        } else if (condition.name) {
+            sql = sql  +' name like \'%' + condition.name + '%\'';
+        }
+        return db.query(sql, hospitalId);
     }
 }
