@@ -94,5 +94,14 @@ module.exports = {
             sql = sql  +' name like \'%' + condition.name + '%\'';
         }
         return db.query(sql, hospitalId);
+    },
+    findChargeItemsBy: function(hospitalId, condition){
+        var sql = sqlMapping.dict.findChargeItemsBy;
+        if (condition.code) {
+            sql = sql  +' code like \'%' + condition.code + '%\'';
+        } else if (condition.name) {
+            sql = sql  +' name like \'%' + condition.name + '%\'';
+        }
+        return db.query(sql, hospitalId);
     }
 }

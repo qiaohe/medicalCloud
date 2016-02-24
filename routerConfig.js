@@ -665,7 +665,12 @@ module.exports = [
         handler: dictController.getDrugsBy,
         secured: 'user'
     },
-
+    {
+        method: "get",
+        path: "/api/chargeItems/search",
+        handler: dictController.getChargeItemsBy,
+        secured: 'user'
+    },
     {
         method: "del",
         path: "/api/drugs/:id",

@@ -142,13 +142,23 @@ module.exports = {
     getRecipes: function (req, res, next) {
         var rid = req.params.id;
         medicalDAO.findRecipesBy(rid).then(function (result) {
-            res.send({ret: 0, data: _.groupBy(result, 'orderNo')});
+            var data = _.groupBy(result, 'orderNo');
+            var result = [];
+            for (var p in data) {
+                result.push({orerNo: p, drugs: data[p]});
+            }
+            res.send({ret: 0, data: result});
         });
         return next();
     },
     getPrescriptions: function (req, res, next) {
         var rid = req.params.id;
         medicalDAO.findPrescriptionsBy(rid).then(function (result) {
+            var data = _.groupBy(result, 'orderNo');
+            var result = [];
+            for (var p in data) {
+                result.push({orerNo: p, item: data[p]});
+            }
             res.send({ret: 0, data: result});
         });
         return next();
