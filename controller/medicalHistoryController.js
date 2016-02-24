@@ -53,6 +53,7 @@ module.exports = {
                             name: drugs[0].name,
                             specification: drugs[0].specification,
                             price: drugs[0].sellPrice,
+                            code:drugs[0].code,
                             totalPrice: +drugs[0].sellPrice * +item.quantity,
                             createDate: new Date(),
                             registrationId: registrationId,
