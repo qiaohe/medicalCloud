@@ -14,6 +14,7 @@ module.exports = {
         var medicalHistory = req.body;
         medicalHistory.createDate = new Date();
         medicalHistory.hospitalId = req.user.hospitalId;
+        if (!req.body.templateId) delete delete req.body.templateId;
         if (medicalHistory.id) {
             delete req.body.createDate;
             medicalDAO.updateMedicalHistory(req.body).then(function (result) {
@@ -53,7 +54,7 @@ module.exports = {
                             name: drugs[0].name,
                             specification: drugs[0].specification,
                             price: drugs[0].sellPrice,
-                            code:drugs[0].code,
+                            code: drugs[0].code,
                             totalPrice: +drugs[0].sellPrice * +item.quantity,
                             createDate: new Date(),
                             registrationId: registrationId,
@@ -211,9 +212,15 @@ module.exports = {
     changeOrderStatus: function (req, res, next) {
         var orderNo = req.params.id;
         var status = req.params.status;
-        orderDAO.update({orderNo: orderNo, status: status}).then(function (result) {
+        var order = {orderNo: orderNo, status: status};
+        if (status == 3) {
+            order.drugSender = req.user.id;
+            order.drugSenderName = req.user.name;
+            order.sendDrugDate = new Date();
+        }
+        orderDAO.update(order).then(function (result) {
             res.send({ret: 0, message: '更新订单状态成功'});
-        })
+        });
         return next();
     },
     getDrugUsageRecords: function (req, res, next) {

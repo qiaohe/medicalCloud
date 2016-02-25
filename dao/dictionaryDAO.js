@@ -80,6 +80,10 @@ module.exports = {
     insertDrugInventory: function (item) {
         return db.query(sqlMapping.dict.insertDrugInventory, item);
     },
+
+    findDrugInventoryBy: function (hospitalId, drugId, batchNo) {
+        return db.query(sqlMapping.dict.findDrugInventoryBy, [+hospitalId, +drugId, batchNo]);
+    },
     updateDrugInventory: function (item) {
         return db.query(sqlMapping.dict.updateDrugInventory, [item, item.id]);
     },
@@ -89,18 +93,18 @@ module.exports = {
     findDrugsBy: function (hospitalId, condition) {
         var sql = sqlMapping.dict.findDrugsBy;
         if (condition.code) {
-            sql = sql  +' code like \'%' + condition.code + '%\'';
+            sql = sql + ' code like \'%' + condition.code + '%\'';
         } else if (condition.name) {
-            sql = sql  +' name like \'%' + condition.name + '%\'';
+            sql = sql + ' name like \'%' + condition.name + '%\'';
         }
         return db.query(sql, hospitalId);
     },
-    findChargeItemsBy: function(hospitalId, condition){
+    findChargeItemsBy: function (hospitalId, condition) {
         var sql = sqlMapping.dict.findChargeItemsBy;
         if (condition.code) {
-            sql = sql  +' code like \'%' + condition.code + '%\'';
+            sql = sql + ' code like \'%' + condition.code + '%\'';
         } else if (condition.name) {
-            sql = sql  +' name like \'%' + condition.name + '%\'';
+            sql = sql + ' name like \'%' + condition.name + '%\'';
         }
         return db.query(sql, hospitalId);
     }

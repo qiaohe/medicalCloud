@@ -797,5 +797,4 @@ module.exports = [
         handler: medicalHistoryController.getDrugUsageRecords,
         secured: 'user'
     }
-
 ];

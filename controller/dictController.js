@@ -402,6 +402,7 @@ module.exports = {
         });
         return next();
     },
+
     addDrug: function (req, res, next) {
         var item = req.body;
         item.hospitalId = req.user.hospitalId;
@@ -448,18 +449,34 @@ module.exports = {
         var item = req.body;
         item.hospitalId = req.user.hospitalId;
         item.putInDate = new Date();
+        item.putIn = req.user.id;
+        item.putInName = req.user.name;
         item.createDate = new Date();
-        dictionaryDAO.insertDrugInventory(item).then(function (result) {
-            item.id = result.insertId;
-            res.send({ret: 0, data: item});
+        dictionaryDAO.findDrugInventoryBy(item.hospitalId, item.drugId, item.batchNo).then(function (result) {
+            if (result.length) {
+                result[0].amount = item.amount + result[0].amount;
+                result[0].restAmount = item.restAmount + result[0].restAmount;
+                dictionaryDAO.updateDrugInventory(item).then(function (rs) {
+                    res.send({ret: 0, data: result[0]});
+                });
+            } else {
+                item.restAmount = item.amount;
+                dictionaryDAO.insertDrugInventory(item).then(function (result) {
+                    item.id = result.insertId;
+                    res.send({ret: 0, data: item});
+                })
+            }
         })
     },
 
     updateDrugInventory: function (req, res, next) {
         var item = req.body;
         item.hospitalId = req.user.hospitalId;
+        item.putOut = req.user.id;
+        item.putOutDate = new Date();
+        item.putOutName = req.user.name;
         dictionaryDAO.updateDrugInventory(item).then(function (result) {
-            send().send({ret: 0, message: '更新成功'});
+            res.send({ret: 0, message: '出库更新成功'});
         });
     },
     removeDrugInventory: function (req, res, next) {
@@ -473,7 +490,7 @@ module.exports = {
         var code = req.query.code;
         dictionaryDAO.findDrugsBy(req.user.hospitalId, {name: name, code: code}).then(function (result) {
             res.send({ret: 0, data: result});
-        })
+        });
         return next();
     },
     getChargeItemsBy: function (req, res, next) {

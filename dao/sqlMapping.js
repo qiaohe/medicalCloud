@@ -185,7 +185,8 @@ module.exports = {
         findDrugInventory: 'select SQL_CALC_FOUND_ROWS * from DrugInventory di left JOIN Drug d on d.id = di.drugId where di.hospitalId = ? limit ?,?',
         insertDrugInventory: 'insert DrugInventory set ?',
         updateDrugInventory: 'update DrugInventory set ? where id=?',
-        deleteDrugInventory: 'delete DrugInventory where id=?'
+        deleteDrugInventory: 'delete DrugInventory where id=?',
+        findDrugInventoryBy: 'select * from DrugInventory where hospitalId=? and drugId=? and batchNo=?'
         /*
          select SUM(di.restAmount) as inventory, d.*  FROM Drug d left join DrugInventory di on d.id = di.drugId group BY d.id
          */

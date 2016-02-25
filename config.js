@@ -80,6 +80,7 @@ module.exports = {
     outPatientCallTemplate: '【%s】，请您到%s诊室就诊，接诊医生：【%s】。',
     notAvailableTemplate: '【%s】，很抱歉，您预约的【%s医生】门诊，就诊时间%s已过，请及时与前台联系，谢谢！',
     returnRegistrationTemplte: '【%s】，很抱歉，您预约的【%s医生】门诊，就诊时间%s已过，请及时与前台联系，谢谢！',
-    returnRegistrationTemplate: '【%s】，您已预约复诊【%s医生】%s门诊，请带好病历本及检查结果，提前到分诊台，进行确认。'
+    returnRegistrationTemplate: '【%s】，您已预约复诊【%s医生】%s门诊，请带好病历本及检查结果，提前到分诊台，进行确认。',
+    orderStatus:['未支付','已支付','已取消', '已发药']
 };
 
