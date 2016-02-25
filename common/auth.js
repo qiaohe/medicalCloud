@@ -9,7 +9,7 @@ var redisClient = require('./redisClient');
 var url = require('url');
 function authorizedIfNeeded(req) {
     var routeItem = _.findLast(routeConfig, function (item) {
-        var regExp = new RegExp('^' + item.path.replace(/:[a-zA-Z0-9]*/g, '\\w+') + '$');
+        var regExp = new RegExp('^' + item.path.replace(/:[(a-zA-Z0-9)]*/g, '[\\w|-]+') + '$');
         var m = req.method.toLowerCase();
         return (m == item.method || (m == 'delete' && item.method == 'del')) && regExp.test(url.parse(req.url).pathname)
     });
