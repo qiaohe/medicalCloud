@@ -92,6 +92,7 @@ module.exports = {
         var hospitalId = req.user.hospitalId;
         var registrationId = req.body.registrationId;
         var chargeItems = req.body.chargeItems;
+        var newItems = [];
         redis.incrAsync('h:' + hospitalId + ':' + moment().format('YYYYMMDD') + ':2:incr').then(function (reply) {
                 var orderNo = hospitalId + '-' + moment().format('YYYYMMDD') + '-2-' + reply;
                 Promise.map(chargeItems, function (item, index) {
@@ -108,24 +109,22 @@ module.exports = {
                             hospitalId: hospitalId,
                             orderNo: orderNo
                         });
+                        newItems.push(item);
                         return medicalDAO.insertPrescription(item);
                     });
                 }).then(function (result) {
-                    return orderDAO.insert({
+                    var o = {
                         orderNo: orderNo,
                         registrationId: registrationId,
                         hospitalId: hospitalId,
-                        amount: _.sum(chargeItems, function (item) {
-                            return items[0].price * +item.quantity;
-                        }),
+                        amount: _.sum(newItems, 'totalPrice'),
                         paidAmount: 0.00,
-                        paymentAmount: _.sum(chargeItems, function (item) {
-                            return +items[0].price * +item.quantity * (item.discount ? +req.body.discountRate : 1.0)
-                        }),
+                        paymentAmount: _.sum(newItems, 'receivable'),
                         status: 0,
                         createDate: new Date(),
                         type: 2
-                    });
+                    };
+                    return orderDAO.insert(o);
                 }).then(function (result) {
                     res.send({ret: 0, data: '保存成功'});
                 });
@@ -202,8 +201,17 @@ module.exports = {
         });
         return next();
     },
-    getOrderByPatient: function (req, res, next) {
-        orderDAO.findByPatientId(req.user.hospitalId, req.params.id).then(function (orders) {
+
+    getOrderByOrderNos: function (req, res, next) {
+        var orderNoArray = [];
+        if (_.isArray(req.query.orderNo)) {
+            _.forEach(req.query.orderNo, function (item) {
+                orderNoArray.push('\'' + item + '\'');
+            });
+        } else {
+            orderNoArray.push('\'' + req.query.orderNo + '\'');
+        }
+        orderDAO.findByOrderNos(req.user.hospitalId, orderNoArray.join(',')).then(function (orders) {
             if (!orders.length) return res.send({ret: 0, data: []});
             Promise.map(orders, function (order) {
                 if (order.type == 1) return medicalDAO.findRecipesBy(order.registrationId).then(function (items) {
@@ -218,6 +226,24 @@ module.exports = {
         });
         return next();
     },
+
+    chargeOrders: function (req, res, next) {
+        var orders = req.body.orders;
+        Promise.map(orders, function (order) {
+            var order = {
+                orderNo: order,
+                status: 1,
+                chargedBy: req.user.id,
+                chargedByName: req.user.name,
+                chargeDate: new Date()
+            };
+            return orderDAO.update(order)
+        }).then(function () {
+            res.send({ret: 0, message: '收费成功'})
+        });
+        return next();
+    },
+
     getRecipesByOrderNo: function (req, res, next) {
         medicalDAO.findRecipesByOrderNo(req.params.id).then(function (result) {
             res.send({ret: 0, data: result});

@@ -208,6 +208,6 @@ module.exports = {
         findDrugUsageRecords: 'SELECT rp.*, rg.patientName, rg.doctorName, rg.departmentName, rg.patientMobile, m.drugSenderName, m.sendDrugDate from Recipe rp left join Registration rg on rp.registrationId = rg.id left join MedicalOrder m on m.orderNo = rp.orderNo where rp.hospitalId=? order by rp.createDate limit ?,?',
         findOrdersByType: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName, r.departmentId,r.patientId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.type=? limit ?,?',
         findOrdersByTypeAndStatus: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientId, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.type=? and m.status=? limit ?,?',
-        findByPatientId: 'select m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.status=0 and r.patientId=?'
+        findByOrderNos: 'select m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.status=0 and m.orderNo in '
     }
 };

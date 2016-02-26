@@ -799,8 +799,15 @@ module.exports = [
     },
     {
         method: "get",
-        path: "/api/patients/:id/orders",
-        handler: medicalHistoryController.getOrderByPatient,
+        path: "/api/orders/charging",
+        handler: medicalHistoryController.getOrderByOrderNos,
         secured: 'user'
-    }
+    },
+    {
+        method: "post",
+        path: "/api/orders/charging",
+        handler: medicalHistoryController.chargeOrders,
+        secured: 'user'
+    },
+
 ];
