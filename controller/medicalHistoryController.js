@@ -123,9 +123,8 @@ module.exports = {
                             return +items[0].price * +item.quantity * (item.discount ? +req.body.discountRate : 1.0)
                         }),
                         status: 0,
-                        referenceId: result.insertId,
                         createDate: new Date(),
-                        type: 1
+                        type: 2
                     });
                 }).then(function (result) {
                     res.send({ret: 0, data: '保存成功'});
@@ -200,6 +199,22 @@ module.exports = {
             if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
             orders.pageIndex = pageSize;
             res.send({ret: 0, data: orders});
+        });
+        return next();
+    },
+    getOrderByPatient: function (req, res, next) {
+        orderDAO.findByPatientId(req.user.hospitalId, req.params.id).then(function (orders) {
+            if (!orders.length) return res.send({ret: 0, data: []});
+            Promise.map(orders, function (order) {
+                if (order.type == 1) return medicalDAO.findRecipesBy(order.registrationId).then(function (items) {
+                    order.items = items;
+                });
+                if (order.type == 2) return medicalDAO.findPrescriptionsBy(order.registrationId).then(function (items) {
+                    order.items = items;
+                });
+            }).then(function () {
+                res.send({ret: 0, data: orders});
+            })
         });
         return next();
     },

@@ -11,7 +11,9 @@ module.exports = {
     findOrdersByTypeAndStatus: function (type, status, page) {
         return db.queryWithCount(sqlMapping.order.findOrdersByTypeAndStatus, [type, status, page.from, page.size]);
     },
-
+    findByPatientId: function (hospitalId, patientId) {
+        return db.query(sqlMapping.order.findByPatientId, [hospitalId, patientId]);
+    },
     findOrdersByStatus: function (hospitalId, status, page) {
         return db.queryWithCount(sqlMapping.order.findOrdersByStatus, [hospitalId, status, page.from, page.size]);
     },

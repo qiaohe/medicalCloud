@@ -796,5 +796,11 @@ module.exports = [
         path: "/api/orders/usageRecords",
         handler: medicalHistoryController.getDrugUsageRecords,
         secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/patients/:id/orders",
+        handler: medicalHistoryController.getOrderByPatient,
+        secured: 'user'
     }
 ];
