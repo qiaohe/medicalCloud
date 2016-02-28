@@ -276,5 +276,28 @@ module.exports = {
             res.send({ret: 0, data: records});
         });
         return next();
+    },
+    getAccountingInfo: function (req, res, next) {
+        var hospitalId = req.user.hospitalId;
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        orderDAO.findOrdersBy(hospitalId, ' m.status > 0', {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (orders) {
+            orders.pageIndex = pageIndex;
+            Promise.map(orders.rows, function (order) {
+                if (order.type == 2) {
+                    return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
+                        _.forEach(extras, function (item) {
+                            order[item.fieldName] = item.sum;
+                        });
+                    })
+                }
+            }).then(function () {
+                res.send({ret: 0, data: orders});
+            })
+        });
+        return next();
     }
 }

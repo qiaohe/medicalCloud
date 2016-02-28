@@ -809,5 +809,10 @@ module.exports = [
         handler: medicalHistoryController.chargeOrders,
         secured: 'user'
     },
-
+    {
+        method: "get",
+        path: "/api/accountingInfo",
+        handler: medicalHistoryController.getAccountingInfo,
+        secured: 'user'
+    }
 ];
