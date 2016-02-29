@@ -191,11 +191,21 @@ module.exports = {
     getOrdersByStatus: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        orderDAO.findOrdersByStatus(req.user.hospitalId, req.params.status, {
+        var conditions = [];
+        if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.paymentDate) conditions.push('m.paymentDate like \'%' + req.query.paymentDate + '%\'');
+        if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
+        if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
+        orderDAO.findOrdersByStatus(req.user.hospitalId, req.params.status, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (orders) {
             if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            //orders.rows.forEach(function (order) {
+            //    order.memberTypeName = config.memberType[+order.memberType];
+            //    order.paymentTypeName = config.paymentType[+order.paymentType];
+            //    order.statusName = config.orderStatus[+order.status];
+            //});
             orders.pageIndex = pageSize;
             res.send({ret: 0, data: orders});
         });

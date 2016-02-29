@@ -14,8 +14,13 @@ module.exports = {
     findByOrderNos: function (hospitalId, orderNos) {
         return db.query(sqlMapping.order.findByOrderNos + '(' + orderNos + ')', [hospitalId, orderNos]);
     },
-    findOrdersByStatus: function (hospitalId, status, page) {
-        return db.queryWithCount(sqlMapping.order.findOrdersByStatus, [hospitalId, status, page.from, page.size]);
+    findOrdersByStatus: function (hospitalId, status, conditions, page) {
+        var sql = sqlMapping.order.findOrdersByStatus;
+        if (conditions.length) {
+            sql = sql + ' and ' + conditions.join(' and ');
+        }
+        sql = sql + ' limit ?, ?';
+        return db.queryWithCount(sql, [hospitalId, status, page.from, page.size]);
     },
     findOrdersBy: function (hospitalId, condition, page) {
         var sql = sqlMapping.order.findOrdersBy;
