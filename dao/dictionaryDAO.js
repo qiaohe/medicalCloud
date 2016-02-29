@@ -59,8 +59,9 @@ module.exports = {
     findChargeItems: function (hospitalId, page) {
         return db.queryWithCount(sqlMapping.dict.findChargeItems, [hospitalId, page.from, page.size]);
     },
-    findDrugs: function (hospitalId, page) {
-        return db.queryWithCount(sqlMapping.dict.findDrugs, [hospitalId, page.from, page.size]);
+    findDrugs: function (hospitalId, conditions, page) {
+        var sql = conditions.length ? 'select * from Drug where hospitalId=? and ' + conditions.join(' and ') + ' LIMIT ?, ?' : sqlMapping.dict.findDrugs;
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     deleteDrug: function (id) {
         return db.query(sqlMapping.dict.deleteDrug, id);
@@ -74,8 +75,9 @@ module.exports = {
     findDrugById: function (id) {
         return db.query(sqlMapping.dict.findDrugById, id);
     },
-    findDrugInventory: function (hospitalId, page) {
-        return db.queryWithCount(sqlMapping.dict.findDrugInventory, [hospitalId, page.from, page.size]);
+    findDrugInventory: function (hospitalId, conditions, page) {
+        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS * from DrugInventory di left JOIN Drug d on d.id = di.drugId where di.hospitalId = ? and ' + conditions.join(' and ') + ' limit ?,?' : sqlMapping.dict.findDrugInventory;
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     insertDrugInventory: function (item) {
         return db.query(sqlMapping.dict.insertDrugInventory, item);

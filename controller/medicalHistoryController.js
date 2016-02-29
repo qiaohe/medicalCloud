@@ -171,6 +171,11 @@ module.exports = {
             size: pageSize
         }).then(function (orders) {
             if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            orders.rows.forEach(function (order) {
+                order.memberType = config.memberType[+order.memberType];
+                order.paymentType = config.paymentType[+order.paymentType];
+                order.status = config.orderStatus[+order.status];
+            });
             orders.pageIndex = pageSize;
             res.send({ret: 0, data: orders});
         });
@@ -185,6 +190,11 @@ module.exports = {
         }).then(function (orders) {
             if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
             orders.pageIndex = pageSize;
+            orders.rows.forEach(function (order) {
+                order.memberType = config.memberType[+order.memberType];
+                order.paymentType = config.paymentType[+order.paymentType];
+                order.status = config.orderStatus[+order.status];
+            });
             res.send({ret: 0, data: orders});
         });
     },
@@ -201,11 +211,11 @@ module.exports = {
             size: pageSize
         }).then(function (orders) {
             if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
-            //orders.rows.forEach(function (order) {
-            //    order.memberTypeName = config.memberType[+order.memberType];
-            //    order.paymentTypeName = config.paymentType[+order.paymentType];
-            //    order.statusName = config.orderStatus[+order.status];
-            //});
+            orders.rows.forEach(function (order) {
+                order.memberType = config.memberType[+order.memberType];
+                order.paymentType = config.paymentType[+order.paymentType];
+                order.status = config.orderStatus[+order.status];
+            });
             orders.pageIndex = pageSize;
             res.send({ret: 0, data: orders});
         });
@@ -305,6 +315,11 @@ module.exports = {
                     })
                 }
             }).then(function () {
+                orders.rows.length && orders.rows.forEach(function (order) {
+                    order.memberType = config.memberType[+order.memberType];
+                    order.paymentType = config.paymentType[+order.paymentType];
+                    order.status = config.orderStatus[+order.status];
+                });
                 res.send({ret: 0, data: orders});
             })
         });

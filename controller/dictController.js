@@ -393,7 +393,11 @@ module.exports = {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var hospitalId = req.user.hospitalId;
-        dictionaryDAO.findDrugs(hospitalId, {
+        var conditions = [];
+        if (req.query.code) conditions.push('code like \'%' + req.query.code + '%\'');
+        if (req.query.type) conditions.push('type=\'' + req.query.type + '\'');
+        if (req.query.name) conditions.push('name like \'%' + req.query.name + '%\'');
+        dictionaryDAO.findDrugs(hospitalId,conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (items) {
@@ -437,7 +441,13 @@ module.exports = {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var hospitalId = req.user.hospitalId;
-        dictionaryDAO.findDrugInventory(hospitalId, {
+        var conditions = [];
+        if (req.query.code) conditions.push('code like \'%' + req.query.code + '%\'');
+        if (req.query.type) conditions.push('type=\'' + req.query.type + '\'');
+        if (req.query.name) conditions.push('name like \'%' + req.query.name + '%\'');
+        if (req.query.startDate) conditions.push('putOutDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('putOutDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        dictionaryDAO.findDrugInventory(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (items) {
