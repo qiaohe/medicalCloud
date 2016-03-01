@@ -5,8 +5,9 @@ module.exports = {
     insert: function (order) {
         return db.query(sqlMapping.order.insert, order);
     },
-    findOrdersByType: function (type, page) {
-        return db.queryWithCount(sqlMapping.order.findOrdersByType, [type, page.from, page.size]);
+    findOrdersByType: function (type, conditions, page) {
+        var sql = !conditions.length ? sqlMapping.order.findOrdersByType : sqlMapping.order.findOrdersByType + 'and ' + conditions.join(' and ');
+        return db.queryWithCount(sql + ' limit ?,?', [type, page.from, page.size]);
     },
     findOrdersByTypeAndStatus: function (type, status, page) {
         return db.queryWithCount(sqlMapping.order.findOrdersByTypeAndStatus, [type, status, page.from, page.size]);
@@ -34,7 +35,12 @@ module.exports = {
     update: function (order) {
         return db.query(sqlMapping.order.update, [order, order.orderNo]);
     },
-    findDrugUsageRecords: function (hospitalId, page) {
-        return db.queryWithCount(sqlMapping.order.findDrugUsageRecords, [hospitalId, page.from, page.size]);
+    findDrugUsageRecords: function (hospitalId, conditions, page) {
+        var sql = sqlMapping.order.findDrugUsageRecords;
+        if (conditions.length) {
+            sql = sql + ' and ' + conditions.join(' and ');
+        }
+        sql = sql + ' order by rp.createDate limit ?,?';
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     }
 }

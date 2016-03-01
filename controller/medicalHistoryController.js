@@ -169,7 +169,15 @@ module.exports = {
     getOrdersBy: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        orderDAO.findOrdersByType(req.params.id, {
+        var conditions = [];
+        if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.departmentId) conditions.push('r.departmentId=' + req.query.departmentId);
+        if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);
+        if (req.query.drugSender) conditions.push('m.drugSender=' + req.query.drugSender);
+        if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
+        if (req.query.startDate) conditions.push('m.sendDrugDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('m.sendDrugDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        orderDAO.findOrdersByType(req.params.id, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (orders) {
@@ -178,6 +186,7 @@ module.exports = {
                 order.memberType = config.memberType[+order.memberType];
                 order.paymentType = config.paymentType[+order.paymentType];
                 order.status = config.orderStatus[+order.status];
+                order.type = config.orderType[+order.type];
             });
             orders.pageIndex = pageSize;
             res.send({ret: 0, data: orders});
@@ -197,6 +206,7 @@ module.exports = {
                 order.memberType = config.memberType[+order.memberType];
                 order.paymentType = config.paymentType[+order.paymentType];
                 order.status = config.orderStatus[+order.status];
+                order.type = config.orderType[+order.type];
             });
             res.send({ret: 0, data: orders});
         });
@@ -218,6 +228,7 @@ module.exports = {
                 order.memberType = config.memberType[+order.memberType];
                 order.paymentType = config.paymentType[+order.paymentType];
                 order.status = config.orderStatus[+order.status];
+                order.type = config.orderType[+order.type];
             });
             orders.pageIndex = pageSize;
             res.send({ret: 0, data: orders});
@@ -290,7 +301,16 @@ module.exports = {
     getDrugUsageRecords: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        orderDAO.findDrugUsageRecords(req.user.hospitalId, {
+        var conditions = [];
+        if (req.query.patientMobile) conditions.push('rg.patientMobile like \'%' + req.query.patientMobile + '%\'');
+        if (req.query.patientName) conditions.push('rg.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.departmentId) conditions.push('rg.departmentId=' + req.query.departmentId);
+        if (req.query.doctorId) conditions.push('rg.doctorId=' + req.query.doctorId);
+        if (req.query.drugSender) conditions.push('m.drugSender=' + req.query.drugSender);
+        if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
+        if (req.query.startDate) conditions.push('m.sendDrugDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('m.sendDrugDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        orderDAO.findDrugUsageRecords(req.user.hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (records) {
@@ -322,6 +342,7 @@ module.exports = {
                     order.memberType = config.memberType[+order.memberType];
                     order.paymentType = config.paymentType[+order.paymentType];
                     order.status = config.orderStatus[+order.status];
+                    order.type = config.orderType[+order.type];
                 });
                 res.send({ret: 0, data: orders});
             })

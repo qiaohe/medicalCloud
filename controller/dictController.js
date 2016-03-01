@@ -227,7 +227,10 @@ module.exports = {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var hospitalId = req.user.hospitalId;
-        dictionaryDAO.findDiseases(hospitalId, {
+        var conditions = [];
+        if (req.query.name) conditions.push('name like \'%' + req.query.name + '%\'');
+        if (req.query.departmentId) conditions.push('departmentId=' + req.query.departmentId);
+        dictionaryDAO.findDiseases(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (diseases) {
@@ -303,7 +306,10 @@ module.exports = {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var hospitalId = req.user.hospitalId;
-        dictionaryDAO.findMedicalTemplates(hospitalId, {
+        var conditions = [];
+        if (req.query.name) conditions.push('dic.name like \'%' + req.query.name + '%\'');
+        if (req.query.departmentId) conditions.push('m.departmentId=' + req.query.departmentId);
+        dictionaryDAO.findMedicalTemplates(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (templates) {
@@ -381,7 +387,10 @@ module.exports = {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var hospitalId = req.user.hospitalId;
-        dictionaryDAO.findChargeItems(hospitalId, {
+        var conditions = [];
+        if (req.query.name) conditions.push('name like \'%' + req.query.name + '%\'');
+        if (req.query.categoryId) conditions.push('categoryId=' + req.query.categoryId);
+        dictionaryDAO.findChargeItems(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (items) {

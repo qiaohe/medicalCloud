@@ -8,8 +8,11 @@ module.exports = {
     deleteDisease: function (id) {
         return db.query(sqlMapping.dict.deleteDisease, id);
     },
-    findDiseases: function (hospitalId, page) {
-        return db.queryWithCount(sqlMapping.dict.findDiseases, [hospitalId, page.from, page.size]);
+    findDiseases: function (hospitalId, conditions, page) {
+        var sql = sqlMapping.dict.findDiseases;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' limit ?,?';
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     updateDisease: function (diseaseDic) {
         return db.query(sqlMapping.dict.updateDisease, [diseaseDic, diseaseDic.id]);
@@ -26,8 +29,11 @@ module.exports = {
     findDictItems: function (hospitalId, type, page) {
         return db.queryWithCount(sqlMapping.dict.findDictItems, [+hospitalId, +type, page.from, page.size]);
     },
-    findMedicalTemplates: function (hospitalId, page) {
-        return db.queryWithCount(sqlMapping.dict.findMedicalTemplates, [+hospitalId, page.from, page.size]);
+    findMedicalTemplates: function (hospitalId, conditions, page) {
+        var sql = sqlMapping.dict.findMedicalTemplates;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' limit ?,?';
+        return db.queryWithCount(sql, [+hospitalId, page.from, page.size]);
     },
     getMedicalTemplateBy: function (hospitalId, departmentId) {
         return db.queryWithCount(sqlMapping.dict.getMedicalTemplateBy, [+hospitalId, departmentId]);
@@ -56,8 +62,11 @@ module.exports = {
     updateChargeItem: function (item) {
         return db.query(sqlMapping.dict.updateChargeItem, [item, item.id]);
     },
-    findChargeItems: function (hospitalId, page) {
-        return db.queryWithCount(sqlMapping.dict.findChargeItems, [hospitalId, page.from, page.size]);
+    findChargeItems: function (hospitalId, conditions, page) {
+        var sql = sqlMapping.dict.findChargeItems;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' LIMIT ?, ?';
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     findDrugs: function (hospitalId, conditions, page) {
         var sql = conditions.length ? 'select * from Drug where hospitalId=? and ' + conditions.join(' and ') + ' LIMIT ?, ?' : sqlMapping.dict.findDrugs;
