@@ -14,7 +14,10 @@ module.exports = {
         var medicalHistory = req.body;
         medicalHistory.createDate = new Date();
         medicalHistory.hospitalId = req.user.hospitalId;
-        if (!req.body.templateId) delete delete req.body.templateId;
+        delete medicalHistory.name;
+        delete medicalHistory.type;
+        delete medicalHistory.diseaseId;
+        if (!req.body.templateId) delete req.body.templateId;
         if (medicalHistory.id) {
             delete req.body.createDate;
             medicalDAO.updateMedicalHistory(req.body).then(function (result) {

@@ -370,6 +370,7 @@ module.exports = {
 
     updateChargeItem: function (req, res, next) {
         req.body.hospitalId = req.user.hospitalId;
+        delete req.body.categoryName;
         dictionaryDAO.updateChargeItem(req.body).then(function (result) {
             res.send({ret: 0, message: '更新成功'});
         });
@@ -397,7 +398,7 @@ module.exports = {
         if (req.query.code) conditions.push('code like \'%' + req.query.code + '%\'');
         if (req.query.type) conditions.push('type=\'' + req.query.type + '\'');
         if (req.query.name) conditions.push('name like \'%' + req.query.name + '%\'');
-        dictionaryDAO.findDrugs(hospitalId,conditions, {
+        dictionaryDAO.findDrugs(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (items) {
