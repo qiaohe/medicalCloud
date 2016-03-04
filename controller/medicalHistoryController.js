@@ -189,7 +189,7 @@ module.exports = {
                 order.status = config.orderStatus[+order.status];
                 order.type = config.orderType[+order.type];
             });
-            orders.pageIndex = pageSize;
+            orders.pageIndex = pageIndex;
             res.send({ret: 0, data: orders});
         });
     },
@@ -217,6 +217,7 @@ module.exports = {
         var pageSize = +req.query.pageSize;
         var conditions = [];
         if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.memberType) conditions.push('r.memberType=' + req.query.memberType);
         if (req.query.paymentDate) conditions.push('m.paymentDate like \'%' + req.query.paymentDate + '%\'');
         if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
         if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
@@ -325,7 +326,16 @@ module.exports = {
         var hospitalId = req.user.hospitalId;
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        orderDAO.findOrdersBy(hospitalId, ' m.status > 0', {
+        var conditions = [];
+        conditions.push('m.status>0');
+        //if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
+        //if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.departmentId) conditions.push('r.departmentId=' + req.query.departmentId);
+        if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);
+        //if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
+        if (req.query.startDate) conditions.push('m.paymentDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('m.paymentDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        orderDAO.findOrdersBy(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (orders) {
@@ -345,6 +355,7 @@ module.exports = {
                     order.status = config.orderStatus[+order.status];
                     order.type = config.orderType[+order.type];
                 });
+                orders.pageIndex = pageIndex;
                 res.send({ret: 0, data: orders});
             })
         });
