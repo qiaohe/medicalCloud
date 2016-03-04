@@ -63,7 +63,8 @@ module.exports = {
                             registrationId: registrationId,
                             unit: drugs[0].unit,
                             hospitalId: hospitalId,
-                            orderNo: orderNo
+                            orderNo: orderNo,
+                            type: drugs[0].type
                         });
                         items.push(item);
                         return medicalDAO.insertRecipe(item);
