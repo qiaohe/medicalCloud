@@ -164,7 +164,7 @@ module.exports = {
         updateDictItem: 'update Dictionary set ? where id = ?',
         deleteDictItem: 'delete from Dictionary where id =?',
         findDictItems: 'select SQL_CALC_FOUND_ROWS * from Dictionary where hospitalId =? and type=? limit ?,?',
-        findMedicalTemplates: 'select SQL_CALC_FOUND_ROWS m.*, d.`name`, d.departmentName, dic.`name` from MedicalTemplate m left JOIN DiseaseDic dic on dic.id=m.diseaseId left JOIN Doctor d on d.id=m.doctorId where m.hospitalId =? ',
+        findMedicalTemplates: 'select SQL_CALC_FOUND_ROWS d.`name` as departmentName, dic.`name` as diseaseType, m.* from MedicalTemplate m left JOIN DiseaseDic dic on dic.id=m.diseaseId left JOIN Department d on d.id=m.departmentId where m.hospitalId =? ',
         insertMedicalTemplte: 'insert MedicalTemplate set ?',
         getMedicalTemplateBy: 'select id, name from MedicalTemplate where hospitalId=? and departmentId=?',
         findMedicalTemplateById: 'select * from MedicalTemplate where id=?',
