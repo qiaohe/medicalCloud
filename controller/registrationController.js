@@ -6,7 +6,7 @@ var businessPeopleDAO = require('../dao/businessPeopleDAO');
 var hospitalDAO = require('../dao/hospitalDAO');
 var deviceDAO = require('../dao/deviceDAO');
 var pusher = require('../domain/NotificationPusher');
-var Promise = require('bluebird');
+var orderDAO = require('../dao/orderDAO');
 var _ = require('lodash');
 var util = require('util');
 var moment = require('moment');
@@ -136,6 +136,23 @@ module.exports = {
                 r.id = result.insertId;
                 return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod);
             }).then(function (result) {
+                return redis.incrAsync('h:' + r.hospitalId + ':' + moment().format('YYYYMMDD') + ':2:incr').then(function (reply) {
+                    var orderNo = r.hospitalId + '-' + moment().format('YYYYMMDD') + '-0-' + reply;
+                    var o = {
+                        orderNo: orderNo,
+                        registrationId: r.id,
+                        hospitalId: r.hospitalId,
+                        amount: r.registrationFee,
+                        paidAmount: 0.00,
+                        paymentAmount: r.registrationFee,
+                        status: 0,
+                        paymentType: 5,
+                        createDate: new Date(),
+                        type: 0
+                    };
+                    return orderDAO.insert(o);
+                });
+            }).then(function (result) {
                 deviceDAO.findTokenByUid(r.patientBasicInfoId).then(function (tokens) {
                     if (r.registrationType == 3 && tokens.length && tokens[0]) {
                         businessPeopleDAO.findShiftPeriodById(r.hospitalId, r.shiftPeriod).then(function (result) {
@@ -157,6 +174,8 @@ module.exports = {
                 });
                 res.send({ret: 0, dta: r})
             });
+        }).catch(function (error) {
+            res.send(error);
         });
         return next();
     },
