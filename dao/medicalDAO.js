@@ -29,5 +29,8 @@ module.exports = {
     },
     findRecipesBy: function (rid) {
         return db.query(sqlMapping.medical.findRecipesBy, rid);
+    },
+    findDrugInventoryByDrugId: function (drugId, expireDate, quantity) {
+        return db.query(sqlMapping.medical.findDrugInventoryByDrugId, [drugId, expireDate, quantity]);
     }
 }
