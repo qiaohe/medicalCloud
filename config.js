@@ -4,7 +4,7 @@ module.exports = {
     server: {
         name: 'medical cloud platform',
         version: '0.0.1',
-        host: '121.42.171.213',
+        host: 'localhost',
         port: 8083
     },
     db: {
@@ -70,7 +70,7 @@ module.exports = {
     outPatientType: ["初诊", "复诊", "院内转诊", "跨院转诊", "远程会诊", "远程初诊", "远程复诊"],
     outpatientStatus: ['未到', '结束', '已转诊', '已预约复诊', '转诊中', '待诊中', '已取消'],
     cashbackType: ['赠劵', '优惠券', '免单'],
-    paymentType: ['银行卡', '储值卡', '现金', '代付', '微信钱包', '支付宝'],
+    paymentType: ['微信支付', '支付宝', '会员卡', '银行卡', '储值卡', '现金', '代付'],
     consumptionLevel: ['<1000', '1000~3000', '3000~5000', '5000~10000', '>10000'],
     employeeStatus: ['在职', '试用', '离职'],
     registrationNotificationTemplate: '【%s】，您已预约【%s医生】门诊，就诊时间%s。请提前半小时到分诊台，进行取号确认。',

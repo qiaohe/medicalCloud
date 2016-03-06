@@ -23,11 +23,14 @@ module.exports = {
         sql = sql + ' limit ?, ?';
         return db.queryWithCount(sql, [hospitalId, status, page.from, page.size]);
     },
-    findOrdersBy: function (hospitalId, condition, page) {
+
+    findOrdersBy: function (hospitalId, conditions, page) {
         var sql = sqlMapping.order.findOrdersBy;
-        if (condition)
-            sql = sql + ' and ' + condition + ' limit ' + page.from + ',' + page.size;
-        return db.queryWithCount(sql, hospitalId);
+        if (conditions.length) {
+            sql = sql + ' and ' + conditions.join(' and ');
+        }
+        sql = sql + ' limit ?, ?';
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     findExtraFeeBy: function (orderNo) {
         return db.query(sqlMapping.order.findExtraFeeBy, orderNo);

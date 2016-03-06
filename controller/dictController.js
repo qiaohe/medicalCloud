@@ -228,7 +228,7 @@ module.exports = {
         var pageSize = +req.query.pageSize;
         var hospitalId = req.user.hospitalId;
         var conditions = [];
-        if (req.query.name) conditions.push('name like \'%' + req.query.name + '%\'');
+        if (req.query.name) conditions.push('d.name like \'%' + req.query.name + '%\'');
         if (req.query.departmentId) conditions.push('departmentId=' + req.query.departmentId);
         dictionaryDAO.findDiseases(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
@@ -307,7 +307,7 @@ module.exports = {
         var pageSize = +req.query.pageSize;
         var hospitalId = req.user.hospitalId;
         var conditions = [];
-        if (req.query.name) conditions.push('dic.name like \'%' + req.query.name + '%\'');
+        if (req.query.name) conditions.push('dic.`name` like \'%' + req.query.name + '%\'');
         if (req.query.departmentId) conditions.push('m.departmentId=' + req.query.departmentId);
         dictionaryDAO.findMedicalTemplates(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
@@ -330,6 +330,7 @@ module.exports = {
         var template = req.body;
         template.hospitalId = req.user.hospitalId;
         template.createDate = new Date();
+        template.doctorId = req.user.id;
         dictionaryDAO.insertMedicalTemplate(template).then(function (result) {
             template.id = result.insertId;
             res.send({ret: 0, data: template});
