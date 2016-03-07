@@ -38,15 +38,11 @@ module.exports = {
         appKey: "ba7b7b62680de68a0d19fa5a"
     },
     sms: {
-        providerUrl: 'http://115.29.44.189:8080/sms/smsInterface.do',
-        template: '【云诊宝】您的邀请码是:code,赶快去注册使用吧.',
-        expireTime: 600,
-        option: {
-            username: 'tuning',
-            password: '111111'
-        }
+        providerUrl: 'https://sms.yunpian.com/v1/sms/send.json',
+        template: '【云诊宝】您的短信验证码是:code,在30分钟内输入有效。',
+        expireTime: 1800000,
+        apikey: '410ac09436843c0270f513a0d84802cc'
     },
-
     clinicConfig: {
         "1": "一诊室",
         "2": "二诊室",

@@ -21,6 +21,8 @@ module.exports = {
         businessPeopleDAO.findPerformanceByMonth(req.user.id, yearMonth).then(function (performances) {
             if (!performances.length) return res.send({ret: 0, data: []});
             res.send({ret: 0, data: performances[0]});
+        }).catch(function (error) {
+            res.send(error);
         });
         return next();
     },
@@ -30,6 +32,8 @@ module.exports = {
             if (!performances.length) return res.send({ret: 0, data: []});
             performances[0].completePercentage = (performances[0].actualCount / performances[0].plannedCount).toFixed(2);
             res.send({ret: 0, data: performances[0]});
+        }).catch(function (error) {
+            res.send(error);
         });
         return next();
     },
@@ -39,6 +43,8 @@ module.exports = {
             if (!contacts.length) return res.send({ret: 0, data: []});
             contacts.forEach(function (contact) {
                 contact.source = config.sourceType[contact.source];
+            }).catch(function (error) {
+                res.send(error);
             });
             res.send({ret: 0, data: contacts});
         });
@@ -57,6 +63,8 @@ module.exports = {
             });
             contacts.pageIndex = pageIndex;
             res.send({ret: 0, data: contacts});
+        }).catch(function (error) {
+            res.send(error);
         });
         return next();
     },
@@ -71,6 +79,8 @@ module.exports = {
             return businessPeopleDAO.addTransferHistory(transfer);
         }).then(function (result) {
             res.send({ret: 0, message: '转移成功'});
+        }).catch(function (error) {
+            res.send(error);
         });
         return next();
     },
@@ -112,12 +122,12 @@ module.exports = {
             })
         }).then(function (result) {
             var smsConfig = config.sms;
-            var option = _.assign(smsConfig.option, {
-                mobile: contact.mobile,
-                content: config.sms.template.replace(':code', invitationCode)
-            });
+            var content = smsConfig.template.replace(':code', invitationCode);
+            var option = {mobile: contact.mobile, text: content, apikey: config.sms.apikey};
             request.postAsync({url: smsConfig.providerUrl, form: option});
             res.send({ret: 0, message: i18n.get('contacts.add.success')});
+        }).catch(function (error) {
+            res.send(error);
         });
         return next();
     },

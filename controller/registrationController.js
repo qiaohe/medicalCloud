@@ -136,7 +136,7 @@ module.exports = {
                 r.id = result.insertId;
                 return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod);
             }).then(function (result) {
-                return redis.incrAsync('h:' + r.hospitalId + ':' + moment().format('YYYYMMDD') + ':2:incr').then(function (reply) {
+                return redis.incrAsync('h:' + r.hospitalId + ':' + moment().format('YYYYMMDD') + ':0:incr').then(function (reply) {
                     var orderNo = r.hospitalId + '-' + moment().format('YYYYMMDD') + '-0-' + reply;
                     var o = {
                         orderNo: orderNo,
