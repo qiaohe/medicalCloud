@@ -64,7 +64,9 @@ module.exports = {
                             unit: drugs[0].unit,
                             hospitalId: hospitalId,
                             orderNo: orderNo,
-                            type: drugs[0].type
+                            type: drugs[0].type,
+                            dosageForm: drugs[0].dosageForm,
+                            factor:drugs[0].factor
                         });
                         items.push(item);
                         return medicalDAO.insertRecipe(item);
@@ -81,7 +83,7 @@ module.exports = {
                         paidAmount: 0.00,
                         paymentAmount: amount,
                         status: 0,
-                        paymentType:1,
+                        paymentType: 1,
                         createDate: new Date(),
                         type: 1
                     });
@@ -126,7 +128,7 @@ module.exports = {
                         paidAmount: 0.00,
                         paymentAmount: _.sum(newItems, 'receivable'),
                         status: 0,
-                        paymentType:1,
+                        paymentType: 1,
                         createDate: new Date(),
                         type: 2
                     };
