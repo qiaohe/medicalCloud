@@ -295,13 +295,30 @@ module.exports = {
         var status = req.params.status;
         var order = {orderNo: orderNo, status: status};
         if (status == 3) {
-            order.drugSender = req.user.id;
-            order.drugSenderName = req.user.name;
-            order.sendDrugDate = new Date();
+            medicalDAO.findRecipesByOrderNo(orderNo).then(function (recipes) {
+                var expireDate = moment().format('YYYY-MM-DD');
+                Promise.map(recipes, function (recipe) {
+                    return medicalDAO.findDrugInventoryByDrugId(+recipe.drugId, expireDate, +recipe.quantity).then(function (drugInventories) {
+                        if (drugInventories.length) {
+                            var inventory = drugInventories[0];
+                            inventory.restAmount = inventory.restAmount - recipe.quantity;
+                            return dictionaryDAO.updateDrugInventory(inventory);
+                        }
+                    })
+                }).then(function (result) {
+                    order.drugSender = req.user.id;
+                    order.drugSenderName = req.user.name;
+                    order.sendDrugDate = new Date();
+                    orderDAO.update(order).then(function (result) {
+                        res.send({ret: 0, message: '更新订单状态成功'});
+                    });
+                });
+            });
+        } else {
+            orderDAO.update(order).then(function (result) {
+                res.send({ret: 0, message: '更新订单状态成功'});
+            });
         }
-        orderDAO.update(order).then(function (result) {
-            res.send({ret: 0, message: '更新订单状态成功'});
-        });
         return next();
     },
     getDrugUsageRecords: function (req, res, next) {
