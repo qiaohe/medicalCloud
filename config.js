@@ -34,8 +34,8 @@ module.exports = {
         prefix: "http://7xoadl.com2.z0.glb.qiniucdn.com/"
     },
     jpush: {
-        masterSecret: "e359739da88500a8e7a93a3b",
-        appKey: "ba7b7b62680de68a0d19fa5a"
+        masterSecret: "746f077c505f3195a4abf5a3",
+        appKey: "21bd61c93392c3e2d1e48d4c"
     },
     sms: {
         providerUrl: 'https://sms.yunpian.com/v1/sms/send.json',
