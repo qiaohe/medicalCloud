@@ -25,8 +25,8 @@ module.exports = {
         port: 6379
     },
     rongcloud: {
-        appKey: 'm7ua80gbuxrim',
-        appSecret: 'Z4Vyp9riQ9'
+        appKey: 'z3v5yqkbvtei0',
+        appSecret: 'BDcA3iRjgFp'
     },
     qiniu: {
         ak: "ZNrhKtanGiBCTOPg4XRD9SMOAbLzy8iREzQzUP5T",
