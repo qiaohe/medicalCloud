@@ -467,6 +467,8 @@ module.exports = {
             size: pageSize
         }).then(function (notifications) {
             res.send({ret: 0, data: notifications});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     }
