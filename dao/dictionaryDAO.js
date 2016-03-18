@@ -36,7 +36,7 @@ module.exports = {
         return db.queryWithCount(sql, [+hospitalId, page.from, page.size]);
     },
     getMedicalTemplateBy: function (hospitalId, departmentId) {
-        return db.queryWithCount(sqlMapping.dict.getMedicalTemplateBy, [+hospitalId, departmentId]);
+        return db.query(sqlMapping.dict.getMedicalTemplateBy, [+hospitalId, departmentId]);
     },
     findMedicalTemplateById: function (id) {
         return db.query(sqlMapping.dict.findMedicalTemplateById, id);
