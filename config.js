@@ -4,7 +4,7 @@ module.exports = {
     server: {
         name: 'medical cloud platform',
         version: '0.0.1',
-        host: 'localhost',
+        host: '121.42.171.213',
         port: 8083
     },
     db: {
@@ -29,9 +29,9 @@ module.exports = {
         appSecret: 'BDcA3iRjgFp'
     },
     qiniu: {
-        ak: "ZNrhKtanGiBCTOPg4XRD9SMOAbLzy8iREzQzUP5T",
-        sk: "L6VfXirR55Gk6mQ67Jn4pg7bksMpc-F5mghT0GK4",
-        prefix: "http://7xoadl.com2.z0.glb.qiniucdn.com/"
+        ak: "0d02DpW7tBPiN3TuZYV7WcxmN1C9aCiNZeW9fp5W",
+        sk: "7zD3aC6xpvp_DfDZ0LJhjMq6n6nB6UVDbl37C5FZ",
+        prefix: "http://7xrtp2.com2.z0.glb.qiniucdn.com/"
     },
     jpush: {
         masterSecret: "746f077c505f3195a4abf5a3",
@@ -77,6 +77,8 @@ module.exports = {
     notAvailableTemplate: '【%s】，很抱歉，您预约的【%s医生】门诊，就诊时间%s已过，请及时与前台联系，谢谢！',
     returnRegistrationTemplte: '【%s】，很抱歉，您预约的【%s医生】门诊，就诊时间%s已过，请及时与前台联系，谢谢！',
     returnRegistrationTemplate: '【%s】，您已预约复诊【%s医生】%s门诊，请带好病历本及检查结果，提前到分诊台，进行确认。',
+    recipeOrderTemplate: '【%s】，您的处方订单已生成，请您1H内通过网上支付或通过收银窗口支付。',
+    prescriptionOrderTemplate: '【%s】，您的治疗订单已生成，请您在1H内通过网上支付或通过收银窗口支付，完成诊疗。',
     orderStatus: ['未支付', '已支付', '已取消', '完成'],
     orderType: ["挂号费", "药费", "诊疗费"]
 };

@@ -5,10 +5,13 @@ var i18n = require('../i18n/localeMessage');
 var registrationDAO = require('../dao/registrationDAO');
 var medicalDAO = require('../dao/medicalDAO');
 var dictionaryDAO = require('../dao/dictionaryDAO');
+var deviceDAO = require('../dao/deviceDAO');
 var orderDAO = require('../dao/orderDAO');
 var Promise = require("bluebird");
 var _ = require('lodash');
 var moment = require('moment');
+var util = require('util');
+var pusher = require('../domain/NotificationPusher');
 module.exports = {
     saveMedicalHistory: function (req, res, next) {
         var medicalHistory = req.body;
@@ -50,48 +53,70 @@ module.exports = {
         var drugItems = req.body.drugs;
         var items = [];
         redis.incrAsync('h:' + hospitalId + ':' + moment().format('YYYYMMDD') + ':1:incr').then(function (reply) {
-                var orderNo = _.padLeft(hospitalId, 4, '0') + moment().format('YYYYMMDD') + '1' + _.padLeft(reply, 3, '0');
-                Promise.map(drugItems, function (item, index) {
-                    return dictionaryDAO.findDrugById(+item.drugId).then(function (drugs) {
-                        item = _.assign(item, {
-                            name: drugs[0].name,
-                            specification: drugs[0].specification,
-                            price: drugs[0].sellPrice,
-                            code: drugs[0].code,
-                            totalPrice: +drugs[0].sellPrice * +item.quantity,
-                            createDate: new Date(),
-                            registrationId: registrationId,
-                            unit: drugs[0].unit,
-                            hospitalId: hospitalId,
-                            orderNo: orderNo,
-                            type: drugs[0].type,
-                            dosageForm: drugs[0].dosageForm,
-                            factor:drugs[0].factor
-                        });
-                        items.push(item);
-                        return medicalDAO.insertRecipe(item);
-                    });
-                }).then(function (result) {
-                    var amount = _.sum(items, function (item) {
-                        return item.totalPrice;
-                    });
-                    return orderDAO.insert({
-                        orderNo: orderNo,
-                        registrationId: registrationId,
-                        hospitalId: hospitalId,
-                        amount: amount,
-                        paidAmount: 0.00,
-                        paymentAmount: amount,
-                        status: 0,
-                        paymentType: 1,
+            var orderNo = _.padLeft(hospitalId, 4, '0') + moment().format('YYYYMMDD') + '1' + _.padLeft(reply, 3, '0');
+            Promise.map(drugItems, function (item, index) {
+                return dictionaryDAO.findDrugById(+item.drugId).then(function (drugs) {
+                    item = _.assign(item, {
+                        name: drugs[0].name,
+                        specification: drugs[0].specification,
+                        price: drugs[0].sellPrice,
+                        code: drugs[0].code,
+                        totalPrice: +drugs[0].sellPrice * +item.quantity,
                         createDate: new Date(),
-                        type: 1
+                        registrationId: registrationId,
+                        unit: drugs[0].unit,
+                        hospitalId: hospitalId,
+                        orderNo: orderNo,
+                        type: drugs[0].type,
+                        dosageForm: drugs[0].dosageForm,
+                        factor: drugs[0].factor
                     });
-                }).then(function (result) {
-                    res.send({ret: 0, data: '保存成功'});
+                    items.push(item);
+                    return medicalDAO.insertRecipe(item);
                 });
-            }
-        );
+            }).then(function (result) {
+                var amount = _.sum(items, function (item) {
+                    return item.totalPrice;
+                });
+                return orderDAO.insert({
+                    orderNo: orderNo,
+                    registrationId: registrationId,
+                    hospitalId: hospitalId,
+                    amount: amount,
+                    paidAmount: 0.00,
+                    paymentAmount: amount,
+                    status: 0,
+                    paymentType: 1,
+                    createDate: new Date(),
+                    type: 1
+                });
+            }).then(function (result) {
+                return registrationDAO.findRegistrationsById(registrationId);
+            }).then(function (registrations) {
+                var registration = registrations[0];
+                deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
+                    if (tokens.length && tokens[0]) {
+                        var notificationBody = util.format(config.recipeOrderTemplate, registration.patientName + (registration.gender == 0 ? '先生' : '女士'));
+                        pusher.push({
+                            body: notificationBody,
+                            uid: registration.patientBasicInfoId,
+                            patientName: registration.patientName,
+                            patientMobile: registration.patientMobile,
+                            title: '处方订单',
+                            hospitalId: req.user.hospitalId,
+                            type: 2,
+                            audience: {registration_id: [tokens[0].token]}
+                        }, function (err, result) {
+                            if (err) throw err;
+                        });
+                    }
+                })
+            }).then(function (result) {
+                res.send({ret: 0, data: '保存成功'});
+            });
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
         return next();
     },
 
@@ -101,43 +126,65 @@ module.exports = {
         var chargeItems = req.body.chargeItems;
         var newItems = [];
         redis.incrAsync('h:' + hospitalId + ':' + moment().format('YYYYMMDD') + ':2:incr').then(function (reply) {
-                var orderNo = _.padLeft(hospitalId, 4, '0') + moment().format('YYYYMMDD') + '2' + _.padLeft(reply, 3, '0');
-                Promise.map(chargeItems, function (item, index) {
-                    return dictionaryDAO.findChargeItemById(+item.chargeItemId).then(function (items) {
-                        item = _.assign(item, {
-                            name: items[0].name,
-                            code: items[0].code,
-                            price: items[0].price,
-                            receivable: +items[0].price * +item.quantity * (item.discount ? +req.body.discountRate : 1.0),
-                            totalPrice: +items[0].price * +item.quantity,
-                            createDate: new Date(),
-                            registrationId: registrationId,
-                            unit: items[0].unit,
-                            hospitalId: hospitalId,
-                            orderNo: orderNo
-                        });
-                        newItems.push(item);
-                        return medicalDAO.insertPrescription(item);
-                    });
-                }).then(function (result) {
-                    var o = {
-                        orderNo: orderNo,
-                        registrationId: registrationId,
-                        hospitalId: hospitalId,
-                        amount: _.sum(newItems, 'totalPrice'),
-                        paidAmount: 0.00,
-                        paymentAmount: _.sum(newItems, 'receivable'),
-                        status: 0,
-                        paymentType: 1,
+            var orderNo = _.padLeft(hospitalId, 4, '0') + moment().format('YYYYMMDD') + '2' + _.padLeft(reply, 3, '0');
+            Promise.map(chargeItems, function (item, index) {
+                return dictionaryDAO.findChargeItemById(+item.chargeItemId).then(function (items) {
+                    item = _.assign(item, {
+                        name: items[0].name,
+                        code: items[0].code,
+                        price: items[0].price,
+                        receivable: +items[0].price * +item.quantity * (item.discount ? +req.body.discountRate : 1.0),
+                        totalPrice: +items[0].price * +item.quantity,
                         createDate: new Date(),
-                        type: 2
-                    };
-                    return orderDAO.insert(o);
-                }).then(function (result) {
-                    res.send({ret: 0, data: '保存成功'});
+                        registrationId: registrationId,
+                        unit: items[0].unit,
+                        hospitalId: hospitalId,
+                        orderNo: orderNo
+                    });
+                    newItems.push(item);
+                    return medicalDAO.insertPrescription(item);
                 });
-            }
-        );
+            }).then(function (result) {
+                var o = {
+                    orderNo: orderNo,
+                    registrationId: registrationId,
+                    hospitalId: hospitalId,
+                    amount: _.sum(newItems, 'totalPrice'),
+                    paidAmount: 0.00,
+                    paymentAmount: _.sum(newItems, 'receivable'),
+                    status: 0,
+                    paymentType: 1,
+                    createDate: new Date(),
+                    type: 2
+                };
+                return orderDAO.insert(o);
+            }).then(function (result) {
+                return registrationDAO.findRegistrationsById(registrationId);
+            }).then(function (registrations) {
+                var registration = registrations[0];
+                deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
+                    if (tokens.length && tokens[0]) {
+                        var notificationBody = util.format(config.prescriptionOrderTemplate, registration.patientName + (registration.gender == 0 ? '先生' : '女士'));
+                        pusher.push({
+                            body: notificationBody,
+                            uid: registration.patientBasicInfoId,
+                            patientName: registration.patientName,
+                            patientMobile: registration.patientMobile,
+                            title: '划价订单',
+                            type: 2,
+                            hospitalId: req.user.hospitalId,
+                            audience: {registration_id: [tokens[0].token]}
+                        }, function (err, result) {
+                            if (err) throw err;
+                        });
+                    }
+                })
+            }).then(function (result) {
+                res.send({ret: 0, data: '保存成功'});
+            });
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
         return next();
     },
     getMedicalHistories: function (req, res, next) {

@@ -142,18 +142,18 @@ module.exports = {
         findCities: 'select cityId, city from city where province=?'
     },
     notification: {
-        insert: 'insert notification set ?',
-        findAll: 'select SQL_CALC_FOUND_ROWS * from notification order by id desc limit ?,?',
+        insert: 'insert Notification set ?',
+        findAll: 'select SQL_CALC_FOUND_ROWS * from Notification order by id desc limit ?,?',
         findPatientQueue: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = d.departmentId where r.registerDate = ? and dep.floor = ? order by doctorId, sequence',
         findPatientQueueBy: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence, dep.floor from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = d.departmentId where r.id=?',
         findSequencesBy: 'select r.sequence from Registration r where r.doctorId =? and sequence>=? order by sequence limit 3'
     },
     device: {
-        insert: 'insert device set ?',
-        findByToken: 'select * from device where token = ?',
-        findByUid: 'select * from device where uid = ?',
-        update: 'update device set ? where token =?',
-        findTokenByUid: 'select token from device where uid=?'
+        insert: 'insert Device set ?',
+        findByToken: 'select * from Device where token = ?',
+        findByUid: 'select * from Device where uid = ?',
+        update: 'update Device set ? where token =?',
+        findTokenByUid: 'select token from Device where uid=?'
     },
     dict: {
         insertDisease: 'insert DiseaseDic set ?',

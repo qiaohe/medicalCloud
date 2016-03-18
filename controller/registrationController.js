@@ -165,6 +165,7 @@ module.exports = {
                                 patientName: r.patientName,
                                 patientMobile: r.patientMobile,
                                 uid: r.patientBasicInfoId,
+                                type: 1,
                                 hospitalId: req.user.hospitalId
                             }, function (err, result) {
                                 if (err) throw err;

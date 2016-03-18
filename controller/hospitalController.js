@@ -395,6 +395,7 @@ module.exports = {
                                     patientName: registration.patientName,
                                     patientMobile: registration.patientMobile,
                                     title: '叫号提醒通知',
+                                    type: 2,
                                     hospitalId: req.user.hospitalId,
                                     audience: {registration_id: [tokens[0].token]}
                                 }, function (err, result) {

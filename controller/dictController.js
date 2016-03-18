@@ -185,16 +185,20 @@ module.exports = {
                     result.push({id: menu.id, name: menu.name, routeUri: menu.routeUri, icon: menu.icon, subItems: []});
                 } else {
                     var item = _.findWhere(result, {id: menu.pid});
-                    item.subItems.push({
-                        id: menu.id,
-                        name: menu.name,
-                        routeUri: menu.routeUri,
-                        icon: menu.icon,
-                        subItems: []
-                    });
+                    if (item) {
+                        item.subItems.push({
+                            id: menu.id,
+                            name: menu.name,
+                            routeUri: menu.routeUri,
+                            icon: menu.icon,
+                            subItems: []
+                        });
+                    }
                 }
             });
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, data: err.message})
         });
         return next();
     },
