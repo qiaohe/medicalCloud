@@ -504,7 +504,7 @@ module.exports = [
         secured: 'user'
     },
     {
-        method: "get",
+        method: "post",
         path: "/api/outPatients/:id/queuing",
         handler: hospitalController.queueOutPatient,
         secured: 'user'

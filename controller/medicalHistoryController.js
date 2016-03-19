@@ -86,7 +86,7 @@ module.exports = {
                     paidAmount: 0.00,
                     paymentAmount: amount,
                     status: 0,
-                    paymentType: 1,
+                    //paymentType: 1,
                     createDate: new Date(),
                     type: 1
                 });
@@ -153,7 +153,7 @@ module.exports = {
                     paidAmount: 0.00,
                     paymentAmount: _.sum(newItems, 'receivable'),
                     status: 0,
-                    paymentType: 1,
+                    //paymentType: 1,
                     createDate: new Date(),
                     type: 2
                 };
