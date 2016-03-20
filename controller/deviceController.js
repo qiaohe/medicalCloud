@@ -32,7 +32,9 @@ module.exports = {
                     hospitalId: req.user.hospitalId
                 }).then(function (result) {
                     res.send({ret: 0, message: i18n.get('notification.send.success')});
-                })
+                }).catch(function (err) {
+                    res.send({ret: 1, message: err.message});
+                });
             });
         return next();
     }

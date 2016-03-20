@@ -23,6 +23,8 @@ module.exports = {
             res.send({ret: 0, data: performances[0]});
         }).catch(function (error) {
             res.send(error);
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -34,6 +36,8 @@ module.exports = {
             res.send({ret: 0, data: performances[0]});
         }).catch(function (error) {
             res.send(error);
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -45,6 +49,8 @@ module.exports = {
                 contact.source = config.sourceType[contact.source];
             }).catch(function (error) {
                 res.send(error);
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
             });
             res.send({ret: 0, data: contacts});
         });
@@ -65,6 +71,8 @@ module.exports = {
             res.send({ret: 0, data: contacts});
         }).catch(function (error) {
             res.send(error);
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -81,6 +89,8 @@ module.exports = {
             res.send({ret: 0, message: '转移成功'});
         }).catch(function (error) {
             res.send(error);
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -229,6 +239,8 @@ module.exports = {
                         });
                     });
                 }
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
             });
         return next();
     },
@@ -243,6 +255,8 @@ module.exports = {
                 registration.status = registration.status == null ? null : config.registrationStatus[registration.status];
             });
             res.send({ret: 0, data: registrations});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     }

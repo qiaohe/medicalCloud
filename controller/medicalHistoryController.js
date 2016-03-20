@@ -96,13 +96,14 @@ module.exports = {
                 var registration = registrations[0];
                 deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
                     if (tokens.length && tokens[0]) {
-                        var notificationBody = util.format(config.recipeOrderTemplate, registration.patientName + (registration.gender == 0 ? '先生' : '女士'));
+                        var notificationBody = util.format(config.recipeOrderTemplate, registration.patientName + (registration.gender == 0 ? '先生' : '女士'),
+                            registration.hospitalName, orderNo);
                         pusher.push({
                             body: notificationBody,
                             uid: registration.patientBasicInfoId,
                             patientName: registration.patientName,
                             patientMobile: registration.patientMobile,
-                            title: '处方订单',
+                            title: '药费订单',
                             hospitalId: req.user.hospitalId,
                             type: 2,
                             audience: {registration_id: [tokens[0].token]}
@@ -164,13 +165,15 @@ module.exports = {
                 var registration = registrations[0];
                 deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
                     if (tokens.length && tokens[0]) {
-                        var notificationBody = util.format(config.prescriptionOrderTemplate, registration.patientName + (registration.gender == 0 ? '先生' : '女士'));
+                        var notificationBody = util.format(config.prescriptionOrderTemplate,
+                            registration.patientName + (registration.gender == 0 ? '先生' : '女士'),
+                            registration.hospitalName, orderNo);
                         pusher.push({
                             body: notificationBody,
                             uid: registration.patientBasicInfoId,
                             patientName: registration.patientName,
                             patientMobile: registration.patientMobile,
-                            title: '划价订单',
+                            title: '诊疗费订单',
                             type: 2,
                             hospitalId: req.user.hospitalId,
                             audience: {registration_id: [tokens[0].token]}

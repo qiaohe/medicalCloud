@@ -12,6 +12,8 @@ module.exports = {
         var hospitalId = req.user.hospitalId;
         hospitalDAO.findDepartments(hospitalId).then(function (departments) {
             res.send({ret: 0, data: departments});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -19,6 +21,8 @@ module.exports = {
         var hospitalId = req.user.hospitalId;
         hospitalDAO.findDoctors(hospitalId).then(function (doctors) {
             res.send({ret: 0, data: doctors});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -28,6 +32,8 @@ module.exports = {
         var name = req.query.name;
         businessPeopleDAO.findBusinessPeople(hospitalId, name).then(function (result) {
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -37,6 +43,8 @@ module.exports = {
         var hospitalId = req.user.hospitalId;
         businessPeopleDAO.findNoPlanBusinessPeople(hospitalId, year).then(function (result) {
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -44,6 +52,8 @@ module.exports = {
         var hospitalId = req.user.hospitalId;
         businessPeopleDAO.findShiftPeriods(hospitalId).then(function (result) {
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -54,6 +64,8 @@ module.exports = {
         var day = req.query.day;
         businessPeopleDAO.findAvailableShiftPeriods(hospitalId, doctorId, day).then(function (result) {
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -70,6 +82,8 @@ module.exports = {
             }).then(function (result) {
                 res.send({ret: 0, data: {id: result.insertId, name: period.name}});
             })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -83,6 +97,8 @@ module.exports = {
             }).then(function (result) {
                 res.send({ret: 0, message: i18n.get('shiftPeriod.remove.success')});
             })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -90,6 +106,8 @@ module.exports = {
     editShiftPeriod: function (req, res, next) {
         businessPeopleDAO.updateShiftPeriod(req.body.name, req.body.id).then(function (result) {
             res.send({ret: 0, message: i18n.get('shiftPeriod.update.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -105,12 +123,16 @@ module.exports = {
         var hospitalId = req.user.hospitalId;
         hospitalDAO.findJobTitles(hospitalId).then(function (jobs) {
             res.send({ret: 0, data: jobs});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
     getProvinces: function (req, res, next) {
         hospitalDAO.findProvinces().then(function (provinces) {
             res.send({ret: 0, data: provinces});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -125,6 +147,8 @@ module.exports = {
         var hospitalId = req.user.hospitalId;
         hospitalDAO.findRoles(hospitalId).then(function (roles) {
             res.send({ret: 0, data: roles});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -133,6 +157,8 @@ module.exports = {
         hospitalDAO.insertRole(req.body).then(function (result) {
             req.body.id = result.insertId;
             res.send(req.body);
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -140,6 +166,8 @@ module.exports = {
     removeRole: function (req, res, next) {
         hospitalDAO.deleteRole(req.params.id).then(function () {
             res.send({ret: 0, message: i18n.get('role.remove.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -147,6 +175,8 @@ module.exports = {
     getJobTitlesByRole: function (req, res, next) {
         hospitalDAO.findJobTitleByRole(req.user.hospitalId, req.params.roleId).then(function (jobTitles) {
             res.send({ret: 0, data: jobTitles});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -156,24 +186,32 @@ module.exports = {
         hospitalDAO.insertJobTitle(req.body).then(function (result) {
             req.body.id = result.insertId;
             res.send(req.body);
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
     removeJobTitlesByRole: function (req, res, next) {
         hospitalDAO.deleteJobTitle(req.params.roleId, req.params.id).then(function () {
             res.send({ret: 0, message: i18n.get('jobTitle.remove.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
     editJobTitlesByRole: function (req, res, next) {
         hospitalDAO.updateJobTitle(req.body).then(function () {
             res.send({ret: 0, message: i18n.get('update.jobTitle.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
     editRole: function (req, res, next) {
         hospitalDAO.updateRole(req.body).then(function () {
             res.send({ret: 0, message: i18n.get('update.role.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -199,12 +237,16 @@ module.exports = {
             res.send({ret: 0, data: result});
         }).catch(function (err) {
             res.send({ret: 1, data: err.message})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
     getMenus: function (req, res, next) {
         hospitalDAO.findMenus().then(function (menus) {
             res.send({ret: 0, data: menus});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -224,6 +266,8 @@ module.exports = {
             });
         }).then(function (result) {
             res.send({ret: 0, message: '设置权限成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -240,6 +284,8 @@ module.exports = {
         }).then(function (diseases) {
             diseases.pageIndex = pageIndex;
             res.send({ret: 0, data: diseases});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -251,12 +297,16 @@ module.exports = {
         dictionaryDAO.insertDisease(diseaseDic).then(function (result) {
             diseaseDic.id = result.insertId;
             res.send({ret: 0, data: diseaseDic});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
     removeDiseaseDic: function (req, res, next) {
         dictionaryDAO.deleteDisease(req.params.id).then(function (result) {
             res.send({ret: 0, message: '删除成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -266,6 +316,8 @@ module.exports = {
         delete req.body.createDate;
         dictionaryDAO.updateDisease(req.body).then(function (result) {
             res.send({ret: 0, message: '更新成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -281,6 +333,8 @@ module.exports = {
     removeDictItem: function (req, res, next) {
         dictionaryDAO.deleteDictItem(req.params.id).then(function (result) {
             res.send({ret: 0, message: '删除成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -289,6 +343,8 @@ module.exports = {
         req.body.hospitalId = req.user.hospitalId;
         dictionaryDAO.updateDictItem(req.body).then(function (result) {
             res.send({ret: 0, message: '更新成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -302,6 +358,8 @@ module.exports = {
         }).then(function (items) {
             items.pageIndex = pageIndex;
             res.send({ret: 0, data: items});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -319,6 +377,8 @@ module.exports = {
         }).then(function (templates) {
             templates.pageIndex = pageIndex;
             res.send({ret: 0, data: templates});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -326,6 +386,8 @@ module.exports = {
         var hospitalId = req.user.hospitalId;
         dictionaryDAO.getMedicalTemplateBy(hospitalId, req.params.id).then(function (result) {
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -338,18 +400,24 @@ module.exports = {
         dictionaryDAO.insertMedicalTemplate(template).then(function (result) {
             template.id = result.insertId;
             res.send({ret: 0, data: template});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
     removeMedicalTemplate: function (req, res, next) {
         dictionaryDAO.deleteMedicalTemplate(req.params.id).then(function (result) {
             res.send({ret: 0, message: '删除成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
     getMedicalTemplateById: function (req, res, next) {
         dictionaryDAO.findMedicalTemplateById(req.params.id).then(function (result) {
             res.send({ret: 0, data: result[0]});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -359,6 +427,8 @@ module.exports = {
         delete req.body.departmentName;
         dictionaryDAO.updateMedicalTemplate(req.body).then(function (result) {
             res.send({ret: 0, message: '更新成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -368,6 +438,8 @@ module.exports = {
         dictionaryDAO.insertChargeItem(item).then(function (result) {
             item.id = result.insertId;
             res.send({ret: 0, data: item});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -375,6 +447,8 @@ module.exports = {
     removeChargeItem: function (req, res, next) {
         dictionaryDAO.deleteChargeItem(req.params.id).then(function (result) {
             res.send({ret: 0, message: '删除成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -384,6 +458,8 @@ module.exports = {
         delete req.body.categoryName;
         dictionaryDAO.updateChargeItem(req.body).then(function (result) {
             res.send({ret: 0, message: '更新成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -401,6 +477,8 @@ module.exports = {
         }).then(function (items) {
             items.pageIndex = pageIndex;
             res.send({ret: 0, data: items});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -418,6 +496,8 @@ module.exports = {
         }).then(function (items) {
             items.pageIndex = pageIndex;
             res.send({ret: 0, data: items});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -428,12 +508,16 @@ module.exports = {
         dictionaryDAO.insertDrug(item).then(function (result) {
             item.id = result.insertId;
             res.send({ret: 0, data: item});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
     removeDrug: function (req, res, next) {
         dictionaryDAO.deleteDrug(req.params.id).then(function (result) {
             res.send({ret: 0, message: '删除成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -442,6 +526,8 @@ module.exports = {
         req.body.hospitalId = req.user.hospitalId;
         dictionaryDAO.updateDrug(req.body).then(function (result) {
             res.send({ret: 0, message: '更新成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -449,6 +535,8 @@ module.exports = {
     getDrugById: function (req, res, next) {
         dictionaryDAO.findDrugById(req.params.id).then(function (drugs) {
             res.send({ret: 0, data: drugs[0]});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -467,6 +555,8 @@ module.exports = {
             size: pageSize
         }).then(function (items) {
             res.send({ret: 0, data: items});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -491,7 +581,9 @@ module.exports = {
                     res.send({ret: 0, data: item});
                 })
             }
-        })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
     },
 
     updateDrugInventory: function (req, res, next) {
@@ -502,11 +594,15 @@ module.exports = {
         item.putOutName = req.user.name;
         dictionaryDAO.updateDrugInventory(item).then(function (result) {
             res.send({ret: 0, message: '出库更新成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
     },
     removeDrugInventory: function (req, res, next) {
         dictionaryDAO.deleteDrugInventory(req.params.id).then(function (result) {
             res.send({ret: 0, message: '删除成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -515,6 +611,8 @@ module.exports = {
         var code = req.query.code;
         dictionaryDAO.findDrugsBy(req.user.hospitalId, {name: name, code: code}).then(function (result) {
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -523,6 +621,8 @@ module.exports = {
         var code = req.query.code;
         dictionaryDAO.findChargeItemsBy(req.user.hospitalId, {name: name, code: code}).then(function (result) {
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     }

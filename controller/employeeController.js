@@ -55,13 +55,17 @@ module.exports = {
                 })
             }
             res.send({ret: 0, data: employee});
-        })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
     },
     changePassword: function (req, res, next) {
         var employee = req.body;
         employee.password = md5(employee.password);
         employeeDAO.updateEmployee(employee).then(function (result) {
             res.send({ret: 0, message: i18n.get('employee.changePassword.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -74,6 +78,8 @@ module.exports = {
             return employeeDAO.deleteDoctorBy(req.params.id);
         }).then(function () {
             res.send({ret: 0, message: i18n.get('employee.remove.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -140,6 +146,8 @@ module.exports = {
             return employeeDAO.updateEmployee(employee)
         }).then(function (result) {
             res.send({ret: 0, message: i18n.get('employee.update.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -151,13 +159,15 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }, getConditions(req)).then(function (empoyees) {
-            if (!empoyees.rows.length) res.send({ret: 0, data: {rows: [], pageIndex:0, count:0}});
+            if (!empoyees.rows.length) res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
             empoyees.rows.forEach(function (employee) {
                 employee.status = config.employeeStatus[employee.status];
                 employee.gender = config.gender[employee.gender];
             });
             empoyees.pageIndex = pageIndex;
             res.send({ret: 0, data: empoyees});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -175,7 +185,7 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }, conditions).then(function (doctors) {
-            if (!doctors.rows.length) res.send({ret: 0, data: {rows: [], pageIndex:0, count:0}});
+            if (!doctors.rows.length) res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
             doctors.rows && doctors.rows.forEach(function (doctor) {
                 doctor.gender = config.gender[doctor.gender];
                 doctor.images = doctor.images && doctor.images.split(',');
@@ -183,6 +193,8 @@ module.exports = {
             });
             doctors.pageIndex = pageIndex;
             res.send({ret: 0, data: doctors});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -193,12 +205,16 @@ module.exports = {
         employeeDAO.findById(id, hospitalId).then(function (employees) {
             var employee = employees[0];
             res.send({ret: 0, data: employee});
-        })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
     },
 
     deleteDoctor: function (req, res, next) {
         employeeDAO.deleteDoctor(req.params.id).then(function (result) {
             res.send({ret: 0, message: i18n.get('doctor.delete.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -210,6 +226,8 @@ module.exports = {
         doctor.images = doctor.images && doctor.images.join(',');
         employeeDAO.updateDoctor(doctor).then(function (result) {
             res.send({ret: 0, message: i18n.get('doctor.update.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -223,6 +241,8 @@ module.exports = {
                 result.push({department: key, doctors: data[key]})
             }
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
     }
 }

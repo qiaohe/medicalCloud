@@ -39,6 +39,8 @@ module.exports = {
                     res.send({ret: 0, data: user});
                 }
             })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -48,12 +50,16 @@ module.exports = {
         if (!token) return res.send(401, i18n.get('token.not.provided'));
         redis.delAsync(token).then(function () {
             res.send({ret: 0, message: i18n.get('logout.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
     getMemberInfo: function (req, res, next) {
         employeeDAO.findByIdWithHospital(req.user.hospitalId, req.user.id).then(function (employees) {
             res.send({ret: 0, data: employees[0]});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     }

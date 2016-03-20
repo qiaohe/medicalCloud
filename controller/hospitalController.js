@@ -30,6 +30,8 @@ module.exports = {
         }).then(function (departments) {
             departments.pageIndex = pageIndex;
             return res.send({ret: 0, data: departments});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -40,12 +42,16 @@ module.exports = {
         hospitalDAO.addDepartment(department).then(function (result) {
             department.id = result.insertId;
             res.send({ret: 0, data: department});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
     removeDepartment: function (req, res, next) {
         hospitalDAO.removeDepartment(req.params.id).then(function (result) {
             res.send({ret: 0, message: i18n.get('department.remove.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -54,6 +60,8 @@ module.exports = {
         department.hospitalId = req.user.hospitalId;
         hospitalDAO.updateDepartment(department).then(function (result) {
             res.send({ret: 0, message: i18n.get('department.update.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -62,6 +70,8 @@ module.exports = {
         var hospitalId = req.user.hospitalId;
         hospitalDAO.findDoctorsByDepartment(hospitalId, departmentId).then(function (doctors) {
             return res.send({ret: 0, data: doctors});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -89,6 +99,8 @@ module.exports = {
                 result.push(item);
             }
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -96,6 +108,8 @@ module.exports = {
         hospitalDAO.findDoctorById(req.params.doctorId).then(function (doctors) {
             var doctor = doctors[0];
             return res.send({ret: 0, data: doctor});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -105,6 +119,8 @@ module.exports = {
         hospital.images = hospital.images && hospital.images.length && hospital.images.join(',');
         hospitalDAO.updateHospital(hospital).then(function (result) {
             res.send({ret: 0, message: i18n.get('hospital.update.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -114,6 +130,8 @@ module.exports = {
         hospitalDAO.findHospitalById(hospitalId).then(function (result) {
             result[0].images = result[0].images && result[0].images.split(',');
             res.send({ret: 0, data: result[0]});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -132,6 +150,8 @@ module.exports = {
                 result.push({day: item, title: pq});
             }
             return res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -143,6 +163,8 @@ module.exports = {
         var day = d.substring(0, 4) + '-' + d.substring(4, 6) + '-' + d.substring(6, 8);
         hospitalDAO.findShiftPlansByDay(hospitalId, doctorId, day).then(function (plans) {
             return res.send({ret: 0, data: plans});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -172,6 +194,8 @@ module.exports = {
             return hospitalDAO.addShiftPlan(shitPlan);
         }).then(function () {
             res.send({ret: 0, message: i18n.get('shiftPlan.add.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -200,6 +224,8 @@ module.exports = {
             return hospitalDAO.updateShiftPlan(shitPlan);
         }).then(function () {
             res.send({ret: 0, message: i18n.get('shiftPlan.edit.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -246,6 +272,8 @@ module.exports = {
                 });
             });
             res.send({ret: 0, data: data});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -275,6 +303,8 @@ module.exports = {
                 });
             });
             res.send({ret: 0, data: data});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -283,6 +313,8 @@ module.exports = {
         var year = req.params.year;
         hospitalDAO.deletePerformancesBy(businessPeopleId, year).then(function (result) {
             res.send({ret: 0, message: i18n.get('performance.remove.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -302,6 +334,8 @@ module.exports = {
             return hospitalDAO.addPerformance(performance);
         }).then(function () {
             res.send({ret: 0, message: i18n.get('performance.add.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -312,6 +346,8 @@ module.exports = {
             return hospitalDAO.updatePerformance(performance);
         }).then(function () {
             res.send({ret: 0, message: i18n.get('performance.add.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -366,6 +402,8 @@ module.exports = {
             result.availableCount = _.sum(plans, 'restQuantity');
             result.shiftPlans = plans;
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -388,7 +426,9 @@ module.exports = {
                         registration = registrations[0];
                         deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
                             if (tokens.length && tokens[0]) {
-                                var notificationBody = util.format(config.outPatientCallTemplate, registration.patientName + (registration.gender == 0 ? '先生' : '女士'), registration.departmentName, registration.doctorName);
+                                var notificationBody = util.format(config.outPatientCallTemplate,
+                                    registration.patientName + (registration.gender == 0 ? '先生' : '女士'),
+                                    registration.hospitalName + registration.departmentName, registration.doctorName);
                                 notificationPusher.push({
                                     body: notificationBody,
                                     uid: registration.patientBasicInfoId,
@@ -408,6 +448,8 @@ module.exports = {
                     res.send({ret: 0, data: '叫号成功'});
                 });
             }
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -428,6 +470,8 @@ module.exports = {
             });
             histories.pageIndex = pageIndex;
             return res.send({ret: 0, data: histories});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
     },
 
