@@ -18,7 +18,8 @@ module.exports = {
     },
     app: {
         locale: 'zh_CN',
-        tokenExpire: 8640000
+        tokenExpire: 8640000,
+        orderDelayMinutes: 1
     },
     redis: {
         host: '127.0.0.1',

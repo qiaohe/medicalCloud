@@ -11,6 +11,7 @@ var Promise = require("bluebird");
 var _ = require('lodash');
 var moment = require('moment');
 var util = require('util');
+var queue = require('../common/queue');
 var pusher = require('../domain/NotificationPusher');
 module.exports = {
     saveMedicalHistory: function (req, res, next) {
@@ -25,7 +26,9 @@ module.exports = {
             delete req.body.createDate;
             medicalDAO.updateMedicalHistory(req.body).then(function (result) {
                 res.send({ret: 0, message: '更新成功'})
-            })
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
+            });
         } else {
             registrationDAO.findRegistrationsById(medicalHistory.registrationId).then(function (registrations) {
                 var r = registrations[0];
@@ -42,6 +45,8 @@ module.exports = {
             }).then(function (result) {
                 medicalHistory.id = result.id;
                 return res.send({ret: 0, data: medicalHistory});
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
             });
         }
         return next();
@@ -75,6 +80,13 @@ module.exports = {
                     return medicalDAO.insertRecipe(item);
                 });
             }).then(function (result) {
+                var job = queue.create('orderPayDelayedQueue', {
+                    title: '订单延迟支付',
+                    orderNo: orderNo
+                }).delay(config.app.orderDelayMinutes * 60 * 1000).save(function (err) {
+                    if (!err) console.log(job.id);
+                });
+
                 var amount = _.sum(items, function (item) {
                     return item.totalPrice;
                 });
@@ -146,6 +158,12 @@ module.exports = {
                     return medicalDAO.insertPrescription(item);
                 });
             }).then(function (result) {
+                var job = queue.create('orderPayDelayedQueue', {
+                    title: '订单延迟支付',
+                    orderNo: orderNo
+                }).delay(config.app.orderDelayMinutes * 60 * 1000).save(function (err) {
+                    if (!err) console.log(job.id);
+                });
                 var o = {
                     orderNo: orderNo,
                     registrationId: registrationId,
@@ -206,6 +224,8 @@ module.exports = {
                 result.push({orerNo: p, drugs: data[p]});
             }
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -218,6 +238,8 @@ module.exports = {
                 result.push({orerNo: p, item: data[p]});
             }
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -245,6 +267,8 @@ module.exports = {
             });
             orders.pageIndex = pageIndex;
             res.send({ret: 0, data: orders});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
     },
 
@@ -264,6 +288,8 @@ module.exports = {
                 order.type = config.orderType[+order.type];
             });
             res.send({ret: 0, data: orders});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
     },
     getOrdersByStatus: function (req, res, next) {
@@ -288,6 +314,8 @@ module.exports = {
             });
             orders.pageIndex = pageSize;
             res.send({ret: 0, data: orders});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -313,6 +341,8 @@ module.exports = {
             }).then(function () {
                 res.send({ret: 0, data: orders});
             })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -330,6 +360,8 @@ module.exports = {
             return orderDAO.update(order)
         }).then(function () {
             res.send({ret: 0, message: '收费成功'})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -337,6 +369,8 @@ module.exports = {
     getRecipesByOrderNo: function (req, res, next) {
         medicalDAO.findRecipesByOrderNo(req.params.id).then(function (result) {
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -363,10 +397,14 @@ module.exports = {
                         res.send({ret: 0, message: '更新订单状态成功'});
                     });
                 });
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
             });
         } else {
             orderDAO.update(order).then(function (result) {
                 res.send({ret: 0, message: '更新订单状态成功'});
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
             });
         }
         return next();
@@ -390,6 +428,8 @@ module.exports = {
             if (!records.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
             records.pageIndex = pageIndex;
             res.send({ret: 0, data: records});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -429,6 +469,8 @@ module.exports = {
                 orders.pageIndex = pageIndex;
                 res.send({ret: 0, data: orders});
             })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     }

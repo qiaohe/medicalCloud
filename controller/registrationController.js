@@ -45,6 +45,8 @@ module.exports = {
             });
             registrations.pageIndex = pageIndex;
             return res.send({ret: 0, data: registrations});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -67,6 +69,8 @@ module.exports = {
             });
             registrations.pageIndex = pageIndex;
             return res.send({ret: 0, data: registrations});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -216,6 +220,8 @@ module.exports = {
             }
         }).then(function () {
             return res.send({ret: 0, message: i18n.get('registration.update.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -235,6 +241,8 @@ module.exports = {
             })
         }).then(function () {
             res.send({ret: 0, message: i18n.get('preRegistration.cancel.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     }
@@ -263,6 +271,8 @@ module.exports = {
             })
         }).then(function () {
             res.send({ret: 0, message: i18n.get('preRegistration.cancel.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -292,6 +302,8 @@ module.exports = {
             });
             registrations.pageIndex = pageIndex;
             return res.send({ret: 0, data: registrations});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
 
         return next();

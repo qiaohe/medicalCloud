@@ -37,6 +37,8 @@ module.exports = {
             });
             companies.pageIndex = pageIndex;
             return res.send({ret: 0, data: companies});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -48,6 +50,8 @@ module.exports = {
             company.sourceName = config.sourceType[company.source];
             company.cashbackTypeName = config.cashbackType[company.cashbackType];
             res.send({ret: 0, data: company});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -58,6 +62,8 @@ module.exports = {
         patientDAO.insertGroupCompany(groupCompany).then(function (result) {
             groupCompany.id = result.insertId;
             res.send({ret: 0, data: groupCompany});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -67,6 +73,8 @@ module.exports = {
         groupCompany = _.omit(groupCompany, ['recommenderName', 'sourceName', 'cashbackTypeName']);
         patientDAO.updateGroupCompany(groupCompany).then(function (result) {
             res.send({ret: 0, message: i18n.get('groupCompany.update.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -74,6 +82,8 @@ module.exports = {
         var id = req.params.id;
         patientDAO.deleteGroupCompany(id).then(function (result) {
             res.send({ret: 0, message: i18n.get('groupCompany.delete.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -94,6 +104,8 @@ module.exports = {
             });
             patients.pageIndex = pageIndex;
             res.send({ret: 0, data: patients});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -143,6 +155,8 @@ module.exports = {
                     });
                 });
             });
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -175,7 +189,9 @@ module.exports = {
             })
         }).then(function () {
             res.send({ret: 0, message: i18n.get('patient.update.success')});
-        })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
     },
     addPrePaidHistory: function (req, res, next) {
         var prePaid = req.body;
@@ -202,6 +218,8 @@ module.exports = {
             })
         }).then(function (result) {
             res.send({ret: 0, data: i18n.get('prePaid.add.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -232,6 +250,8 @@ module.exports = {
                 registration.status = registration.status == null ? null : config.registrationStatus[registration.status];
             });
             res.send({ret: 0, data: data});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -240,6 +260,8 @@ module.exports = {
         patientDAO.findPatientBasicInfoById(+patientId).then(function (patients) {
             if (!patients.length) res.send({ret: 0, data: {}});
             res.send({ret: 0, data: patients[0]});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     }
