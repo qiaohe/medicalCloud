@@ -301,6 +301,7 @@ module.exports = {
         if (req.query.paymentDate) conditions.push('m.paymentDate like \'%' + req.query.paymentDate + '%\'');
         if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
         if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
+        if (req.query.patientId) conditions.push('r.patientId=' + req.query.patientId);
         orderDAO.findOrdersByStatus(req.user.hospitalId, req.params.status, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
@@ -312,7 +313,7 @@ module.exports = {
                 order.status = config.orderStatus[+order.status];
                 order.type = config.orderType[+order.type];
             });
-            orders.pageIndex = pageSize;
+            orders.pageIndex = pageIndex;
             res.send({ret: 0, data: orders});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});

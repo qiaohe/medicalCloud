@@ -48,7 +48,7 @@ io.sockets.on('connect', function (socket) {
             var item = _.find(data, {
                 doctorId: queue.doctorId,
                 doctorName: queue.doctorName,
-   //             departmentName: queue.departmentName,
+                //             departmentName: queue.departmentName,
                 clinic: queue.clinic
             });
             if (item) {
