@@ -81,6 +81,8 @@ module.exports = {
     returnRegistrationTemplte: '【%s】，很抱歉，您预约的【%s医生】门诊，就诊时间%s已过，请及时与前台联系，谢谢！',
     returnRegistrationTemplate: '【%s】，您已预约复诊【%s医生】%s门诊，请带好病历本及检查结果，提前到分诊台，进行确认。',
     recipeOrderTemplate: '【%s】您在%s的药费订单%s已生成，为了您的康复，请通过收银窗口支付，或在一小时内完成网上支付。',
+    medicalHistoryTemplate: '【%s】您在%s医生门诊已完成，您可以在线查看您的门诊病历。',
+    sendDrugTemplate: '【%s】您已领取【%s】医生在门诊号%S中开具的药品；请谨遵医嘱，祝您早日康复！',
     prescriptionOrderTemplate: '【%s】您在%s的诊疗费订单已生成，为了顺利完成诊疗，请通过收银窗口支付，或在一小时内完成网上支付。',
     orderStatus: ['未支付', '已支付', '已取消', '完成'],
     orderType: ["挂号费", "药费", "诊疗费"]

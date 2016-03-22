@@ -21,6 +21,7 @@ module.exports = {
         delete medicalHistory.name;
         delete medicalHistory.type;
         delete medicalHistory.diseaseId;
+        var r = {};
         if (!req.body.templateId) delete req.body.templateId;
         if (medicalHistory.id) {
             delete req.body.createDate;
@@ -31,18 +32,38 @@ module.exports = {
             });
         } else {
             registrationDAO.findRegistrationsById(medicalHistory.registrationId).then(function (registrations) {
-                var r = registrations[0];
+                r = registrations[0];
                 medicalHistory = _.assign(medicalHistory, {
                     doctorId: r.doctorId,
                     doctorName: r.doctorName,
                     departmentId: r.departmentId,
                     departmentName: r.departmentName,
-                    patientName: r.patientName,
+                    patientName: medicalHistory.patientName ? medicalHistory.patientName : r.patientName,
                     patientMobile: r.patientMobile,
-                    patientId: r.patientId
+                    patientId: r.patientId,
+                    gender: medicalHistory.gender ? medicalHistory.gender : r.gender,
+                    patientBasicInfoId: r.patientBasicInfoId
                 });
                 return medicalDAO.insertMedicalHistory(medicalHistory);
             }).then(function (result) {
+                deviceDAO.findTokenByUid(medicalHistory.patientBasicInfoId).then(function (tokens) {
+                    if (tokens.length && tokens[0]) {
+                        var notificationBody = util.format(config.medicalHistoryTemplate, medicalHistory.patientName + (medicalHistory.gender == 0 ? '先生' : '女士'),
+                            r.hospitalName + medicalHistory.departmentName + medicalHistory.doctorName);
+                        pusher.push({
+                            body: notificationBody,
+                            uid: medicalHistory.patientBasicInfoId,
+                            patientName: medicalHistory.patientName,
+                            patientMobile: medicalHistory.patientMobile,
+                            title: '病历提醒',
+                            hospitalId: r.hospitalId,
+                            type: 2,
+                            audience: {registration_id: [tokens[0].token]}
+                        }, function (err, result) {
+                            if (err) throw err;
+                        });
+                    }
+                });
                 medicalHistory.id = result.id;
                 return res.send({ret: 0, data: medicalHistory});
             }).catch(function (err) {
@@ -394,10 +415,31 @@ module.exports = {
                     order.drugSender = req.user.id;
                     order.drugSenderName = req.user.name;
                     order.sendDrugDate = new Date();
-                    orderDAO.update(order).then(function (result) {
-                        res.send({ret: 0, message: '更新订单状态成功'});
+                    return orderDAO.update(order);
+                });
+            }).then(function () {
+                orderDAO.findOrderByOrderNo(orderNo).then(function (orders) {
+                    var o = order[0];
+                    deviceDAO.findTokenByUid(o.patientBasicInfoId).then(function (tokens) {
+                        if (tokens.length && tokens[0]) {
+                            var notificationBody = util.format(config.sendDrugTemplate, o.patientName + (o.gender == 0 ? '先生' : '女士'),
+                                o.hospitalName + o.departmentName + o.doctorName, r.sequence);
+                            pusher.push({
+                                body: notificationBody,
+                                uid: o.patientBasicInfoId,
+                                patientName: o.patientName,
+                                patientMobile: o.patientMobile,
+                                title: '已领取药品通知',
+                                hospitalId: o.hospitalId,
+                                type: 1,
+                                audience: {registration_id: [tokens[0].token]}
+                            }, function (err, result) {
+                                if (err) throw err;
+                            });
+                        }
                     });
                 });
+                res.send({ret: 0, message: '更新订单状态成功'});
             }).catch(function (err) {
                 res.send({ret: 1, message: err.message});
             });

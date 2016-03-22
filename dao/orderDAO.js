@@ -45,5 +45,8 @@ module.exports = {
         }
         sql = sql + ' order by rp.createDate limit ?,?';
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
+    },
+    findOrderByOrderNo: function (orderNo) {
+        return db.query(sqlMapping.order.findOrderByOrderNo, [orderNo]);
     }
 }
