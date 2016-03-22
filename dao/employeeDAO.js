@@ -31,7 +31,7 @@ module.exports = {
         return db.query(sqlMapping.employee.findById, [id, hospitalId]);
     },
 
-    findByIdWithHospital: function(hospitalId, id) {
+    findByIdWithHospital: function (hospitalId, id) {
         return db.query(sqlMapping.employee.findByIdWithHospital, [+hospitalId, +id]);
     },
     findDoctorsGroupByDepartment: function (hospitalId) {
@@ -57,10 +57,13 @@ module.exports = {
     insertDoctor: function (doctor) {
         return db.query(sqlMapping.doctor.insert, doctor);
     },
-    deleteDoctorBy: function(empoyeeId) {
+    deleteDoctorBy: function (empoyeeId) {
         return db.query(sqlMapping.doctor.deleteDoctorBy, empoyeeId);
     },
-    deleteEmployee: function(id) {
+    deleteEmployee: function (id) {
         return db.query(sqlMapping.employee.delete, id);
+    },
+    updateDoctorByDepartment: function (id, name) {
+        return db.query(sqlMapping.employee.updateDoctorByDepartment, [name, id]);
     }
 }

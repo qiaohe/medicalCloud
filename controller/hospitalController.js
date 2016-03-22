@@ -5,6 +5,7 @@ var i18n = require('../i18n/localeMessage');
 var hospitalDAO = require('../dao/hospitalDAO');
 var registrationDAO = require('../dao/registrationDAO');
 var notificationDAO = require('../dao/notificationDAO');
+var employeeDAO = require('../dao/employeeDAO');
 var deviceDAO = require('../dao/deviceDAO');
 var notificationPusher = require('../domain/NotificationPusher');
 var _ = require('lodash');
@@ -59,7 +60,13 @@ module.exports = {
         var department = req.body;
         department.hospitalId = req.user.hospitalId;
         hospitalDAO.updateDepartment(department).then(function (result) {
-            res.send({ret: 0, message: i18n.get('department.update.success')});
+            if (department.name) {
+                employeeDAO.updateDoctorByDepartment(department.id, department.name).then(function (result) {
+                    res.send({ret: 0, message: i18n.get('department.update.success')});
+                })
+            } else {
+                res.send({ret: 0, message: i18n.get('department.update.success')});
+            }
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
