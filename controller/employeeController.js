@@ -24,37 +24,42 @@ module.exports = {
         employee.hospitalId = req.user.hospitalId;
         employee.status = 0;
         employee.createDate = new Date();
-        employeeDAO.insert(employee).then(function (result) {
-            employee.id = result.insertId;
-            if (employee.role == 2) {
-                var doctor = {
-                    birthday: employee.birthday,
-                    contract: employee.contract,
-                    contactTel: employee.contactTel,
-                    createDate: employee.createDate,
-                    departmentId: employee.department,
-                    employeeId: employee.id,
-                    gender: employee.gender,
-                    headPic: employee.headPic,
-                    hospitalId: employee.hospitalId,
-                    name: employee.name,
-                    jobTitleId: employee.jobTitle,
-                    status: employee.status
-                };
-                hospitalDAO.findHospitalById(employee.hospitalId).then(function (hospitals) {
-                    doctor.hospitalName = hospitals[0].name;
-                    return employeeDAO.findDepartmentById(employee.department);
-                }).then(function (departments) {
-                    doctor.departmentName = departments[0].name;
-                    return employeeDAO.findJobTitleById(employee.jobTitle)
-                }).then(function (jobTitles) {
-                    doctor.jobTitle = jobTitles[0].name;
-                    return employeeDAO.insertDoctor(doctor);
-                }).then(function (result) {
-                    return res.send({ret: 0, data: employee});
-                })
-            }
-            res.send({ret: 0, data: employee});
+        employeeDAO.findByUsername(employee.mobile).then(function (employees) {
+            if (employees.length) return res.send({ret: 0, message: '用户已经存在。'})
+            employeeDAO.insert(employee).then(function (result) {
+                employee.id = result.insertId;
+                if (employee.role == 2) {
+                    var doctor = {
+                        birthday: employee.birthday,
+                        contract: employee.contract,
+                        contactTel: employee.contactTel,
+                        createDate: employee.createDate,
+                        departmentId: employee.department,
+                        employeeId: employee.id,
+                        gender: employee.gender,
+                        headPic: employee.headPic,
+                        hospitalId: employee.hospitalId,
+                        name: employee.name,
+                        jobTitleId: employee.jobTitle,
+                        status: employee.status
+                    };
+                    hospitalDAO.findHospitalById(employee.hospitalId).then(function (hospitals) {
+                        doctor.hospitalName = hospitals[0].name;
+                        return employeeDAO.findDepartmentById(employee.department);
+                    }).then(function (departments) {
+                        doctor.departmentName = departments[0].name;
+                        return employeeDAO.findJobTitleById(employee.jobTitle)
+                    }).then(function (jobTitles) {
+                        doctor.jobTitle = jobTitles[0].name;
+                        return employeeDAO.insertDoctor(doctor);
+                    }).then(function (result) {
+                        return res.send({ret: 0, data: employee});
+                    })
+                }
+                res.send({ret: 0, data: employee});
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
+            });
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });

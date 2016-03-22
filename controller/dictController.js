@@ -219,19 +219,17 @@ module.exports = {
         hospitalDAO.findMyMenus(req.user.id).then(function (menus) {
             var result = [];
             menus.length && menus.forEach(function (menu) {
-                if (!menu.pid) {
-                    result.push({id: menu.id, name: menu.name, routeUri: menu.routeUri, icon: menu.icon, subItems: []});
+                var item = _.findWhere(result, {id: menu.pid});
+                if (item) {
+                    item.subItems.push({
+                        id: menu.id,
+                        name: menu.name,
+                        routeUri: menu.routeUri,
+                        icon: menu.icon,
+                        subItems: []
+                    });
                 } else {
-                    var item = _.findWhere(result, {id: menu.pid});
-                    if (item) {
-                        item.subItems.push({
-                            id: menu.id,
-                            name: menu.name,
-                            routeUri: menu.routeUri,
-                            icon: menu.icon,
-                            subItems: []
-                        });
-                    }
+                    result.push({id: menu.id, name: menu.name, routeUri: menu.routeUri, icon: menu.icon, subItems: []});
                 }
             });
             res.send({ret: 0, data: result});

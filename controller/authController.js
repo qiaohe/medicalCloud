@@ -15,11 +15,9 @@ module.exports = {
         var password = (req.body && req.body.password) || (req.query && req.query.password);
         var user = {};
         employeeDAO.findByUsername(userName).then(function (users) {
-            if (!users || !users.length) return res.send({ret: 1, message: i18n.get('member.not.exists')});
+            if (!users || !users.length) throw new Error(i18n.get('member.not.exists'));
             user = users[0];
-            if (user.password != md5(password)) return res.send({
-                ret: 1, message: i18n.get('member.password.error')
-            });
+            if (user.password != md5(password)) throw new Error(i18n.get('member.password.error'));
             var token = uuid.v4();
             redis.set(token, JSON.stringify(user));
             redis.expire(token, config.app.tokenExpire);
@@ -31,7 +29,7 @@ module.exports = {
             hospitalDAO.findCustomerServiceId(user.hospitalId).then(function (cs) {
                 if (cs && cs.length && cs[0].customerServiceUid && user.id == cs[0].customerServiceUid) {
                     rongcloudSDK.user.getToken(user.hospitalId + '-' + user.id, user.name, 'http://7xoadl.com2.z0.glb.qiniucdn.com/user58.png', function (err, resultText) {
-                        if (err) throw err;
+                        if (err) throw new Error(err.message);
                         user.rongToken = JSON.parse(resultText).token;
                         res.send({ret: 0, data: user});
                     });
