@@ -18,6 +18,7 @@ module.exports = {
                     patientName: notification.patientName,
                     patientMobile: notification.patientMobile,
                     type: notification.type,
+                    unread: 1,
                     hospitalId: notification.hospitalId
                 }).then(function (result) {
                     return callback(err, result);

@@ -18,7 +18,8 @@ module.exports = {
         findJobTitleByRole: 'select id, name from JobTitle where hospitalId = ? and role =?',
         findJobTitleById: 'select * from JobTitle where id = ?',
         findDepartmentById: 'select * from Department where id=?',
-        delete: 'delete from Employee where id =?'
+        delete: 'delete from Employee where id =?',
+        updateDoctorByDepartment: 'update Doctor set departmentName=? where departmentId=?'
     },
     businessPeople: {
         deletePerformancesBy: 'delete from Performance where businessPeopleId = ? and left(yearMonth,4) = ?',
@@ -97,7 +98,7 @@ module.exports = {
         deleteDoctorBy: 'delete from Doctor where employeeId =?',
         findWaitOutpatients: 'select SQL_CALC_FOUND_ROWS concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , sp.`name`) as registerDate, r.id, r.patientName, r.patientMobile, r.gender, p.birthday, r.sequence, r.registrationType, r.`comment`, r.outPatientType, r.createDate, r.businessPeopleName as recommender, r.outpatientStatus, pi.balance, pi.memberType,pi.memberCardNo from Registration r LEFT JOIN  PatientBasicInfo p on p.id = r.patientBasicInfoId left JOIN ShiftPeriod sp on sp.id = r.shiftPeriod LEFT JOIN Patient pi on pi.id = r.patientId LEFT JOIN Doctor d ON d.id = r.doctorId where d.employeeId = ? and r.registerDate=? and r.status<>4 and r.sequence is not null order by field(r.outpatientStatus, 5, 0, 1), r.shiftPeriod, r.createDate limit ?, ?',
         findFinishedCountByDate: 'select count(*) as count from Registration r where r.doctorId = ? and r.registerDate=? and r.outPatientStatus=1',
-        findHistoryOutpatients: 'select concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , sp.`name`) as registerDate, r.id, r.patientName, r.patientMobile, r.gender, p.birthday, r.sequence, r.registrationType, r.`comment`, r.outPatientType, r.createDate, r.businessPeopleName as recommender, r.outpatientStatus from Registration r LEFT JOIN  PatientBasicInfo p on p.id = r.patientBasicInfoId left JOIN ShiftPeriod sp on sp.id = r.shiftPeriod LEFT JOIN Doctor d ON d.id = r.doctorId where d.employeeId = ? and r.outPatientStatus = 1 order by r.registerDate, r.sequence'
+        findHistoryOutpatients: 'select SQL_CALC_FOUND_ROWS concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , sp.`name`) as registerDate, r.id, r.patientName, r.patientMobile, r.gender, p.birthday, r.sequence, r.registrationType, r.`comment`, r.outPatientType, r.createDate, r.businessPeopleName as recommender, r.outpatientStatus from Registration r LEFT JOIN  PatientBasicInfo p on p.id = r.patientBasicInfoId left JOIN ShiftPeriod sp on sp.id = r.shiftPeriod LEFT JOIN Doctor d ON d.id = r.doctorId where d.employeeId = ? and r.outPatientStatus = 1 order by r.registerDate, r.sequence'
     },
 
     registration: {
