@@ -79,7 +79,7 @@ module.exports = {
         var drugItems = req.body.drugs;
         var items = [];
         var orderNo = {};
-        redis.incrAsyc('h:' + hospitalId + ':' + moment().format('YYYYMMDD') + ':1:incr').then(function (reply) {
+        redis.incrAsync('h:' + hospitalId + ':' + moment().format('YYYYMMDD') + ':1:incr').then(function (reply) {
             orderNo = _.padLeft(hospitalId, 4, '0') + moment().format('YYYYMMDD') + '1' + _.padLeft(reply, 3, '0');
             Promise.map(drugItems, function (item, index) {
                 return dictionaryDAO.findDrugById(+item.drugId).then(function (drugs) {
