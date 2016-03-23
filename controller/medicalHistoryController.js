@@ -78,8 +78,9 @@ module.exports = {
         var registrationId = req.body.registrationId;
         var drugItems = req.body.drugs;
         var items = [];
-        redis.incrAsync('h:' + hospitalId + ':' + moment().format('YYYYMMDD') + ':1:incr').then(function (reply) {
-            var orderNo = _.padLeft(hospitalId, 4, '0') + moment().format('YYYYMMDD') + '1' + _.padLeft(reply, 3, '0');
+        var orderNo = {};
+        redis.incrAsyc('h:' + hospitalId + ':' + moment().format('YYYYMMDD') + ':1:incr').then(function (reply) {
+            orderNo = _.padLeft(hospitalId, 4, '0') + moment().format('YYYYMMDD') + '1' + _.padLeft(reply, 3, '0');
             Promise.map(drugItems, function (item, index) {
                 return dictionaryDAO.findDrugById(+item.drugId).then(function (drugs) {
                     item = _.assign(item, {
@@ -159,8 +160,9 @@ module.exports = {
         var registrationId = req.body.registrationId;
         var chargeItems = req.body.chargeItems;
         var newItems = [];
+        var orderNo = {};
         redis.incrAsync('h:' + hospitalId + ':' + moment().format('YYYYMMDD') + ':2:incr').then(function (reply) {
-            var orderNo = _.padLeft(hospitalId, 4, '0') + moment().format('YYYYMMDD') + '2' + _.padLeft(reply, 3, '0');
+            orderNo = _.padLeft(hospitalId, 4, '0') + moment().format('YYYYMMDD') + '2' + _.padLeft(reply, 3, '0');
             Promise.map(chargeItems, function (item, index) {
                 return dictionaryDAO.findChargeItemById(+item.chargeItemId).then(function (items) {
                     item = _.assign(item, {
