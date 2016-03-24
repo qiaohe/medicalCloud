@@ -311,8 +311,7 @@ module.exports = {
 
     updateDiseaseDic: function (req, res, next) {
         req.body.hospitalId = req.user.hospitalId;
-        delete req.body.createDate;
-        dictionaryDAO.updateDisease(req.body).then(function (result) {
+        dictionaryDAO.updateDisease(_.omit(req.body, ['createDate', 'departmentName', 'creatorName'])).then(function (result) {
             res.send({ret: 0, message: '更新成功'});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
