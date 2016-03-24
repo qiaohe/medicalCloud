@@ -492,7 +492,8 @@ module.exports = {
             return deviceDAO.findTokenByUid(registration.patientBasicInfoId);
         }).then(function (tokens) {
             if (registration.outpatientStatus == 0 && tokens.length && tokens[0]) {
-                var notificationBody = util.format(config.notAvailableTemplate, registration.departmentName, registration.doctorName);
+                var notificationBody = util.format(config.notAvailableTemplate, registration.patientName + (registration.gender == 0 ? '先生' : '女士'),
+                    registration.hospitalName + registration.departmentName + registration.doctorName);
                 notificationPusher.push({
                     body: notificationBody,
                     uid: registration.patientBasicInfoId,
@@ -500,6 +501,7 @@ module.exports = {
                     patientMobile: registration.patientMobile,
                     hospitalId: req.user.hospitalId,
                     title: '未到提醒通知',
+                    type: 1,
                     audience: {registration_id: [tokens[0].token]}
                 }, function (err, result) {
                     if (err) throw err;

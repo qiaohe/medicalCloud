@@ -4,7 +4,7 @@ module.exports = {
     server: {
         name: 'medical cloud platform',
         version: '0.0.1',
-        host: '121.42.171.213',
+        host: 'localhost',
         port: 8083
     },
     db: {
@@ -21,7 +21,7 @@ module.exports = {
     app: {
         locale: 'zh_CN',
         tokenExpire: 8640000,
-        orderDelayMinutes: 1
+        orderDelayMinutes: 30
     },
     redis: {
         host: '127.0.0.1',
@@ -77,8 +77,7 @@ module.exports = {
     cancelRegistrationTemplate: '【%s】，您已取消预约【%s医生】%s门诊，如有需要请再次预约，谢谢！',
     outPatientReminderTemplate: '【%s】，您预约的【%s医生】%s门诊，现在离就诊时间还剩1小时，请提前到分诊台，进行确认。',
     outPatientCallTemplate: '【%s】您在%s门诊已开始，请尽快前往就诊。接诊医生：【%s】。',
-    notAvailableTemplate: '【%s】，很抱歉，您预约的【%s医生】门诊，就诊时间%s已过，请及时与前台联系，谢谢！',
-    returnRegistrationTemplte: '【%s】，很抱歉，您预约的【%s医生】门诊，就诊时间%s已过，请及时与前台联系，谢谢！',
+    notAvailableTemplate: '【%s】，很抱歉，您预约的【%s医生】门诊，就诊时间已过，请及时与前台联系，谢谢！',
     returnRegistrationTemplate: '【%s】，您已预约复诊【%s医生】%s门诊，请带好病历本及检查结果，提前到分诊台，进行确认。',
     recipeOrderTemplate: '【%s】您在%s的药费订单%s已生成，为了您的康复，请通过收银窗口支付，或在一小时内完成网上支付。',
     medicalHistoryTemplate: '【%s】您在%s医生门诊已完成，您可以在线查看您的门诊病历。',

@@ -623,5 +623,9 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
+    },
+    getSysDictByType: function (req, res, next) {
+        res.send({ret: 0, data: config[req.params.type]});
+        return next();
     }
 }

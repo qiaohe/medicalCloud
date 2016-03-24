@@ -814,5 +814,11 @@ module.exports = [
         path: "/api/accountingInfo",
         handler: medicalHistoryController.getAccountingInfo,
         secured: 'user'
-    }
+    },
+    {
+        method: "get",
+        path: "/api/sys/dict/:type",
+        handler: dictController.getSysDictByType,
+        secured: 'user'
+    },
 ];
