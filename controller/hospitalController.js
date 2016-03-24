@@ -500,6 +500,7 @@ module.exports = {
                     patientMobile: registration.patientMobile,
                     hospitalId: req.user.hospitalId,
                     title: '未到提醒通知',
+                    type: 1,
                     audience: {registration_id: [tokens[0].token]}
                 }, function (err, result) {
                     if (err) throw err;

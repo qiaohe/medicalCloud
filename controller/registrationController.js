@@ -123,7 +123,7 @@ module.exports = {
                     doctorJobTitle: doctor.jobTitle,
                     doctorJobTitleId: doctor.jobTitleId,
                     doctorHeadPic: doctor.headPic,
-                    status: 1, creator: req.user.id
+                    status: 0, creator: req.user.id
                 });
                 return redis.incrAsync('doctor:' + r.doctorId + ':d:' + r.registerDate + ':period:' + r.shiftPeriod + ':incr').then(function (seq) {
                     return redis.getAsync('h:' + req.user.hospitalId + ':p:' + r.shiftPeriod).then(function (sp) {
