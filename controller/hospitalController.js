@@ -492,7 +492,8 @@ module.exports = {
             return deviceDAO.findTokenByUid(registration.patientBasicInfoId);
         }).then(function (tokens) {
             if (registration.outpatientStatus == 0 && tokens.length && tokens[0]) {
-                var notificationBody = util.format(config.notAvailableTemplate, registration.departmentName, registration.doctorName);
+                var notificationBody = util.format(config.notAvailableTemplate, registration.patientName + (registration.gender == 0 ? '先生' : '女士'),
+                    registration.hospitalName + registration.departmentName + registration.doctorName);
                 notificationPusher.push({
                     body: notificationBody,
                     uid: registration.patientBasicInfoId,
