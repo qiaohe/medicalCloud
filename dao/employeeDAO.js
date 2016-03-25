@@ -8,6 +8,9 @@ module.exports = {
     findByUsername: function (username) {
         return db.query(sqlMapping.employee.findByUserName, username);
     },
+    findByName: function (username) {
+        return db.query(sqlMapping.employee.findByName, username);
+    },
 
     updateEmployee: function (employee) {
         return db.query(sqlMapping.employee.updateEmployee, [employee, employee.id])

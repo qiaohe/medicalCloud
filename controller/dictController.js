@@ -7,6 +7,7 @@ var Promise = require('bluebird');
 var businessPeopleDAO = require('../dao/businessPeopleDAO');
 var redis = require('../common/redisClient');
 var i18n = require('../i18n/localeMessage');
+var employeeDAO = require('../dao/employeeDAO');
 module.exports = {
     getDepartments: function (req, res, next) {
         var hospitalId = req.user.hospitalId;
@@ -232,7 +233,9 @@ module.exports = {
                     result.push({id: menu.id, name: menu.name, routeUri: menu.routeUri, icon: menu.icon, subItems: []});
                 }
             });
-            res.send({ret: 0, data: result});
+            employeeDAO.findByName(req.user.name).then(function (users) {
+                res.send({ret: 0, data: result, expand: !users[0].admin});
+            });
         }).catch(function (err) {
             res.send({ret: 1, data: err.message})
         }).catch(function (err) {

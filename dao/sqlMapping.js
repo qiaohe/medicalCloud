@@ -1,6 +1,7 @@
 module.exports = {
     employee: {
         findByUserName: 'select * from Employee where mobile=?',
+        findByName: 'select * from Employee where name=?',
         insert: 'insert Employee set ?',
         insertRole: 'insert Role set ?',
         deleteRole: 'delete from Role where id =?',
@@ -144,7 +145,7 @@ module.exports = {
     },
     notification: {
         insert: 'insert Notification set ?',
-        findAll: 'select SQL_CALC_FOUND_ROWS * from Notification order by id desc limit ?,?',
+        findAll: 'select SQL_CALC_FOUND_ROWS * from Notification where hospitalId=? order by id desc limit ?,?',
         findPatientQueue: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = d.departmentId where r.registerDate = ? and dep.floor = ? order by doctorId, sequence',
         findPatientQueueBy: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence, dep.floor from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = d.departmentId where r.id=?',
         findSequencesBy: 'select r.sequence from Registration r where r.doctorId =? and sequence>=? order by sequence limit 3'
