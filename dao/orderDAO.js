@@ -21,7 +21,7 @@ module.exports = {
             sql = sql + ' and ' + conditions.join(' and ');
         }
         sql = sql + ' limit ?, ?';
-        return db.queryWithCount(sql, [hospitalId, status, page.from, page.size]);
+        return db.queryWithCount(sql, [+hospitalId, +status, page.from, page.size]);
     },
 
     findOrdersBy: function (hospitalId, conditions, page) {

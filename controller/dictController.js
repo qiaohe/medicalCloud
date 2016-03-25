@@ -552,6 +552,7 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (items) {
+            items.pageIndex = pageIndex;
             res.send({ret: 0, data: items});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
