@@ -71,7 +71,9 @@ io.sockets.on('connect', function (socket) {
 process.on('queueEvent', function (data) {
     return io.sockets.in(data.floor).emit('message', data);
 });
-
+process.on('refreshEvent', function (data) {
+    return io.sockets.in(data.floor).emit('refresh', data.patients);
+});
 
 var kue = require('kue');
 kue.createQueue('orderPayDelayedQueue');

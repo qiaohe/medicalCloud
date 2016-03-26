@@ -7,7 +7,7 @@ module.exports = {
     },
     findOrdersByType: function (type, conditions, page) {
         var sql = !conditions.length ? sqlMapping.order.findOrdersByType : sqlMapping.order.findOrdersByType + 'and ' + conditions.join(' and ');
-        return db.queryWithCount(sql + ' limit ?,?', [type, page.from, page.size]);
+        return db.queryWithCount(sql + ' order by sendDrugDate desc limit ?,?', [type, page.from, page.size]);
     },
     findOrdersByTypeAndStatus: function (type, status, page) {
         return db.queryWithCount(sqlMapping.order.findOrdersByTypeAndStatus, [type, status, page.from, page.size]);
@@ -21,7 +21,7 @@ module.exports = {
             sql = sql + ' and ' + conditions.join(' and ');
         }
         sql = sql + ' limit ?, ?';
-        return db.queryWithCount(sql, [+hospitalId, +status, page.from, page.size]);
+        return db.queryWithCount(sql, [hospitalId, status, page.from, page.size]);
     },
 
     findOrdersBy: function (hospitalId, conditions, page) {
@@ -37,6 +37,10 @@ module.exports = {
     },
     update: function (order) {
         return db.query(sqlMapping.order.update, [order, order.orderNo]);
+    },
+
+    updateBy: function (order) {
+        return db.query(sqlMapping.order.updateBy, [order, order.orderNo]);
     },
     findDrugUsageRecords: function (hospitalId, conditions, page) {
         var sql = sqlMapping.order.findDrugUsageRecords;

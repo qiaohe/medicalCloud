@@ -26,7 +26,7 @@ module.exports = {
         if (medicalHistory.id) {
             delete req.body.createDate;
             medicalDAO.updateMedicalHistory(req.body).then(function (result) {
-                res.send({ret: 0, message: '更新成功'})
+                res.send({ret: 0, data: req.body})
             }).catch(function (err) {
                 res.send({ret: 1, message: err.message});
             });
@@ -46,6 +46,7 @@ module.exports = {
                 });
                 return medicalDAO.insertMedicalHistory(medicalHistory);
             }).then(function (result) {
+                medicalHistory.id = result.insertId;
                 deviceDAO.findTokenByUid(medicalHistory.patientBasicInfoId).then(function (tokens) {
                     if (tokens.length && tokens[0]) {
                         var notificationBody = util.format(config.medicalHistoryTemplate, medicalHistory.patientName + (medicalHistory.gender == 0 ? '先生' : '女士'),
@@ -64,7 +65,6 @@ module.exports = {
                         });
                     }
                 });
-                medicalHistory.id = result.id;
                 return res.send({ret: 0, data: medicalHistory});
             }).catch(function (err) {
                 res.send({ret: 1, message: err.message});
@@ -379,9 +379,11 @@ module.exports = {
                 status: 1,
                 chargedBy: req.user.id,
                 chargedByName: req.user.name,
-                chargeDate: new Date()
+                chargeDate: new Date(),
+                paymentDate: new Date(),
+                paymentType: 5
             };
-            return orderDAO.update(order)
+            return orderDAO.updateBy(order)
         }).then(function () {
             res.send({ret: 0, message: '收费成功'})
         }).catch(function (err) {
