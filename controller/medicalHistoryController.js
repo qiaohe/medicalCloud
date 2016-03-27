@@ -128,24 +128,24 @@ module.exports = {
                 return registrationDAO.findRegistrationsById(registrationId);
             }).then(function (registrations) {
                 var registration = registrations[0];
-                deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
-                    if (tokens.length && tokens[0]) {
-                        var notificationBody = util.format(config.recipeOrderTemplate, registration.patientName + (registration.gender == 0 ? '先生' : '女士'),
-                            registration.hospitalName, orderNo);
-                        pusher.push({
-                            body: notificationBody,
-                            uid: registration.patientBasicInfoId,
-                            patientName: registration.patientName,
-                            patientMobile: registration.patientMobile,
-                            title: '药费订单',
-                            hospitalId: req.user.hospitalId,
-                            type: 2,
-                            audience: {registration_id: [tokens[0].token]}
-                        }, function (err, result) {
-                            if (err) throw err;
-                        });
-                    }
-                })
+                //deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
+                //    if (tokens.length && tokens[0]) {
+                //        var notificationBody = util.format(config.recipeOrderTemplate, registration.patientName + (registration.gender == 0 ? '先生' : '女士'),
+                //            registration.hospitalName, orderNo);
+                //        pusher.push({
+                //            body: notificationBody,
+                //            uid: registration.patientBasicInfoId,
+                //            patientName: registration.patientName,
+                //            patientMobile: registration.patientMobile,
+                //            title: '药费订单',
+                //            hospitalId: req.user.hospitalId,
+                //            type: 2,
+                //            audience: {registration_id: [tokens[0].token]}
+                //        }, function (err, result) {
+                //            if (err) throw err;
+                //        });
+                //    }
+                //})
             }).then(function (result) {
                 res.send({ret: 0, data: '保存成功'});
             });
@@ -204,25 +204,25 @@ module.exports = {
                 return registrationDAO.findRegistrationsById(registrationId);
             }).then(function (registrations) {
                 var registration = registrations[0];
-                deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
-                    if (tokens.length && tokens[0]) {
-                        var notificationBody = util.format(config.prescriptionOrderTemplate,
-                            registration.patientName + (registration.gender == 0 ? '先生' : '女士'),
-                            registration.hospitalName, orderNo);
-                        pusher.push({
-                            body: notificationBody,
-                            uid: registration.patientBasicInfoId,
-                            patientName: registration.patientName,
-                            patientMobile: registration.patientMobile,
-                            title: '诊疗费订单',
-                            type: 2,
-                            hospitalId: req.user.hospitalId,
-                            audience: {registration_id: [tokens[0].token]}
-                        }, function (err, result) {
-                            if (err) throw err;
-                        });
-                    }
-                })
+                //deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
+                //    if (tokens.length && tokens[0]) {
+                //        var notificationBody = util.format(config.prescriptionOrderTemplate,
+                //            registration.patientName + (registration.gender == 0 ? '先生' : '女士'),
+                //            registration.hospitalName, orderNo);
+                //        pusher.push({
+                //            body: notificationBody,
+                //            uid: registration.patientBasicInfoId,
+                //            patientName: registration.patientName,
+                //            patientMobile: registration.patientMobile,
+                //            title: '诊疗费订单',
+                //            type: 2,
+                //            hospitalId: req.user.hospitalId,
+                //            audience: {registration_id: [tokens[0].token]}
+                //        }, function (err, result) {
+                //            if (err) throw err;
+                //        });
+                //    }
+                //})
             }).then(function (result) {
                 res.send({ret: 0, data: '保存成功'});
             });
@@ -424,24 +424,24 @@ module.exports = {
             }).then(function () {
                 orderDAO.findOrderByOrderNo(orderNo).then(function (orders) {
                     var o = order[0];
-                    deviceDAO.findTokenByUid(o.patientBasicInfoId).then(function (tokens) {
-                        if (tokens.length && tokens[0]) {
-                            var notificationBody = util.format(config.sendDrugTemplate, o.patientName + (o.gender == 0 ? '先生' : '女士'),
-                                o.hospitalName + o.departmentName + o.doctorName, r.sequence);
-                            pusher.push({
-                                body: notificationBody,
-                                uid: o.patientBasicInfoId,
-                                patientName: o.patientName,
-                                patientMobile: o.patientMobile,
-                                title: '已领取药品通知',
-                                hospitalId: o.hospitalId,
-                                type: 1,
-                                audience: {registration_id: [tokens[0].token]}
-                            }, function (err, result) {
-                                if (err) throw err;
-                            });
-                        }
-                    });
+                    //deviceDAO.findTokenByUid(o.patientBasicInfoId).then(function (tokens) {
+                    //    if (tokens.length && tokens[0]) {
+                    //        var notificationBody = util.format(config.sendDrugTemplate, o.patientName + (o.gender == 0 ? '先生' : '女士'),
+                    //            o.hospitalName + o.departmentName + o.doctorName, r.sequence);
+                    //        pusher.push({
+                    //            body: notificationBody,
+                    //            uid: o.patientBasicInfoId,
+                    //            patientName: o.patientName,
+                    //            patientMobile: o.patientMobile,
+                    //            title: '已领取药品通知',
+                    //            hospitalId: o.hospitalId,
+                    //            type: 1,
+                    //            audience: {registration_id: [tokens[0].token]}
+                    //        }, function (err, result) {
+                    //            if (err) throw err;
+                    //        });
+                    //    }
+                    //});
                 });
                 res.send({ret: 0, message: '更新订单状态成功'});
             }).catch(function (err) {

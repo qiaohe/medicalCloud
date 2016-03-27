@@ -431,25 +431,25 @@ module.exports = {
                     });
                     registrationDAO.findRegistrationsById(rid).then(function (registrations) {
                         registration = registrations[0];
-                        deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
-                            if (tokens.length && tokens[0]) {
-                                var notificationBody = util.format(config.outPatientCallTemplate,
-                                    registration.patientName + (registration.gender == 0 ? '先生' : '女士'),
-                                    registration.hospitalName + registration.departmentName, registration.doctorName);
-                                notificationPusher.push({
-                                    body: notificationBody,
-                                    uid: registration.patientBasicInfoId,
-                                    patientName: registration.patientName,
-                                    patientMobile: registration.patientMobile,
-                                    title: '叫号提醒通知',
-                                    type: 2,
-                                    hospitalId: req.user.hospitalId,
-                                    audience: {registration_id: [tokens[0].token]}
-                                }, function (err, result) {
-                                    if (err) throw err;
-                                });
-                            }
-                        })
+                        //deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
+                        //    if (tokens.length && tokens[0]) {
+                        //        var notificationBody = util.format(config.outPatientCallTemplate,
+                        //            registration.patientName + (registration.gender == 0 ? '先生' : '女士'),
+                        //            registration.hospitalName + registration.departmentName, registration.doctorName);
+                        //        notificationPusher.push({
+                        //            body: notificationBody,
+                        //            uid: registration.patientBasicInfoId,
+                        //            patientName: registration.patientName,
+                        //            patientMobile: registration.patientMobile,
+                        //            title: '叫号提醒通知',
+                        //            type: 2,
+                        //            hospitalId: req.user.hospitalId,
+                        //            audience: {registration_id: [tokens[0].token]}
+                        //        }, function (err, result) {
+                        //            if (err) throw err;
+                        //        });
+                        //    }
+                        //})
                     });
                     process.emit('queueEvent', data);
                     res.send({ret: 0, data: '叫号成功'});
