@@ -9,7 +9,9 @@ module.exports = {
     findJobTitles: function (hospitalId) {
         return db.query(sqlMapping.hospital.findJobTitles, hospitalId);
     },
-
+    findHospitalByDomainName: function(domainName){
+        return db.query(sqlMapping.hospital.findHospitalByDomainName, domainName);
+    },
     findByUsername: function (username) {
         return db.query(sqlMapping.employee.findByUserName, username);
     },

@@ -556,5 +556,12 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
+    },
+    getMyHospital: function (req, res, next) {
+        hospitalDAO.findHospitalByDomainName('www.hisforce.cn').then(function (hospitals) {
+            if (hospitals[0].images) hospitals[0].images = hospitals[0].images.split(',');
+            res.send({ret: 0, data: hospitals[0]});
+        });
+        return next();
     }
 }

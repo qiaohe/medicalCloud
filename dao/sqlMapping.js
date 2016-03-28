@@ -67,6 +67,7 @@ module.exports = {
         insertPatient: 'insert Patient set ?',
         findPatientByBasicInfoId: 'select * from Patient where patientBasicInfoId = ?',
         findJobTitles: 'select id, name from JobTitle where hospitalId =?',
+        findHospitalByDomainName: 'select * from Hospital where domainName = ?',
         update: 'update Hospital set ? where id = ?',
         findCustomerServiceId: 'select customerServiceUid from Hospital where id =? ',
         deleteMenuByJobTitle: 'delete from JobTitleMenuItem where jobTitleId=? and menuItem=?',

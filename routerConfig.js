@@ -821,4 +821,9 @@ module.exports = [
         handler: dictController.getSysDictByType,
         secured: 'user'
     },
+    {
+        method: "get",
+        path: "/api/myHospital",
+        handler: hospitalController.getMyHospital
+    }
 ];
