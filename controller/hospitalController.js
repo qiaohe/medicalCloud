@@ -558,7 +558,7 @@ module.exports = {
         return next();
     },
     getMyHospital: function (req, res, next) {
-        hospitalDAO.findHospitalByDomainName('www.hisforce.cn').then(function (hospitals) {
+        hospitalDAO.findHospitalByDomainName(req.headers.host.split(':')[0]).then(function (hospitals) {
             if (hospitals[0].images) hospitals[0].images = hospitals[0].images.split(',');
             res.send({ret: 0, data: hospitals[0]});
         });
