@@ -509,6 +509,37 @@ module.exports = {
                 });
                 return next();
             } else {
+                if (req.body.outpatientStatus == 1) {
+                    notificationDAO.findPatientQueueByDepartmentId(moment().format('YYYY-MM-DD'), registration.departmentId).then(function (queueList) {
+                        var data = [];
+                        if (queueList.length) {
+                            queueList.forEach(function (queue) {
+                                if (!queue.clinic) queue.clinic = '1';
+                                queue.clinic = config.clinicConfig[queue.clinic];
+                                var item = _.find(data, {
+                                    doctorId: queue.doctorId,
+                                    doctorName: queue.doctorName,
+                                    //             departmentName: queue.departmentName,
+                                    clinic: queue.clinic
+                                });
+                                if (item) {
+                                    if (item.sequences.length < 4)
+                                        item.sequences.push(queue.sequence);
+                                } else {
+                                    data.push({
+                                        doctorId: queue.doctorId,
+                                        doctorName: queue.doctorName,
+                                        patientName: queue.patientName,
+                                        departmentName: queue.departmentName,
+                                        clinic: queue.clinic,
+                                        sequences: [queue.sequence]
+                                    });
+                                }
+                            });
+                            process.emit('refreshEvent', {floor: queueList[0].floor, patients: data});
+                        }
+                    });
+                }
                 res.send({ret: 0, message: i18n.get('outpatientStatus.change.success')});
             }
         })

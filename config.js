@@ -4,7 +4,7 @@ module.exports = {
     server: {
         name: 'medical cloud platform',
         version: '0.0.1',
-        host: 'localhost',
+        host: '121.42.171.213',
         port: 8083
     },
     db: {
@@ -13,8 +13,6 @@ module.exports = {
         user: 'root',
         password: 'heqiao75518',
         debug: false,
-        supportBigNumbers: true,
-        bigNumberStrings: true,
         multipleStatements: true,
         database: 'medicalDB'
     },
