@@ -94,7 +94,7 @@ module.exports = {
                 });
             }).then(function (result) {
                 r.patientBasicInfoId = result;
-                return businessPeopleDAO.findPatientByBasicInfoId(result).then(function (patients) {
+                return businessPeopleDAO.findPatientByBasicInfoId(result, req.user.hospitalId).then(function (patients) {
                     if (patients.length) return patients[0].id;
                     return redis.incrAsync('member.no.incr').then(function (memberNo) {
                         return businessPeopleDAO.insertPatient({
@@ -151,8 +151,8 @@ module.exports = {
                         paidAmount: r.registrationFee,
                         paymentAmount: r.registrationFee,
                         paymentDate: new Date(),
-                        status: 1,
-                        paymentType: 5,
+                        status: (r.registrationType == 3 ? 0 : 1),
+                        paymentType: (r.registrationType == 3 ? null : 5),
                         createDate: new Date(),
                         type: 0
                     };

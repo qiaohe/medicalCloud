@@ -29,7 +29,7 @@ module.exports = {
         if (conditions.length) {
             sql = sql + ' and ' + conditions.join(' and ');
         }
-        sql = sql + ' limit ?, ?';
+        sql = sql + ' order by m.createDate desc limit ?, ?';
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     findExtraFeeBy: function (orderNo) {

@@ -51,14 +51,17 @@ module.exports = {
     findPatientBasicInfoBy: function (mobile) {
         return db.query(sqlMapping.businessPeople.findPatientBasicInfoBy, mobile);
     },
+    findPatientBasicInfoByPatientId: function (id) {
+        return db.query(sqlMapping.businessPeople.findPatientBasicInfoByPatientId, id);
+    },
     findPatientBy: function (hospitalId, basicInfoId) {
         return db.query(sqlMapping.businessPeople.findPatientBy, [hospitalId, basicInfoId]);
     },
     insertPatientBasicInfo: function (patientBasicInfo) {
         return db.query(sqlMapping.businessPeople.insertPatientBasicInfo, patientBasicInfo)
     },
-    findPatientByBasicInfoId: function (patientBasicInfoId) {
-        return db.query(sqlMapping.businessPeople.findPatientByBasicInfoId, patientBasicInfoId)
+    findPatientByBasicInfoId: function (patientBasicInfoId, hospitalId) {
+        return db.query(sqlMapping.businessPeople.findPatientByBasicInfoId, [patientBasicInfoId, hospitalId])
     },
     insertPatient: function (patient) {
         return db.query(sqlMapping.businessPeople.insertPatient, patient)
