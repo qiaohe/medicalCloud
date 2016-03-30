@@ -33,6 +33,7 @@ module.exports = {
         findPatientByBasicInfoId: 'select * from Patient where patientBasicInfoId = ?',
         insertPatientBasicInfo: 'insert PatientBasicInfo set ?',
         findPatientBasicInfoBy: 'select * from PatientBasicInfo where mobile=?',
+        findPatientBasicInfoByPatientId: 'select pb.* from PatientBasicInfo pb left JOIN Patient p on pb.id = p.patientBasicInfoId where p.id=?',
         findPatientBy: 'select * from Patient where hospitalId=? and patientBasicInfoId=?',
         updateShiftPlan: 'update ShiftPlan set actualQuantity = actualQuantity + 1 where doctorId = ? and day =? and shiftPeriod = ?',
         updateShiftPlanDec: 'update ShiftPlan set actualQuantity = actualQuantity - 1 where doctorId = ? and day =? and shiftPeriod = ?',
@@ -125,6 +126,7 @@ module.exports = {
     },
     patient: {
         updatePatient: 'update Patient set ? where id = ?',
+        findByPatientByMobile: 'SELECT p.memberType, pc.gender, pc.birthday, pc.mobile, pc.`name` from Patient p LEFT JOIN PatientBasicInfo pc on pc.id = p.patientBasicInfoId where hospitalId = ? and pc.mobile = ?',
         findGroupCompanies: 'select SQL_CALC_FOUND_ROWS gc.*, e.`name` as recommenderName from GroupCompany gc left JOIN Employee e on e.id = gc.recommender where gc.hospitalId=? order by gc.id desc limit ?, ?',
         updateGroupCompany: 'update GroupCompany set ? where id = ?',
         deleteGroupCompany: 'delete from GroupCompany where id = ?',

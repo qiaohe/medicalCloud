@@ -53,5 +53,8 @@ module.exports = {
     },
     updatePatient: function (patient) {
         return db.query(sqlMapping.patient.updatePatient, [patient, patient.id]);
+    },
+    findByPatientByMobile: function (hospitalId, mobile) {
+        return db.query(sqlMapping.patient.findByPatientByMobile, [hospitalId, mobile]);
     }
 }

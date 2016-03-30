@@ -51,6 +51,9 @@ module.exports = {
     findPatientBasicInfoBy: function (mobile) {
         return db.query(sqlMapping.businessPeople.findPatientBasicInfoBy, mobile);
     },
+    findPatientBasicInfoByPatientId: function (id) {
+        return db.query(sqlMapping.businessPeople.findPatientBasicInfoByPatientId, id);
+    },
     findPatientBy: function (hospitalId, basicInfoId) {
         return db.query(sqlMapping.businessPeople.findPatientBy, [hospitalId, basicInfoId]);
     },
