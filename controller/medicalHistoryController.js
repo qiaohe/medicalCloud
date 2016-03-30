@@ -489,7 +489,7 @@ module.exports = {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var conditions = [];
-        conditions.push('m.status>0');
+        conditions.push('(m.status=1 or m.status=3)');
         //if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
         //if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
         if (req.query.departmentId) conditions.push('r.departmentId=' + req.query.departmentId);
@@ -503,11 +503,14 @@ module.exports = {
             size: pageSize
         }).then(function (orders) {
             orders.pageIndex = pageIndex;
+            orders.fields = [];
             Promise.map(orders.rows, function (order) {
                 if (order.type == 2) {
                     return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
+                        order.extras = extras;
                         _.forEach(extras, function (item) {
-                            order[item.fieldName] = item.sum;
+                            orders.fields.push(item.fieldName);
+                            //order[item.fieldName] = item.sum;
                         });
                     })
                 }
