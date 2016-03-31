@@ -60,8 +60,8 @@ module.exports = {
     insertPatientBasicInfo: function (patientBasicInfo) {
         return db.query(sqlMapping.businessPeople.insertPatientBasicInfo, patientBasicInfo)
     },
-    findPatientByBasicInfoId: function (patientBasicInfoId) {
-        return db.query(sqlMapping.businessPeople.findPatientByBasicInfoId, patientBasicInfoId)
+    findPatientByBasicInfoId: function (patientBasicInfoId, hospitalId) {
+        return db.query(sqlMapping.businessPeople.findPatientByBasicInfoId, [patientBasicInfoId, hospitalId])
     },
     insertPatient: function (patient) {
         return db.query(sqlMapping.businessPeople.insertPatient, patient)

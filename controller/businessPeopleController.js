@@ -185,7 +185,7 @@ module.exports = {
                                     registration.sequence = sp + seq;
                                     registration.outPatientType = 0;
                                     registration.outpatientStatus = 5;
-                                    return businessPeopleDAO.findPatientByBasicInfoId(registration.patientBasicInfoId);
+                                    return businessPeopleDAO.findPatientByBasicInfoId(registration.patientBasicInfoId, req.user.hospitalId);
                                 });
                             });
                         }
@@ -199,7 +199,7 @@ module.exports = {
                                     registration.sequence = sp + seq;
                                     registration.outPatientType = 0;
                                     registration.outpatientStatus = 5;
-                                    return businessPeopleDAO.findPatientByBasicInfoId(registration.patientBasicInfoId);
+                                    return businessPeopleDAO.findPatientByBasicInfoId(registration.patientBasicInfoId,req.user.hospitalId);
                                 });
                             });
                         });

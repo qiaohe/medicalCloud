@@ -14,9 +14,10 @@ var redis = require('../common/redisClient');
 var md5 = require('md5');
 function getConditions(req) {
     var conditions = [];
-    if (req.query.memberType) conditions.push('p.memberType=' + req.query.memberType);
+    if (req.query.memberType) conditions.push('r.memberType=' + req.query.memberType);
     if (req.query.outPatientType) conditions.push('r.outPatientType=' + req.query.outPatientType);
     if (req.query.departmentId) conditions.push('r.departmentId=' + req.query.departmentId);
+    if (req.query.registerDate) conditions.push('r.registerDate>=\'' + req.query.registerDate + '\'');
     if (req.query.employeeId) conditions.push('d.employeeId=' + req.query.employeeId);
     if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);
     if (req.query.outpatientStatus) conditions.push('r.outpatientStatus=' + req.query.outpatientStatus);
@@ -94,7 +95,7 @@ module.exports = {
                 });
             }).then(function (result) {
                 r.patientBasicInfoId = result;
-                return businessPeopleDAO.findPatientByBasicInfoId(result).then(function (patients) {
+                return businessPeopleDAO.findPatientByBasicInfoId(result, req.user.hospitalId).then(function (patients) {
                     if (patients.length) return patients[0].id;
                     return redis.incrAsync('member.no.incr').then(function (memberNo) {
                         return businessPeopleDAO.insertPatient({
@@ -151,8 +152,8 @@ module.exports = {
                         paidAmount: r.registrationFee,
                         paymentAmount: r.registrationFee,
                         paymentDate: new Date(),
-                        status: 1,
-                        paymentType: 5,
+                        status: (r.registrationType == 3 ? 0 : 1),
+                        paymentType: (r.registrationType == 3 ? null : 5),
                         createDate: new Date(),
                         type: 0
                     };
@@ -289,6 +290,7 @@ module.exports = {
     getRegistrationsOfDoctor: function (req, res, next) {
         var employeeId = req.user.id;
         req.query.employeeId = employeeId;
+        req.query.registerDate = moment().format('YYYY-MM-DD');
         var pageIndex = req.query.pageIndex;
         var pageSize = req.query.pageSize;
         registrationDAO.findRegistrations(req.user.hospitalId, getConditions(req), {

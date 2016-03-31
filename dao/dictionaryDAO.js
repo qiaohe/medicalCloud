@@ -69,7 +69,7 @@ module.exports = {
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     findDrugs: function (hospitalId, conditions, page) {
-        var sql = conditions.length ? 'select * from Drug where hospitalId=? and ' + conditions.join(' and ') + ' LIMIT ?, ?' : sqlMapping.dict.findDrugs;
+        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS * from Drug where hospitalId=? and ' + conditions.join(' and ') + ' LIMIT ?, ?' : sqlMapping.dict.findDrugs;
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     deleteDrug: function (id) {

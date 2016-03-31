@@ -30,7 +30,7 @@ module.exports = {
         findRegistrationsByUidAndMobile: 'select r.id, r.patientMobile, r.doctorId, doctorName, doctorHeadPic,registrationFee, departmentName,doctorJobTitle, hospitalName, patientName,concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , s.`name`) as shiftPeriod, orderNo, r.status  from Registration r, ShiftPeriod s where r.shiftPeriod = s.id and creator = ? and r.patientMobile=? and r.registrationType =7 order by r.id desc limit ?,?',
         findShiftPeriodById: 'select * from ShiftPeriod where hospitalId = ? and id =?',
         insertPatient: 'insert Patient set ?',
-        findPatientByBasicInfoId: 'select * from Patient where patientBasicInfoId = ?',
+        findPatientByBasicInfoId: 'select * from Patient where patientBasicInfoId = ? and hospitalId=?',
         insertPatientBasicInfo: 'insert PatientBasicInfo set ?',
         findPatientBasicInfoBy: 'select * from PatientBasicInfo where mobile=?',
         findPatientBasicInfoByPatientId: 'select pb.* from PatientBasicInfo pb left JOIN Patient p on pb.id = p.patientBasicInfoId where p.id=?',
@@ -89,6 +89,7 @@ module.exports = {
     doctor: {
         insert: 'insert Doctor set ?',
         findDoctors: 'select id, name from Doctor',
+        findDiscountRateOfDoctor: 'select maxDiscountRate from Employee where hospitalId=? and id=?',
         findDoctorsByHospital: 'select SQL_CALC_FOUND_ROWS d.*, e.birthday, d.clinic, e.mobile from Doctor d, Employee e where e.id = d.employeeId and d.status <> 2 and d.hospitalId = ? order by d.id desc limit ?, ?',
         findDoctorsGroupByDepartment: 'select id, name, departmentName from Doctor where status <> 2 and hospitalId = ?',
         findByDepartment: 'select id, name, departmentName, hospitalName, headPic,registrationFee, speciality,jobTitle from Doctor where hospitalId = ?  and departmentId = ?',
@@ -126,7 +127,7 @@ module.exports = {
     },
     patient: {
         updatePatient: 'update Patient set ? where id = ?',
-        findByPatientByMobile: 'SELECT p.memberType, pc.gender, pc.birthday, pc.mobile, pc.`name` from Patient p LEFT JOIN PatientBasicInfo pc on pc.id = p.patientBasicInfoId where hospitalId = ? and pc.mobile = ?',
+        findByPatientByMobile: 'SELECT p.memberType, pc.gender, pc.birthday, pc.mobile, pc.realName from Patient p LEFT JOIN PatientBasicInfo pc on pc.id = p.patientBasicInfoId where hospitalId = ? and pc.mobile = ?',
         findGroupCompanies: 'select SQL_CALC_FOUND_ROWS gc.*, e.`name` as recommenderName from GroupCompany gc left JOIN Employee e on e.id = gc.recommender where gc.hospitalId=? order by gc.id desc limit ?, ?',
         updateGroupCompany: 'update GroupCompany set ? where id = ?',
         deleteGroupCompany: 'delete from GroupCompany where id = ?',
@@ -148,11 +149,11 @@ module.exports = {
     },
     notification: {
         insert: 'insert Notification set ?',
-        findAll: 'select SQL_CALC_FOUND_ROWS * from Notification where hospitalId=? order by id desc limit ?,?',
-        findPatientQueue: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = d.departmentId where r.registerDate = ? and dep.floor = ? and r.sequence is not null and (r.outpatientStatus =0 or r.outpatientStatus = 5) order by doctorId, sequence',
-        findPatientQueueByDepartmentId: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence, dep.floor from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = d.departmentId where r.registerDate = ? and dep.id = ? and r.sequence is not null and (r.outpatientStatus =0 or r.outpatientStatus = 5) order by doctorId, sequence',
+        findAll: 'select SQL_CALC_FOUND_ROWS * from Notification where hospitalId=? ',
+        findPatientQueue: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = d.departmentId where r.registerDate = ? and dep.floor = ? and r.sequence is not null and (r.outpatientStatus =0 or r.outpatientStatus = 5) and r.status <>4 order by doctorId, sequence',
+        findPatientQueueByDepartmentId: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence, dep.floor from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = d.departmentId where r.registerDate = ? and dep.id = ? and r.sequence is not null and (r.outpatientStatus =0 or r.outpatientStatus = 5) and r.status <>4 order by doctorId, sequence',
         findPatientQueueBy: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence, dep.floor from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = d.departmentId where r.id=?',
-        findSequencesBy: 'select r.sequence from Registration r where r.doctorId =? and sequence>=? and (r.outpatientStatus =0 or r.outpatientStatus = 5) order by sequence limit 3'
+        findSequencesBy: 'select r.sequence from Registration r where r.doctorId =? and sequence>=? and (r.outpatientStatus =0 or r.outpatientStatus = 5) and r.registerDate= ? order by sequence limit 3'
     },
     device: {
         insert: 'insert Device set ?',
@@ -181,7 +182,7 @@ module.exports = {
         deleteChargeItem: 'delete from ChargeItem where id=?',
         findChargeItemById: 'select * from ChargeItem where id=?',
         findChargeItems: 'select SQL_CALC_FOUND_ROWS c.*, d.`value` as categoryName from ChargeItem c left join Dictionary d on d.id = c.categoryId where c.hospitalId=? ',
-        findDrugs: 'select * from Drug where hospitalId=? LIMIT ?, ?',
+        findDrugs: 'select SQL_CALC_FOUND_ROWS * from Drug where hospitalId=? LIMIT ?, ?',
         findDrugsBy: 'select * from Drug where hospitalId=? and ',
         findChargeItemsBy: 'select * from ChargeItem where hospitalId=? and ',
         insertDrug: 'insert Drug set ?',
@@ -215,10 +216,10 @@ module.exports = {
         findExtraFeeBy: 'SELECT d.`value` as fieldName, sum(receivable) as sum from Prescription p left join ChargeItem c ON p.chargeItemId = c.id left join Dictionary d on d.id=c.categoryId WHERE c.categoryId is not NULL and p.orderNo=? group by categoryId',
         findOrdersByStatus: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName, r.departmentId, r.departmentName,r.patientMobile,r.memberType, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.status=?',
         findOrdersBy: 'select SQL_CALC_FOUND_ROWS  m.*, r.patientName,r.patientMobile,r.memberType, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? ',
-        findDrugUsageRecords: 'SELECT rp.*, rg.patientName, rg.doctorName, rg.departmentName, rg.patientMobile, m.drugSenderName, m.sendDrugDate from Recipe rp left join Registration rg on rp.registrationId = rg.id left join MedicalOrder m on m.orderNo = rp.orderNo where rp.hospitalId=? ',
+        findDrugUsageRecords: 'SELECT SQL_CALC_FOUND_ROWS rp.*, rg.patientName, rg.doctorName, rg.departmentName, rg.patientMobile, m.drugSenderName, m.sendDrugDate from Recipe rp left join Registration rg on rp.registrationId = rg.id left join MedicalOrder m on m.orderNo = rp.orderNo where rp.hospitalId=? ',
         findOrdersByType: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.type=? ',
         findOrdersByTypeAndStatus: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType, r.patientId, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.type=? and m.status=? limit ?,?',
-        findByOrderNos: 'select m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.status=0 and m.orderNo in ',
+        findByOrderNos: 'select m.discountRate, m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.status=0 and m.orderNo in ',
         findOrderByOrderNo:'select r.patientBasicInfoId, r.patientMobile, h.patientName, r.hospitalName, r.departmentName, r.doctorName,r.sequence from MedicalOrder m left join Registration r on m.registrationId = r.id left JOIN MedicalHistory h on h.registrationId = m.registrationId where m.orderNo=?'
     }
 };

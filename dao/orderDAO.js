@@ -20,7 +20,7 @@ module.exports = {
         if (conditions.length) {
             sql = sql + ' and ' + conditions.join(' and ');
         }
-        sql = sql + ' limit ?, ?';
+        sql = sql + ' order by ' + (status == 0 ? 'm.createDate ' : 'm.paymentDate') + ' desc limit ?, ?';
         return db.queryWithCount(sql, [hospitalId, status, page.from, page.size]);
     },
 
