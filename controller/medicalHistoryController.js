@@ -358,14 +358,18 @@ module.exports = {
             Promise.map(orders, function (order) {
                 if (order.type == 1) return medicalDAO.findRecipesBy(order.registrationId).then(function (items) {
                     order.items = items;
+                    order.type = config.orderType[+order.type];
                 });
                 if (order.type == 2) return medicalDAO.findPrescriptionsBy(order.registrationId).then(function (items) {
                     order.items = items;
+                    order.type = config.orderType[+order.type];
                 });
+                order.type = config.orderType[+order.type];
             }).then(function () {
                 res.send({ret: 0, data: orders});
             })
         }).catch(function (err) {
+
             res.send({ret: 1, message: err.message});
         });
         return next();
@@ -485,11 +489,12 @@ module.exports = {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var conditions = [];
-        conditions.push('m.status>0');
+        conditions.push('(m.status=1 or m.status=3)');
         //if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
         //if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
         if (req.query.departmentId) conditions.push('r.departmentId=' + req.query.departmentId);
         if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);
+        if (req.query.memberType) conditions.push('r.memberType=' + req.query.memberType);
         //if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
         if (req.query.startDate) conditions.push('m.paymentDate>=\'' + req.query.startDate + ' 00:00:00\'');
         if (req.query.endDate) conditions.push('m.paymentDate<=\'' + req.query.endDate + ' 23:59:59\'');
@@ -498,11 +503,14 @@ module.exports = {
             size: pageSize
         }).then(function (orders) {
             orders.pageIndex = pageIndex;
+            orders.fields = [];
             Promise.map(orders.rows, function (order) {
                 if (order.type == 2) {
                     return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
+                        order.extras = extras;
                         _.forEach(extras, function (item) {
-                            order[item.fieldName] = item.sum;
+                            orders.fields.push(item.fieldName);
+                            //order[item.fieldName] = item.sum;
                         });
                     })
                 }

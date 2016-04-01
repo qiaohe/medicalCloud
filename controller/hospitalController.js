@@ -371,44 +371,47 @@ module.exports = {
         };
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        hospitalDAO.findWaitOutpatients(doctorId, today, {
-            from: (pageIndex - 1) * pageSize,
-            size: pageSize
-        }, getConditions(req)).then(function (items) {
-            items.rows.length && items.rows.forEach(function (item) {
-                item.gender = config.gender[item.gender];
-                item.registrationType = config.registrationType[item.registrationType];
-                item.outPatientType = config.outPatientType[item.outPatientType];
-                item.outpatientStatus = config.outpatientStatus[item.outpatientStatus];
-                item.memberType = config.memberType[item.memberType];
-            });
-            result.waitQueue = items;
-            result.waitQueue.pageIndex = pageIndex;
-            result.waitQueueCount = _.filter(items.rows, function (item) {
-                return item.outpatientStatus == '待诊中';
-            }).length;
-            result.finishedCount = _.filter(items.rows, function (item) {
-                return item.outpatientStatus == '结束';
-            }).length;
-            if (items.rows.length) {
-                return registrationDAO.findCurrentQueueByRegId(items.rows[0].id).then(function (rs) {
-                    rs[0].registrationType = config.registrationType[rs[0].registrationType];
-                    rs[0].outPatientType = config.outPatientType[rs[0].outPatientType];
-                    rs[0].outpatientStatus = config.outpatientStatus[rs[0].outpatientStatus];
-                    rs[0].memberType = config.memberType[rs[0].memberType];
-                    result.currentQueue = rs[0];
+        hospitalDAO.findDiscountRateOfDoctor(req.user.hospitalId, doctorId).then(function (rates) {
+            result.maxDiscountRate = rates.length ? rates[0].maxDiscountRate : null;
+            hospitalDAO.findWaitOutpatients(doctorId, today, {
+                from: (pageIndex - 1) * pageSize,
+                size: pageSize
+            }, getConditions(req)).then(function (items) {
+                items.rows.length && items.rows.forEach(function (item) {
+                    item.gender = config.gender[item.gender];
+                    item.registrationType = config.registrationType[item.registrationType];
+                    item.outPatientType = config.outPatientType[item.outPatientType];
+                    item.outpatientStatus = config.outpatientStatus[item.outpatientStatus];
+                    item.memberType = config.memberType[item.memberType];
+                });
+                result.waitQueue = items;
+                result.waitQueue.pageIndex = pageIndex;
+                result.waitQueueCount = _.filter(items.rows, function (item) {
+                    return item.outpatientStatus == '待诊中';
+                }).length;
+                result.finishedCount = _.filter(items.rows, function (item) {
+                    return item.outpatientStatus == '结束';
+                }).length;
+                if (items.rows.length) {
+                    return registrationDAO.findCurrentQueueByRegId(items.rows[0].id).then(function (rs) {
+                        rs[0].registrationType = config.registrationType[rs[0].registrationType];
+                        rs[0].outPatientType = config.outPatientType[rs[0].outPatientType];
+                        rs[0].outpatientStatus = config.outpatientStatus[rs[0].outpatientStatus];
+                        rs[0].memberType = config.memberType[rs[0].memberType];
+                        result.currentQueue = rs[0];
+                        return hospitalDAO.findFinishedCountByDate(doctorId, today)
+                    })
+                } else {
                     return hospitalDAO.findFinishedCountByDate(doctorId, today)
-                })
-            } else {
-                return hospitalDAO.findFinishedCountByDate(doctorId, today)
-            }
-        }).then(function (finishCount) {
-            //result.finishedCount = finishCount[0].count;
-            return hospitalDAO.findShiftPlansByDayWithName(req.user.hospitalId, doctorId, today);
-        }).then(function (plans) {
-            result.availableCount = _.sum(plans, 'restQuantity');
-            result.shiftPlans = plans;
-            res.send({ret: 0, data: result});
+                }
+            }).then(function (finishCount) {
+                //result.finishedCount = finishCount[0].count;
+                return hospitalDAO.findShiftPlansByDayWithName(req.user.hospitalId, doctorId, today);
+            }).then(function (plans) {
+                result.availableCount = _.sum(plans, 'restQuantity');
+                result.shiftPlans = plans;
+                res.send({ret: 0, data: result});
+            });
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
@@ -423,7 +426,7 @@ module.exports = {
             if (result && result.length) {
                 data = result[0];
                 data.clinic = config.clinicConfig[data.clinic ? data.clinic : '1'];
-                notificationDAO.findSequencesBy(data.doctorId, data.sequence).then(function (sequences) {
+                notificationDAO.findSequencesBy(data.doctorId, data.sequence,  moment().format('YYYY-MM-DD')).then(function (sequences) {
                     delete data.sequence;
                     data.sequences = [];
                     sequences.length && sequences.forEach(function (seq) {
@@ -547,10 +550,17 @@ module.exports = {
     getNotifications: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
+        var conditions = [];
+        if (req.query.startDate) conditions.push('createDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('createDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        if (req.query.body) conditions.push('body like \'%' + req.query.body + '%\'');
+        if (req.query.patientName) conditions.push('patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.patientMobile) conditions.push('patientMobile like \'%' + req.query.patientMobile + '%\'');
         notificationDAO.findAll(req.user.hospitalId, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
-        }).then(function (notifications) {
+        }, conditions).then(function (notifications) {
+            notifications.pageIndex = pageIndex;
             res.send({ret: 0, data: notifications});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});

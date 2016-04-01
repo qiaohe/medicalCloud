@@ -114,23 +114,26 @@ module.exports = {
         var patient = req.body;
         patient.hospitalId = req.user.hospitalId;
         businessPeopleDAO.findPatientBasicInfoBy(patient.mobile).then(function (basicInfos) {
-            return basicInfos.length ? basicInfos[0].id : businessPeopleDAO.insertPatientBasicInfo({
-                name: patient.name,
-                mobile: patient.mobile,
-                createDate: new Date(),
-                birthday: patient.birthday,
-                password: md5('password'),
-                creator: req.user.id,
-                gender: patient.gender,
-                idCard: patient.idCard,
-                headPic: patient.headPic,
-                address: patient.address,
-                status: 0
-            }).then(function (result) {
-                return result.insertId;
-            });
+            if (basicInfos.length) {
+                patient.patientBasicInfoId = basicInfos[0].id;
+            } else {
+                businessPeopleDAO.insertPatientBasicInfo({
+                    name: patient.name,
+                    mobile: patient.mobile,
+                    createDate: new Date(),
+                    birthday: patient.birthday,
+                    password: md5('password'),
+                    creator: req.user.id,
+                    gender: patient.gender,
+                    idCard: patient.idCard,
+                    headPic: patient.headPic,
+                    address: patient.address,
+                    status: 0
+                }).then(function (result) {
+                    patient.patientBasicInfoId = result.insertId;
+                });
+            }
         }).then(function (result) {
-            patient.patientBasicInfoId = result;
             return businessPeopleDAO.findPatientByBasicInfoId(result).then(function (patients) {
                 if (patients.length) return patients[0].id;
                 return redis.incrAsync('member.no.incr').then(function (memberNo) {
@@ -163,7 +166,7 @@ module.exports = {
 
     editPatient: function (req, res, next) {
         var patient = req.body;
-        businessPeopleDAO.findPatientBasicInfoBy(patient.mobile).then(function (basicInfos) {
+        businessPeopleDAO.findPatientBasicInfoByPatientId(patient.id).then(function (basicInfos) {
             var basicInfoId = basicInfos[0].id;
             return businessPeopleDAO.updatePatientBasicInfo({
                 id: basicInfoId,
@@ -235,30 +238,68 @@ module.exports = {
                 data.basicInfo.sourceName = config.sourceType[data.basicInfo.source];
                 data.basicInfo.consumptionLevelName = config.consumptionLevel[data.basicInfo.consumptionLevel];
             }
-            return patientDAO.findTransactionFlows(+patientId, +req.user.hospitalId);
-        }).then(function (flows) {
-            data.transactionFlows = flows;
-            data.transactionFlows && data.transactionFlows.forEach(function (flow) {
-                flow.paymentType = config.paymentType[flow.paymentType];
-                flow.type = config.transactionType[flow.type];
-            });
-            return patientDAO.findRegistrations(+patientId, +req.user.hospitalId);
-        }).then(function (registrations) {
-            data.outPatients = registrations;
-            registrations && registrations.forEach(function (registration) {
-                registration.registrationType = config.registrationType[registration.registrationType];
-                registration.status = registration.status == null ? null : config.registrationStatus[registration.status];
-            });
-            res.send({ret: 0, data: data});
+            res.send({ret: 0, data: data.basicInfo});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
         return next();
     },
+
+    getTransactionFlowOfPatient: function (req, res, next) {
+        var patientId = req.params.patientId;
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        patientDAO.findTransactionFlows(+patientId, +req.user.hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (flows) {
+            if (!flows.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            flows.rows && flows.rows.forEach(function (flow) {
+                flow.paymentType = config.paymentType[flow.paymentType];
+                flow.type = config.transactionType[flow.type];
+            });
+            flows.pageIndex = pageIndex;
+            res.send({ret: 0, data: flows});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+    getRegistrationsOfPatient: function (req, res, next) {
+        var patientId = req.params.patientId;
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        patientDAO.findRegistrations(+patientId, +req.user.hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (registrations) {
+            if (!registrations.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            registrations.rows && registrations.rows.forEach(function (registration) {
+                registration.registrationType = config.registrationType[registration.registrationType];
+                registration.status = registration.status == null ? null : config.registrationStatus[registration.status];
+            });
+            registrations.pageIndex = pageIndex;
+            res.send({ret: 0, data: registrations});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
     getPatientBy: function (req, res, next) {
         var patientId = req.params.id;
         patientDAO.findPatientBasicInfoById(+patientId).then(function (patients) {
             if (!patients.length) res.send({ret: 0, data: {}});
+            res.send({ret: 0, data: patients[0]});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    getPatientByMobile: function (req, res, next) {
+        var mobile = req.params.mobile;
+        patientDAO.findByPatientByMobile(req.user.hospitalId, mobile).then(function (patients) {
             res.send({ret: 0, data: patients[0]});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});

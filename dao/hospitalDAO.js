@@ -9,7 +9,7 @@ module.exports = {
     findJobTitles: function (hospitalId) {
         return db.query(sqlMapping.hospital.findJobTitles, hospitalId);
     },
-    findHospitalByDomainName: function(domainName){
+    findHospitalByDomainName: function (domainName) {
         return db.query(sqlMapping.hospital.findHospitalByDomainName, domainName);
     },
     findByUsername: function (username) {
@@ -160,6 +160,9 @@ module.exports = {
     },
     findJobTitleMenuItem: function (jobTitleId, menuItemId) {
         return db.query(sqlMapping.hospital.findJobTitleMenuItem, [jobTitleId, menuItemId]);
+    },
+    findDiscountRateOfDoctor: function (hospitalId, doctorId) {
+        return db.query(sqlMapping.doctor.findDiscountRateOfDoctor, [hospitalId, doctorId]);
     }
 
 }
