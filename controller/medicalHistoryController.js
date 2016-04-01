@@ -189,6 +189,7 @@ module.exports = {
                 });
                 var o = {
                     orderNo: orderNo,
+                    discountRate: +req.body.discountRate,
                     registrationId: registrationId,
                     hospitalId: hospitalId,
                     amount: _.sum(newItems, 'totalPrice'),
@@ -466,6 +467,7 @@ module.exports = {
         var conditions = [];
         if (req.query.patientMobile) conditions.push('rg.patientMobile like \'%' + req.query.patientMobile + '%\'');
         if (req.query.patientName) conditions.push('rg.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.patientName) conditions.push('rg.patientName like \'%' + req.query.patientName + '%\'');
         if (req.query.departmentId) conditions.push('rg.departmentId=' + req.query.departmentId);
         if (req.query.doctorId) conditions.push('rg.doctorId=' + req.query.doctorId);
         if (req.query.drugSender) conditions.push('m.drugSender=' + req.query.drugSender);
@@ -509,7 +511,8 @@ module.exports = {
                     return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
                         order.extras = extras;
                         _.forEach(extras, function (item) {
-                            orders.fields.push(item.fieldName);
+                            if (orders.fields.indexOf(item.fieldName) < 0)
+                                orders.fields.push(item.fieldName);
                             //order[item.fieldName] = item.sum;
                         });
                     })

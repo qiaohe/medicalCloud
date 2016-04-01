@@ -630,5 +630,14 @@ module.exports = {
     getSysDictByType: function (req, res, next) {
         res.send({ret: 0, data: config[req.params.type]});
         return next();
+    },
+
+    getDrugSenders: function (req, res, next) {
+        employeeDAO.findByRoleName(req.user.hospitalId, config.app.prifixOfDrugSendRole).then(function (senders) {
+            res.send({ret: 0, data: senders});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
     }
 }

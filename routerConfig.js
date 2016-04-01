@@ -389,12 +389,29 @@ module.exports = [
     },
     {
         method: "get",
+        path: "/api/patients/mobile/:mobile",
+        handler: patientController.getPatientByMobile,
+        secured: 'user'
+    },
+    {
+        method: "get",
         path: "/api/patients/:patientId",
         handler: patientController.getPatient,
         secured: 'user'
     },
+    {
+        method: "get",
+        path: "/api/patients/:patientId/transactionFlows",
+        handler: patientController.getTransactionFlowOfPatient,
+        secured: 'user'
+    },
 
-
+    {
+        method: "get",
+        path: "/api/patients/:patientId/registrations",
+        handler: patientController.getRegistrationsOfPatient,
+        secured: 'user'
+    },
     {
         method: "get",
         path: "/api/roles",
@@ -821,4 +838,15 @@ module.exports = [
         handler: dictController.getSysDictByType,
         secured: 'user'
     },
+    {
+        method: "get",
+        path: "/api/myHospital",
+        handler: hospitalController.getMyHospital
+    },
+    {
+        method: "get",
+        path: "/api/drugSenders",
+        handler: dictController.getDrugSenders,
+        secured: 'user'
+    }
 ];

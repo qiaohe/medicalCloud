@@ -116,8 +116,17 @@ module.exports = {
         businessPeopleDAO.findPatientBasicInfoBy(patient.mobile).then(function (basicInfos) {
             if (basicInfos.length) {
                 patient.patientBasicInfoId = basicInfos[0].id;
+                return businessPeopleDAO.updatePatientBasicInfo({
+                    id: basicInfos[0].id,
+                    name: patient.name ? patient.name : basicInfos[0].name,
+                    mobile: patient.mobile,
+                    gender: patient.gender,
+                    idCard: patient.idCard ? patient.idCard : basicInfos[0].idCard,
+                    headPic: patient.headPic ? patient.headPic : basicInfos[0].headPic,
+                    address: patient.address ? patient.address : basicInfos[0].address
+                })
             } else {
-                businessPeopleDAO.insertPatientBasicInfo({
+                return businessPeopleDAO.insertPatientBasicInfo({
                     name: patient.name,
                     mobile: patient.mobile,
                     createDate: new Date(),
@@ -129,34 +138,52 @@ module.exports = {
                     headPic: patient.headPic,
                     address: patient.address,
                     status: 0
-                }).then(function (result) {
-                    patient.patientBasicInfoId = result.insertId;
                 });
             }
         }).then(function (result) {
-            return businessPeopleDAO.findPatientByBasicInfoId(result).then(function (patients) {
-                if (patients.length) return patients[0].id;
-                return redis.incrAsync('member.no.incr').then(function (memberNo) {
-                    return businessPeopleDAO.insertPatient({
-                        patientBasicInfoId: patient.patientBasicInfoId,
-                        hospitalId: req.user.hospitalId,
-                        memberType: patient.memberType,
-                        memberCardNo: req.user.hospitalId + '-1-' + _.padLeft(memberNo, 7, '0'),
-                        createDate: new Date(),
-                        groupId: patient.groupId,
-                        groupName: patient.groupName,
-                        recommender: patient.recommender,
-                        consumptionLevel: patient.consumptionLevel,
-                        cashbackType: patient.cashbackType,
-                        maxDiscountRate: patient.maxDiscountRate,
-                        source: patient.source,
-                        balance: 0.00,
-                        comment: patient.comment
-                    }).then(function (result) {
-                        patient.id = result.insertId;
-                        res.send({ret: 0, data: patient});
+            if (result.insertId) {
+                patient.patientBasicInfoId = result.insertId;
+            }
+            return businessPeopleDAO.findPatientByBasicInfoId(patient.patientBasicInfoId, req.user.hospitalId).then(function (patients) {
+                if (patients.length) {
+                    patientDAO.updatePatient({
+                        id: patients[0].id,
+                        memberType: patient.memberType ? patient.memberType : patients[0].memberType,
+                        groupId: patient.groupId ? patient.groupId : patients[0].groupId,
+                        recommender: patient.recommender ? patient.recommender : patients[0].recommender,
+                        consumptionLevel: patient.consumptionLevel ? patient.consumptionLevel : patients[0].consumptionLevel,
+                        cashbackType: patient.cashbackType ? patient.cashbackType : patients[0].cashbackType,
+                        maxDiscountRate: patient.maxDiscountRate ? patient.maxDiscountRate : patients[0].maxDiscountRate,
+                        source: patient.source ? patient.source : patients[0].source,
+                        comment: patient.comment ? patient.comment : patients[0].comment
+                    }).then(function () {
+                        businessPeopleDAO.findPatientByBasicInfoId(patient.patientBasicInfoId, req.user.hospitalId).then(function (ps) {
+                            res.send({ret: 0, data: ps[0]});
+                        })
+                    })
+                } else {
+                    return redis.incrAsync('member.no.incr').then(function (memberNo) {
+                        return businessPeopleDAO.insertPatient({
+                            patientBasicInfoId: patient.patientBasicInfoId,
+                            hospitalId: req.user.hospitalId,
+                            memberType: patient.memberType,
+                            memberCardNo: req.user.hospitalId + '-1-' + _.padLeft(memberNo, 7, '0'),
+                            createDate: new Date(),
+                            groupId: patient.groupId ? patient.groupId : null,
+                            groupName: patient.groupName ? patient.groupName : null,
+                            recommender: patient.recommender ? patient.recommender : null,
+                            consumptionLevel: patient.consumptionLevel ? patient.consumptionLevel : null,
+                            cashbackType: patient.cashbackType ? patient.cashbackType : null,
+                            maxDiscountRate: patient.maxDiscountRate ? patient.maxDiscountRate : null,
+                            source: patient.source ? patient.source : null,
+                            balance: 0.00,
+                            comment: patient.comment ? patient.comment : null
+                        }).then(function (result) {
+                            patient.id = result.insertId;
+                            res.send({ret: 0, data: patient});
+                        });
                     });
-                });
+                }
             });
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -172,7 +199,7 @@ module.exports = {
                 id: basicInfoId,
                 name: patient.name,
                 mobile: patient.mobile,
-                birthday: patient.birthday,
+                //birthday: patient.birthday,
                 gender: patient.gender,
                 idCard: patient.idCard,
                 headPic: patient.headPic,
@@ -216,6 +243,7 @@ module.exports = {
                     type: 1,
                     invoice: prePaid.invoice,
                     comment: prePaid.comment,
+                    name: '充值交易',
                     transactionNo: moment().format('YYYYMMDDhhmmss') + '-' + prePaid.hospitalId + '-' + prePaid.patientId
                 })
             })
@@ -232,7 +260,7 @@ module.exports = {
         patientDAO.findByPatientBasicInfo(+patientId, +req.user.hospitalId).then(function (patients) {
             data.basicInfo = (patients.length ? patients[0] : {});
             if (data.basicInfo) {
-                data.basicInfo.cashbackTypeName = data.basicInfo.cashbackType && config.cashbackType[data.basicInfo.cashbackType];
+                data.basicInfo.cashbackTypeName = config.cashbackType[data.basicInfo.cashbackType];
                 data.basicInfo.genderName = config.gender[data.basicInfo.gender];
                 data.basicInfo.memberTypeName = config.memberType[data.basicInfo.memberType];
                 data.basicInfo.sourceName = config.sourceType[data.basicInfo.source];

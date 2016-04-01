@@ -68,5 +68,8 @@ module.exports = {
     },
     updateDoctorByDepartment: function (id, name) {
         return db.query(sqlMapping.employee.updateDoctorByDepartment, [name, id]);
+    },
+    findByRoleName: function (hospitalId, roleName) {
+        return db.query(sqlMapping.employee.findByRoleName, [hospitalId, '\'%' + roleName + '%\'']);
     }
 }
