@@ -848,5 +848,10 @@ module.exports = [
         path: "/api/drugSenders",
         handler: dictController.getDrugSenders,
         secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/resetPwd",
+        handler: authController.resetPwd
     }
 ];

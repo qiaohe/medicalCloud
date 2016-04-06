@@ -22,10 +22,9 @@ module.exports = {
         var employee = req.body;
         employee.password = md5(employee.password);
         employee.hospitalId = req.user.hospitalId;
-        employee.status = 0;
         employee.createDate = new Date();
         employeeDAO.findByUsername(employee.mobile).then(function (employees) {
-            if (employees.length) return res.send({ret: 0, message: '”√ªß“—æ≠¥Ê‘⁄°£'})
+            if (employees.length) return res.send({ret: 1, message: 'ÂëòÂ∑•Â∑≤ÁªèÂ≠òÂú®„ÄÇ'});
             employeeDAO.insert(employee).then(function (result) {
                 employee.id = result.insertId;
                 if (employee.role == 2) {

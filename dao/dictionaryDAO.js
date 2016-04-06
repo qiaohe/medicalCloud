@@ -32,7 +32,7 @@ module.exports = {
     findMedicalTemplates: function (hospitalId, conditions, page) {
         var sql = sqlMapping.dict.findMedicalTemplates;
         if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
-        sql = sql + ' limit ?,?';
+        sql = sql + ' order by m.id desc limit ?,?';
         return db.queryWithCount(sql, [+hospitalId, page.from, page.size]);
     },
     getMedicalTemplateBy: function (hospitalId, departmentId) {
@@ -69,7 +69,7 @@ module.exports = {
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     findDrugs: function (hospitalId, conditions, page) {
-        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS * from Drug where hospitalId=? and ' + conditions.join(' and ') + ' LIMIT ?, ?' : sqlMapping.dict.findDrugs;
+        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS * from Drug where hospitalId=? and ' + conditions.join(' and ') + ' order by id desc LIMIT ?, ?' : sqlMapping.dict.findDrugs;
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     deleteDrug: function (id) {
@@ -85,7 +85,7 @@ module.exports = {
         return db.query(sqlMapping.dict.findDrugById, id);
     },
     findDrugInventory: function (hospitalId, conditions, page) {
-        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS * from DrugInventory di left JOIN Drug d on d.id = di.drugId where di.hospitalId = ? and ' + conditions.join(' and ') + ' limit ?,?' : sqlMapping.dict.findDrugInventory;
+        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS di.*, d.name, d.company, d.code, d.type, d.dosageForm, d.specification,d.unit,d.tinyUnit,d.factor, d.sellPrice, d.criticalInventory from DrugInventory di left JOIN Drug d on d.id = di.drugId where di.hospitalId = ? and ' + conditions.join(' and ') + ' order by di.id desc limit ?,?' : sqlMapping.dict.findDrugInventory;
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     insertDrugInventory: function (item) {

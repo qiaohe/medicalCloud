@@ -13,7 +13,11 @@ module.exports = {
     },
 
     updateEmployee: function (employee) {
-        return db.query(sqlMapping.employee.updateEmployee, [employee, employee.id])
+        return db.query(sqlMapping.employee.updateEmployeeByUid, [employee, employee.id])
+    },
+
+    updateEmployeePassword: function (password, mobile) {
+        return db.query(sqlMapping.employee.updateEmployee, [password, mobile])
     },
 
     findEmployees: function (hospitalId, page, conditions) {
