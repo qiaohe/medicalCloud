@@ -248,5 +248,15 @@ module.exports = {
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
+    },
+
+    getEmployeeByMobile: function (req, res, next) {
+        var mobile = req.params.mobile;
+        employeeDAO.findByUsername(mobile).then(function (employees) {
+            res.send({ret: 0, data: employees.length > 0});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
     }
 }

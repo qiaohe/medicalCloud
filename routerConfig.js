@@ -45,10 +45,17 @@ module.exports = [
     },
     {
         method: "get",
+        path: "/api/employees/mobile/?mobile",
+        handler: employeeController.getEmployeeByMobile,
+        secured: 'user'
+    },
+    {
+        method: "get",
         path: "/api/employees",
         handler: employeeController.getEmployees,
         secured: 'user'
     },
+
     {
         method: "get",
         path: "/api/employees/:id",
