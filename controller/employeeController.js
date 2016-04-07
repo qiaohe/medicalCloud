@@ -27,35 +27,39 @@ module.exports = {
             if (employees.length) return res.send({ret: 1, message: '员工已经存在。'});
             employeeDAO.insert(employee).then(function (result) {
                 employee.id = result.insertId;
-                if (employee.role == 2) {
-                    var doctor = {
-                        birthday: employee.birthday,
-                        contract: employee.contract,
-                        contactTel: employee.contactTel,
-                        createDate: employee.createDate,
-                        departmentId: employee.department,
-                        employeeId: employee.id,
-                        gender: employee.gender,
-                        headPic: employee.headPic,
-                        hospitalId: employee.hospitalId,
-                        name: employee.name,
-                        jobTitleId: employee.jobTitle,
-                        status: employee.status
-                    };
-                    hospitalDAO.findHospitalById(employee.hospitalId).then(function (hospitals) {
-                        doctor.hospitalName = hospitals[0].name;
-                        return employeeDAO.findDepartmentById(employee.department);
-                    }).then(function (departments) {
-                        doctor.departmentName = departments[0].name;
-                        return employeeDAO.findJobTitleById(employee.jobTitle)
-                    }).then(function (jobTitles) {
-                        doctor.jobTitle = jobTitles[0].name;
-                        return employeeDAO.insertDoctor(doctor);
-                    }).then(function (result) {
-                        return res.send({ret: 0, data: employee});
-                    })
-                }
-                res.send({ret: 0, data: employee});
+                employeeDAO.findRoleByName(req.user.hospitalId, '医生').then(function (roles) {
+                    if (!roles.length) throw new Error('没有在系统配置里设置医生岗位。');
+                    var roleId = roles[0].id;
+                    if (employee.role == roleId) {
+                        var doctor = {
+                            birthday: employee.birthday,
+                            contract: employee.contract,
+                            contactTel: employee.contactTel,
+                            createDate: employee.createDate,
+                            departmentId: employee.department,
+                            employeeId: employee.id,
+                            gender: employee.gender,
+                            headPic: employee.headPic,
+                            hospitalId: employee.hospitalId,
+                            name: employee.name,
+                            jobTitleId: employee.jobTitle,
+                            status: employee.status
+                        };
+                        hospitalDAO.findHospitalById(employee.hospitalId).then(function (hospitals) {
+                            doctor.hospitalName = hospitals[0].name;
+                            return employeeDAO.findDepartmentById(employee.department);
+                        }).then(function (departments) {
+                            doctor.departmentName = departments[0].name;
+                            return employeeDAO.findJobTitleById(employee.jobTitle)
+                        }).then(function (jobTitles) {
+                            doctor.jobTitle = jobTitles[0].name;
+                            return employeeDAO.insertDoctor(doctor);
+                        }).then(function (result) {
+                            return res.send({ret: 0, data: employee});
+                        })
+                    }
+                    res.send({ret: 0, data: employee});
+                });
             }).catch(function (err) {
                 res.send({ret: 1, message: err.message});
             });
@@ -93,63 +97,69 @@ module.exports = {
         employee.hospitalId = req.user.hospitalId;
         employeeDAO.findById(employee.id, employee.hospitalId).then(function (employees) {
             var e = employees[0];
-            if (e.role == 2 && employee.role != 2) {
-                return employeeDAO.deleteDoctorBy(e.id);
-            } else if (e.role != 2 && employee.role == 2) {
-                var doctor = {
-                    birthday: employee.birthday,
-                    contract: employee.contract,
-                    contactTel: employee.contactTel,
-                    createDate: employee.createDate,
-                    departmentId: employee.department,
-                    employeeId: employee.id,
-                    gender: employee.gender,
-                    headPic: employee.headPic,
-                    hospitalId: employee.hospitalId,
-                    name: employee.name,
-                    jobTitleId: employee.jobTitle,
-                    status: employee.status
-                };
-                hospitalDAO.findHospitalById(employee.hospitalId).then(function (hospitals) {
-                    doctor.hospitalName = hospitals[0].name;
-                    return employeeDAO.findDepartmentById(employee.department);
-                }).then(function (departments) {
-                    doctor.departmentName = departments[0].name;
-                    return employeeDAO.findJobTitleById(employee.jobTitle)
-                }).then(function (jobTitles) {
-                    doctor.jobTitle = jobTitles[0].name;
-                    return employeeDAO.insertDoctor(doctor);
-                })
-            } else if (e.role == 2 && employee.role == 2) {
-                var d = {
-                    birthday: employee.birthday,
-                    contract: employee.contract,
-                    contactTel: employee.contactTel,
-                    createDate: employee.createDate,
-                    departmentId: employee.department,
-                    employeeId: employee.id,
-                    gender: employee.gender,
-                    headPic: employee.headPic,
-                    hospitalId: employee.hospitalId,
-                    name: employee.name,
-                    jobTitleId: employee.jobTitle,
-                    status: employee.status
-                };
-                hospitalDAO.findHospitalById(employee.hospitalId).then(function (hospitals) {
-                    d.hospitalName = hospitals[0].name;
-                    return employeeDAO.findDepartmentById(employee.department);
-                }).then(function (departments) {
-                    d.departmentName = departments[0].name;
-                    return employeeDAO.findJobTitleById(employee.jobTitle)
-                }).then(function (jobTitles) {
-                    d.jobTitle = jobTitles[0].name;
-                    return employeeDAO.updateDoctorBy(d);
-                });
-            }
-        }).then(function (result) {
-            return employeeDAO.updateEmployee(employee)
-        }).then(function (result) {
-            res.send({ret: 0, message: i18n.get('employee.update.success')});
+            employeeDAO.findRoleByName(req.user.hospitalId, '医生').then(function (roles) {
+                if (!roles.length) throw new Error('没有在系统配置里设置医生岗位。');
+                var roleId = roles[0].id;
+                if (e.role == roleId && employee.role != roleId) {
+                    return employeeDAO.deleteDoctorBy(e.id);
+                } else if (e.role != roleId && employee.role == roleId) {
+                    var doctor = {
+                        birthday: employee.birthday,
+                        contract: employee.contract,
+                        contactTel: employee.contactTel,
+                        createDate: employee.createDate,
+                        departmentId: employee.department,
+                        employeeId: employee.id,
+                        gender: employee.gender,
+                        headPic: employee.headPic,
+                        hospitalId: employee.hospitalId,
+                        name: employee.name,
+                        jobTitleId: employee.jobTitle,
+                        status: employee.status
+                    };
+                    hospitalDAO.findHospitalById(employee.hospitalId).then(function (hospitals) {
+                        doctor.hospitalName = hospitals[0].name;
+                        return employeeDAO.findDepartmentById(employee.department);
+                    }).then(function (departments) {
+                        doctor.departmentName = departments[0].name;
+                        return employeeDAO.findJobTitleById(employee.jobTitle)
+                    }).then(function (jobTitles) {
+                        doctor.jobTitle = jobTitles[0].name;
+                        return employeeDAO.insertDoctor(doctor);
+                    })
+                } else if (e.role == roleId && employee.role == roleId) {
+                    var d = {
+                        birthday: employee.birthday,
+                        contract: employee.contract,
+                        contactTel: employee.contactTel,
+                        createDate: employee.createDate,
+                        departmentId: employee.department,
+                        employeeId: employee.id,
+                        gender: employee.gender,
+                        headPic: employee.headPic,
+                        hospitalId: employee.hospitalId,
+                        name: employee.name,
+                        jobTitleId: employee.jobTitle,
+                        status: employee.status
+                    };
+                    hospitalDAO.findHospitalById(employee.hospitalId).then(function (hospitals) {
+                        d.hospitalName = hospitals[0].name;
+                        return employeeDAO.findDepartmentById(employee.department);
+                    }).then(function (departments) {
+                        d.departmentName = departments[0].name;
+                        return employeeDAO.findJobTitleById(employee.jobTitle)
+                    }).then(function (jobTitles) {
+                        d.jobTitle = jobTitles[0].name;
+                        return employeeDAO.updateDoctorBy(d);
+                    });
+                }
+            }).then(function (result) {
+                return employeeDAO.updateEmployee(employee)
+            }).then(function (result) {
+                res.send({ret: 0, message: i18n.get('employee.update.success')});
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
+            });
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
@@ -253,7 +263,7 @@ module.exports = {
     getEmployeeByMobile: function (req, res, next) {
         var mobile = req.params.mobile;
         employeeDAO.findByUsername(mobile).then(function (employees) {
-            res.send({ret: 0, data: employees.length > 0});
+            res.send({ret: 0, data: {exists: employees.length > 0}});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });

@@ -75,5 +75,9 @@ module.exports = {
     },
     findByRoleName: function (hospitalId, roleName) {
         return db.query(sqlMapping.employee.findByRoleName, [hospitalId, '\'%' + roleName + '%\'']);
+    },
+    findRoleByName: function (hospitalId, roleName) {
+        var sql = 'select id from Role where hospitalId=? and `name` like \'%' + roleName + '%\'';
+        return db.query(sql, hospitalId);
     }
 }

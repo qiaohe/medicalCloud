@@ -278,7 +278,7 @@ module.exports = {
         if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
         if (req.query.startDate) conditions.push('m.sendDrugDate>=\'' + req.query.startDate + ' 00:00:00\'');
         if (req.query.endDate) conditions.push('m.sendDrugDate<=\'' + req.query.endDate + ' 23:59:59\'');
-        orderDAO.findOrdersByType(req.params.id, conditions, {
+        orderDAO.findOrdersByType(req.user.hospitalId, req.params.id, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (orders) {
@@ -299,7 +299,7 @@ module.exports = {
     getOrdersByAndStatus: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        orderDAO.findOrdersByTypeAndStatus(req.params.id, req.params.status, {
+        orderDAO.findOrdersByTypeAndStatus(req.user.hospitalId, req.params.id, req.params.status, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (orders) {

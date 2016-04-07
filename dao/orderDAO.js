@@ -5,12 +5,12 @@ module.exports = {
     insert: function (order) {
         return db.query(sqlMapping.order.insert, order);
     },
-    findOrdersByType: function (type, conditions, page) {
+    findOrdersByType: function (hospitalId, type, conditions, page) {
         var sql = !conditions.length ? sqlMapping.order.findOrdersByType : sqlMapping.order.findOrdersByType + 'and ' + conditions.join(' and ');
-        return db.queryWithCount(sql + ' order by sendDrugDate desc limit ?,?', [type, page.from, page.size]);
+        return db.queryWithCount(sql + ' order by sendDrugDate desc limit ?,?', [hospitalId, type, page.from, page.size]);
     },
-    findOrdersByTypeAndStatus: function (type, status, page) {
-        return db.queryWithCount(sqlMapping.order.findOrdersByTypeAndStatus, [type, status, page.from, page.size]);
+    findOrdersByTypeAndStatus: function (hospitalId, type, status, page) {
+        return db.queryWithCount(sqlMapping.order.findOrdersByTypeAndStatus, [hospitalId, type, status, page.from, page.size]);
     },
     findByOrderNos: function (hospitalId, orderNos) {
         return db.query(sqlMapping.order.findByOrderNos + '(' + orderNos + ')', [hospitalId, orderNos]);

@@ -5,6 +5,7 @@ module.exports = {
         insert: 'insert Employee set ?',
         insertRole: 'insert Role set ?',
         deleteRole: 'delete from Role where id =?',
+        findRoleByName:'select id from Role where hospitalId=? and `name` like ?',
         updateRole: 'update Role set ? where id=?',
         updateJobTitle: 'update JobTitle set ? where id=?',
         insertJobTitle: 'insert JobTitle set ?',
@@ -90,7 +91,7 @@ module.exports = {
 
     doctor: {
         insert: 'insert Doctor set ?',
-        findDoctors: 'select id, name from Doctor',
+        findDoctors: 'select id, name from Doctor where hospitalId=?',
         findDiscountRateOfDoctor: 'select maxDiscountRate from Employee where hospitalId=? and id=?',
         findDoctorsByHospital: 'select SQL_CALC_FOUND_ROWS d.*, e.birthday, d.clinic, e.mobile from Doctor d, Employee e where e.id = d.employeeId and d.status <> 2 and d.hospitalId = ? order by d.id desc limit ?, ?',
         findDoctorsGroupByDepartment: 'select id, name, departmentName from Doctor where status <> 2 and hospitalId = ?',
@@ -125,7 +126,7 @@ module.exports = {
         findRegistrationsById: 'select * from Registration where id=?',
         findRegistrationsByIdWithDetail: 'select r.*, d.floor, doc.clinic from Registration r left JOIN Department d on d.id = r.departmentId left JOIN Doctor doc on doc.id = r.doctorId where r.id=?',
         findCurrentQueueByRegId: 'select r.id, doctorName, departmentName, patientName, registrationType, outPatientType, outpatientStatus, p.balance, p.memberType from Registration r LEFT JOIN Patient p on p.id =r.patientId where r.id =?',
-        findRegistrationsBy: 'select SQL_CALC_FOUND_ROWS r.id,r.outpatientStatus, r.patientMobile,r.patientName,r.gender, p.balance, p.memberCardNo, r.memberType, r.doctorName, r.`comment`, r.registrationFee, r.registrationType, r.departmentName, concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , s.`name`) as registerDate, r.outPatientType, r.status, r.sequence, e.name as businessPeopleName, r.outpatientStatus from Registration r LEFT JOIN Employee e on e.id=r.businessPeopleId left JOIN ShiftPeriod s ON s.id= r.shiftPeriod, Patient p where r.patientId =p.id and r.status <>4 and r.hospitalId = ? and r.registerDate=? order by r.id desc limit ?, ?'
+        findRegistrationsBy: 'select SQL_CALC_FOUND_ROWS r.id,r.outpatientStatus, r.patientMobile,r.patientName,r.gender, p.balance, p.memberCardNo, r.memberType, r.doctorName, r.`comment`, r.registrationFee, r.registrationType, r.departmentName, concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , s.`name`) as registerDate, r.outPatientType, r.status, r.sequence, e.name as businessPeopleName, r.outpatientStatus from Registration r LEFT JOIN Employee e on e.id=r.businessPeopleId left JOIN ShiftPeriod s ON s.id= r.shiftPeriod, Patient p where r.patientId =p.id and r.hospitalId = ? and r.registerDate=? order by r.id desc limit ?, ?'
     },
     patient: {
         updatePatient: 'update Patient set ? where id = ?',
@@ -219,8 +220,8 @@ module.exports = {
         findOrdersByStatus: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName, r.departmentId, r.departmentName,r.patientMobile,r.memberType, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.status=?',
         findOrdersBy: 'select SQL_CALC_FOUND_ROWS  m.*, r.patientName,r.patientMobile,r.memberType, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? ',
         findDrugUsageRecords: 'SELECT SQL_CALC_FOUND_ROWS rp.*, rg.patientName, rg.doctorName, rg.departmentName, rg.patientMobile, m.drugSenderName, m.sendDrugDate from Recipe rp left join Registration rg on rp.registrationId = rg.id left join MedicalOrder m on m.orderNo = rp.orderNo where rp.hospitalId=? ',
-        findOrdersByType: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.type=? ',
-        findOrdersByTypeAndStatus: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType, r.patientId, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.type=? and m.status=? limit ?,?',
+        findOrdersByType: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId=? and m.type=? ',
+        findOrdersByTypeAndStatus: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType, r.patientId, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId=? and m.type=? and m.status=? limit ?,?',
         findByOrderNos: 'select m.discountRate, m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.status=0 and m.orderNo in ',
         findOrderByOrderNo: 'select r.patientBasicInfoId, r.patientMobile, h.patientName, r.hospitalName, r.departmentName, r.doctorName,r.sequence from MedicalOrder m left join Registration r on m.registrationId = r.id left JOIN MedicalHistory h on h.registrationId = m.registrationId where m.orderNo=?'
     }

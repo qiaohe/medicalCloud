@@ -108,7 +108,7 @@ module.exports = {
         } else if (condition.name) {
             sql = sql + ' name like \'%' + condition.name + '%\'';
         }
-        return db.query(sql, hospitalId);
+        return db.query(sql + ' limit 0 , 20', hospitalId);
     },
     findChargeItemsBy: function (hospitalId, condition) {
         var sql = sqlMapping.dict.findChargeItemsBy;
