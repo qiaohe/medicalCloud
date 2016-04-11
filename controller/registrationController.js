@@ -89,8 +89,8 @@ module.exports = {
                     mobile: r.patientMobile,
                     createDate: new Date(),
                     password: md5('password'),
-                    creator: req.user.id,
-                    birthday: r.birthday
+                    creator: req.user.id
+                    //birthday: r.birthday
                 }).then(function (result) {
                     return result.insertId;
                 });
@@ -136,7 +136,7 @@ module.exports = {
                         r.registrationType = (r.registrationType ? r.registrationType : 2);
                         if (!r.businessPeopleId) delete r.businessPeopleId;
                         delete r.reason;
-                        delete r.birthday;
+                        //delete r.birthday;
                         return businessPeopleDAO.insertRegistration(r)
                     });
                 });
