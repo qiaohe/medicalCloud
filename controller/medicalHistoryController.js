@@ -357,11 +357,11 @@ module.exports = {
         orderDAO.findByOrderNos(req.user.hospitalId, orderNoArray.join(',')).then(function (orders) {
             if (!orders.length) return res.send({ret: 0, data: []});
             Promise.map(orders, function (order) {
-                if (order.type == 1) return medicalDAO.findRecipesBy(order.registrationId).then(function (items) {
+                if (order.type == 1) return medicalDAO.findRecipesByOrderNo(order.orderNo).then(function (items) {
                     order.items = items;
                     order.type = config.orderType[+order.type];
                 });
-                if (order.type == 2) return medicalDAO.findPrescriptionsBy(order.registrationId).then(function (items) {
+                if (order.type == 2) return medicalDAO.findPrescriptionsByOrderNo(order.orderNo).then(function (items) {
                     order.items = items;
                     order.type = config.orderType[+order.type];
                 });

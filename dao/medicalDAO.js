@@ -17,7 +17,9 @@ module.exports = {
     findRecipesByOrderNo: function (orderNo) {
         return db.query(sqlMapping.medical.findRecipesByOrderNo, orderNo);
     },
-
+    findPrescriptionsByOrderNo: function (orderNo) {
+        return db.query(sqlMapping.medical.findPrescriptionsByOrderNo, orderNo);
+    },
     insertRecipe: function (recipe) {
         return db.query(sqlMapping.medical.insertRecipe, recipe);
     },
