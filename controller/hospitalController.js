@@ -426,7 +426,7 @@ module.exports = {
             if (result && result.length) {
                 data = result[0];
                 data.clinic = config.clinicConfig[data.clinic ? data.clinic : '1'];
-                notificationDAO.findSequencesBy(data.doctorId, data.sequence,  moment().format('YYYY-MM-DD')).then(function (sequences) {
+                notificationDAO.findSequencesBy(data.doctorId, data.sequence, moment().format('YYYY-MM-DD')).then(function (sequences) {
                     delete data.sequence;
                     data.sequences = [];
                     sequences.length && sequences.forEach(function (seq) {
@@ -568,7 +568,7 @@ module.exports = {
         return next();
     },
     getMyHospital: function (req, res, next) {
-        hospitalDAO.findHospitalByDomainName(req.headers.host.split(':')[0]).then(function (hospitals) {
+        hospitalDAO.findHospitalByDomainName(req.headers.origin.substring(7, req.headers.origin.length)).then(function (hospitals) {
             if (hospitals[0].images) hospitals[0].images = hospitals[0].images.split(',');
             res.send({ret: 0, data: hospitals[0]});
         });

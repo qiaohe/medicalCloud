@@ -182,7 +182,7 @@ module.exports = {
                         });
                     }
                 });
-                res.send({ret: 0, dta: r})
+                res.send({ret: 0, data: r})
             });
         }).catch(function (error) {
             res.send(error);
