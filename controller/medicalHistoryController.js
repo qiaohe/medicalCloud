@@ -42,6 +42,7 @@ module.exports = {
                     patientMobile: r.patientMobile,
                     patientId: r.patientId,
                     gender: medicalHistory.gender ? medicalHistory.gender : r.gender,
+                    age: r.age,
                     patientBasicInfoId: r.patientBasicInfoId
                 });
                 return medicalDAO.insertMedicalHistory(medicalHistory);

@@ -489,7 +489,8 @@ module.exports = {
         var conditions = [];
         if (req.query.code) conditions.push('code like \'%' + req.query.code + '%\'');
         if (req.query.type) conditions.push('type=\'' + req.query.type + '\'');
-        if (req.query.name) conditions.push('name like \'%' + req.query.name + '%\'');
+        var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
+        if (req.query.name) conditions.push((reg.test(req.query.name) ? 'name' : 'pinyin') +' like \'%' + req.query.name + '%\'');
         dictionaryDAO.findDrugs(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
