@@ -762,6 +762,12 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "get",
+        path: "/api/patients/:id/medicalHistories",
+        handler: medicalHistoryController.getMedicalHistoriesByPatientId,
+        secured: 'user'
+    },
+    {
         method: "post",
         path: "/api/recipes",
         handler: medicalHistoryController.saveRecipe,
@@ -854,6 +860,12 @@ module.exports = [
         method: "get",
         path: "/api/drugSenders",
         handler: dictController.getDrugSenders,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/chargers",
+        handler: dictController.getChargers,
         secured: 'user'
     },
     {

@@ -42,6 +42,7 @@ module.exports = {
                     patientMobile: r.patientMobile,
                     patientId: r.patientId,
                     gender: medicalHistory.gender ? medicalHistory.gender : r.gender,
+                    age: r.age,
                     patientBasicInfoId: r.patientBasicInfoId
                 });
                 return medicalDAO.insertMedicalHistory(medicalHistory);
@@ -239,6 +240,14 @@ module.exports = {
         });
         return next();
     },
+    getMedicalHistoriesByPatientId: function (req, res, next) {
+        var patientId = req.params.id;
+        medicalDAO.findMedicalHistoryByPatientId(patientId).then(function (result) {
+            res.send({ret: 0, data: result});
+        });
+        return next();
+    },
+
     getRecipes: function (req, res, next) {
         var rid = req.params.id;
         medicalDAO.findRecipesBy(rid).then(function (result) {
@@ -326,6 +335,8 @@ module.exports = {
         if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
         if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
         if (req.query.patientId) conditions.push('r.patientId=' + req.query.patientId);
+        if (req.query.orderType) conditions.push('m.type=' + req.query.orderType);
+        if (req.query.chargedBy) conditions.push('m.chargedBy=' + req.query.chargedBy);
         orderDAO.findOrdersByStatus(req.user.hospitalId, req.params.status, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize

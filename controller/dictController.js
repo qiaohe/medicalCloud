@@ -489,7 +489,8 @@ module.exports = {
         var conditions = [];
         if (req.query.code) conditions.push('code like \'%' + req.query.code + '%\'');
         if (req.query.type) conditions.push('type=\'' + req.query.type + '\'');
-        if (req.query.name) conditions.push('name like \'%' + req.query.name + '%\'');
+        var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
+        if (req.query.name) conditions.push((reg.test(req.query.name) ? 'name' : 'pinyin') + ' like \'%' + req.query.name + '%\'');
         dictionaryDAO.findDrugs(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
@@ -633,11 +634,19 @@ module.exports = {
     },
 
     getDrugSenders: function (req, res, next) {
-        employeeDAO.findByRoleName(req.user.hospitalId, config.app.prifixOfDrugSendRole).then(function (senders) {
+        employeeDAO.findByRoleName(req.user.hospitalId, config.app.prefixOfDrugSendRole).then(function (senders) {
             res.send({ret: 0, data: senders});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    }
+    },
+    getChargers: function (req, res, next) {
+        employeeDAO.findByRoleName(req.user.hospitalId, config.app.prefixOfChargeRole).then(function (chargers) {
+            res.send({ret: 0, data: chargers});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
 }

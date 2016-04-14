@@ -13,8 +13,8 @@ module.exports = {
         sql = sql + ' order by id desc limit ?,?';
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
-    findPatientQueue: function (registerDate, roomid) {
-        return db.query(sqlMapping.notification.findPatientQueue, [registerDate, +roomid]);
+    findPatientQueue: function (registerDate, roomid, domainName) {
+        return db.query(sqlMapping.notification.findPatientQueue, [registerDate, +roomid, domainName]);
     },
     findPatientQueueBy: function (rid) {
         return db.query(sqlMapping.notification.findPatientQueueBy, rid);

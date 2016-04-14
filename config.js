@@ -20,9 +20,9 @@ module.exports = {
         locale: 'zh_CN',
         tokenExpire: 8640000,
         orderDelayMinutes: 240,
-        prifixOfDrugSendRole: '药房',
-        prifixOfDoctorRole: '医生',
-        prifixOfChargeRole: '收费'
+        prefixOfDrugSendRole: '药房',
+        prefixOfDoctorRole: '医生',
+        prefixOfChargeRole: '收费'
     },
     redis: {
         host: '127.0.0.1',

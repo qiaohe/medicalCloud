@@ -106,7 +106,8 @@ module.exports = {
         if (condition.code) {
             sql = sql + ' code like \'%' + condition.code + '%\'';
         } else if (condition.name) {
-            sql = sql + ' name like \'%' + condition.name + '%\'';
+            var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
+            sql = sql + (reg.test(condition.name) ? 'name' : 'pinyin') + ' like \'%' + condition.name + '%\'';
         }
         return db.query(sql + ' limit 0 , 20', hospitalId);
     },
@@ -115,7 +116,8 @@ module.exports = {
         if (condition.code) {
             sql = sql + ' code like \'%' + condition.code + '%\'';
         } else if (condition.name) {
-            sql = sql + ' name like \'%' + condition.name + '%\'';
+            var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
+            sql = sql + (reg.test(condition.name) ? 'name' : 'pinyin') + ' like \'%' + condition.name + '%\'';
         }
         return db.query(sql, hospitalId);
     }

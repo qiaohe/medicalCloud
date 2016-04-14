@@ -17,7 +17,10 @@ function getConditions(req) {
     if (req.query.memberType) conditions.push('r.memberType=' + req.query.memberType);
     if (req.query.outPatientType) conditions.push('r.outPatientType=' + req.query.outPatientType);
     if (req.query.departmentId) conditions.push('r.departmentId=' + req.query.departmentId);
-    if (req.query.registerDate) conditions.push('r.registerDate>=\'' + req.query.registerDate + '\'');
+    if (req.query.registerDateStart) conditions.push('r.registerDate>=\'' + req.query.registerDateStart + '\'');
+    if (req.query.registerDateEnd) conditions.push('r.registerDate<=\'' + req.query.registerDateEnd + '\'');
+    if (req.query.createDateStart) conditions.push('r.createDate>=\'' + req.query.createDate + '\'');
+    if (req.query.createDateEnd) conditions.push('r.createDate<=\'' + req.query.createDate + '\'');
     if (req.query.employeeId) conditions.push('d.employeeId=' + req.query.employeeId);
     if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);
     if (req.query.outpatientStatus) conditions.push('r.outpatientStatus=' + req.query.outpatientStatus);
