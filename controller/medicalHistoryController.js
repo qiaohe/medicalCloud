@@ -240,6 +240,14 @@ module.exports = {
         });
         return next();
     },
+    getMedicalHistoriesByPatientId: function (req, res, next) {
+        var patientId = req.params.id;
+        medicalDAO.findMedicalHistoryByPatientId(patientId).then(function (result) {
+            res.send({ret: 0, data: result[0]});
+        });
+        return next();
+    },
+
     getRecipes: function (req, res, next) {
         var rid = req.params.id;
         medicalDAO.findRecipesBy(rid).then(function (result) {
