@@ -1,7 +1,8 @@
 module.exports = {
     employee: {
         findByUserName: 'select * from Employee where hospitalId=? and mobile=?',
-        findByName: 'select * from Employee where name=?',
+        findByUsernameAndDomain: 'select e.* from Employee e left join Hospital h on e.hospitalId=h.id where e.mobile=? and h.domainName=? ',
+        findByName: 'select * from Employee where hospitalId=? and name=?',
         insert: 'insert Employee set ?',
         insertRole: 'insert Role set ?',
         deleteRole: 'delete from Role where id =?',

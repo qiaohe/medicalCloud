@@ -233,7 +233,7 @@ module.exports = {
                     result.push({id: menu.id, name: menu.name, routeUri: menu.routeUri, icon: menu.icon, subItems: []});
                 }
             });
-            employeeDAO.findByName(req.user.name).then(function (users) {
+            employeeDAO.findByName(req.user.hospitalId, req.user.name).then(function (users) {
                 res.send({ret: 0, data: result, expand: !users[0].admin});
             });
         }).catch(function (err) {

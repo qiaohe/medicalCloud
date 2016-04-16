@@ -262,7 +262,7 @@ module.exports = {
 
     getEmployeeByMobile: function (req, res, next) {
         var mobile = req.params.mobile;
-        employeeDAO.findByUsername(mobile).then(function (employees) {
+        employeeDAO.findByUsername(req.user.hospitalId, mobile).then(function (employees) {
             res.send({ret: 0, data: {exists: employees.length > 0}});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
