@@ -27,7 +27,7 @@ module.exports = {
             if (employees.length) return res.send({ret: 1, message: '员工已经存在。'});
             employeeDAO.insert(employee).then(function (result) {
                 employee.id = result.insertId;
-                employeeDAO.findRoleByName(req.user.hospitalId, '医生').then(function (roles) {
+                employeeDAO.findRoleByName(req.user.hospitalId, config.app.prefixOfDoctorRole).then(function (roles) {
                     if (!roles.length) throw new Error('没有在系统配置里设置医生岗位。');
                     var roleId = roles[0].id;
                     if (employee.role == roleId) {
@@ -97,7 +97,7 @@ module.exports = {
         employee.hospitalId = req.user.hospitalId;
         employeeDAO.findById(employee.id, employee.hospitalId).then(function (employees) {
             var e = employees[0];
-            employeeDAO.findRoleByName(req.user.hospitalId, '医生').then(function (roles) {
+            employeeDAO.findRoleByName(req.user.hospitalId, config.app.prefixOfDoctorRole).then(function (roles) {
                 if (!roles.length) throw new Error('没有在系统配置里设置医生岗位。');
                 var roleId = roles[0].id;
                 if (e.role == roleId && employee.role != roleId) {

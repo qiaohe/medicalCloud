@@ -10,6 +10,7 @@ var server = restify.createServer(config.server);
 var io = socketio.listen(server.server);
 var _ = require('lodash');
 var notificationDAO = require('./dao/notificationDAO');
+var hospitalDAO = require('./dao/hospitalDAO');
 restify.CORS.ALLOW_HEADERS.push('Access-Control-Allow-Origin');
 server.use(restify.CORS());
 server.opts(/.*/, function (req, res, next) {
@@ -38,35 +39,45 @@ server.listen(config.server.port, config.server.host, function () {
 io.sockets.on('connect', function (socket) {
     console.log(socket.handshake.query);
     var roomId = socket.handshake.query.roomId;
+    console.log(socket.handshake.query.roomId);
     socket.join(roomId);
-    var data = [];
-    notificationDAO.findPatientQueue(moment().format('YYYY-MM-DD'), roomId).then(function (queueList) {
-        var data = [];
-        queueList.forEach(function (queue) {
-            if (!queue.clinic) queue.clinic = '1';
-            queue.clinic = config.clinicConfig[queue.clinic];
-            var item = _.find(data, {
-                doctorId: queue.doctorId,
-                doctorName: queue.doctorName,
-                //             departmentName: queue.departmentName,
-                clinic: queue.clinic
-            });
-            if (item) {
-                if (item.sequences.length < 4)
-                    item.sequences.push(queue.sequence);
-            } else {
-                data.push({
-                    doctorId: queue.doctorId,
-                    doctorName: queue.doctorName,
-                    patientName: queue.patientName,
-                    departmentName: queue.departmentName,
-                    clinic: queue.clinic,
-                    sequences: [queue.sequence]
+    var data = {};
+    console.log(socket.handshake.headers);
+    if (socket.handshake.headers.origin) {
+        var domainName = socket.handshake.headers.origin.substring(7, socket.handshake.headers.origin.length);
+        console.log(socket.handshake.headers.origin);
+        hospitalDAO.findHospitalByDomainName(domainName).then(function (hospitals) {
+            data.hospitalName = hospitals[0].name;
+            notificationDAO.findPatientQueue(moment().format('YYYY-MM-DD'), roomId, domainName).then(function (queueList) {
+                var patients = [];
+                queueList.forEach(function (queue) {
+                    if (!queue.clinic) queue.clinic = '1';
+                    queue.clinic = config.clinicConfig[queue.clinic];
+                    var item = _.find(patients, {
+                        doctorId: queue.doctorId,
+                        doctorName: queue.doctorName,
+                        //             departmentName: queue.departmentName,
+                        clinic: queue.clinic
+                    });
+                    if (item) {
+                        if (item.sequences.length < 4)
+                            item.sequences.push(queue.sequence);
+                    } else {
+                        patients.push({
+                            doctorId: queue.doctorId,
+                            doctorName: queue.doctorName,
+                            patientName: queue.patientName,
+                            departmentName: queue.departmentName,
+                            clinic: queue.clinic,
+                            sequences: [queue.sequence]
+                        });
+                    }
                 });
-            }
+                data.patients = patients;
+                return io.sockets.in(roomId).emit('refresh', data);
+            });
         });
-        return io.sockets.in(roomId).emit('refresh', data);
-    });
+    };
 });
 process.on('queueEvent', function (data) {
     return io.sockets.in(data.floor).emit('message', data);
@@ -74,7 +85,6 @@ process.on('queueEvent', function (data) {
 process.on('refreshEvent', function (data) {
     return io.sockets.in(data.floor).emit('refresh', data.patients);
 });
-
 var kue = require('kue');
 kue.createQueue('orderPayDelayedQueue');
-kue.app.listen(8090);
+kue.app.listen(8099);

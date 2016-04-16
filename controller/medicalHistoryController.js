@@ -243,7 +243,7 @@ module.exports = {
     getMedicalHistoriesByPatientId: function (req, res, next) {
         var patientId = req.params.id;
         medicalDAO.findMedicalHistoryByPatientId(patientId).then(function (result) {
-            res.send({ret: 0, data: result[0]});
+            res.send({ret: 0, data: result});
         });
         return next();
     },
@@ -335,6 +335,8 @@ module.exports = {
         if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
         if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
         if (req.query.patientId) conditions.push('r.patientId=' + req.query.patientId);
+        if (req.query.orderType) conditions.push('m.type=' + req.query.orderType);
+        if (req.query.chargedBy) conditions.push('m.chargedBy=' + req.query.chargedBy);
         orderDAO.findOrdersByStatus(req.user.hospitalId, req.params.status, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize

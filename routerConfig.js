@@ -863,6 +863,12 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "get",
+        path: "/api/chargers",
+        handler: dictController.getChargers,
+        secured: 'user'
+    },
+    {
         method: "post",
         path: "/api/resetPwd",
         handler: authController.resetPwd

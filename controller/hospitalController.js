@@ -123,7 +123,7 @@ module.exports = {
     updateHospital: function (req, res, next) {
         var hospital = req.body;
         hospital.id = req.user.hospitalId;
-        hospital.images = hospital.images && hospital.images.length && hospital.images.join(',');
+        hospital.images = (hospital.images && hospital.images.length > 0 ? hospital.images.join(','): null);
         hospitalDAO.updateHospital(hospital).then(function (result) {
             res.send({ret: 0, message: i18n.get('hospital.update.success')});
         }).catch(function (err) {
@@ -135,7 +135,7 @@ module.exports = {
     getHospital: function (req, res, next) {
         var hospitalId = req.user.hospitalId;
         hospitalDAO.findHospitalById(hospitalId).then(function (result) {
-            result[0].images = result[0].images && result[0].images.split(',');
+            result[0].images = (result[0].images && result[0].images.length > 0 ? result[0].images.split(',') : []);
             res.send({ret: 0, data: result[0]});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -569,8 +569,10 @@ module.exports = {
     },
     getMyHospital: function (req, res, next) {
         hospitalDAO.findHospitalByDomainName(req.headers.origin.substring(7, req.headers.origin.length)).then(function (hospitals) {
-            if (hospitals[0].images) hospitals[0].images = hospitals[0].images.split(',');
+            if (hospitals && hospitals.length && hospitals[0].images) hospitals[0].images = hospitals[0].images.split(',');
             res.send({ret: 0, data: hospitals[0]});
+        }).catch(function (err) {
+            res.send({ret: 1, data: err.message});
         });
         return next();
     }
