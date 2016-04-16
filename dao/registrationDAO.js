@@ -28,5 +28,3 @@ module.exports = {
         return db.query(sqlMapping.registration.insertRegistrationCancelHistory, cancelHistory);
     }
 }
-
-kslemz

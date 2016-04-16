@@ -23,7 +23,7 @@ module.exports = {
         employee.password = md5(employee.password);
         employee.hospitalId = req.user.hospitalId;
         employee.createDate = new Date();
-        employeeDAO.findByUsername(employee.mobile).then(function (employees) {
+        employeeDAO.findByUsername(req.user.hospitalId, employee.mobile).then(function (employees) {
             if (employees.length) return res.send({ret: 1, message: '员工已经存在。'});
             employeeDAO.insert(employee).then(function (result) {
                 employee.id = result.insertId;

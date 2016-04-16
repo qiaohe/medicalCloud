@@ -5,8 +5,8 @@ module.exports = {
     insert: function (employee) {
         return db.query(sqlMapping.employee.insert, employee);
     },
-    findByUsername: function (username) {
-        return db.query(sqlMapping.employee.findByUserName, username);
+    findByUsername: function (hospitalId, username) {
+        return db.query(sqlMapping.employee.findByUserName, [hospitalId, username]);
     },
     findByName: function (username) {
         return db.query(sqlMapping.employee.findByName, username);
