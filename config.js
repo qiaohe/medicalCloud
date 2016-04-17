@@ -5,7 +5,7 @@ module.exports = {
         name: 'medical cloud platform',
         version: '0.0.1',
         host: '121.42.171.213',
-        port: 8083
+        port: 8084
     },
     db: {
         host: '121.42.171.213',
@@ -14,7 +14,7 @@ module.exports = {
         password: 'heqiao75518',
         debug: false,
         multipleStatements: true,
-        database: 'medicalDB'
+        database: 'medicalDB_Test'
     },
     app: {
         locale: 'zh_CN',
@@ -26,7 +26,7 @@ module.exports = {
     },
     redis: {
         host: '127.0.0.1',
-        port: 6379
+        port: 6380
     },
     rongcloud: {
         appKey: 'z3v5yqkbvtei0',
