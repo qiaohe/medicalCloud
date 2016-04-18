@@ -11,7 +11,7 @@ module.exports = {
     findDiseases: function (hospitalId, conditions, page) {
         var sql = sqlMapping.dict.findDiseases;
         if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
-        sql = sql + ' limit ?,?';
+        sql = sql + ' order by d.createDate desc limit ?,?';
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     updateDisease: function (diseaseDic) {

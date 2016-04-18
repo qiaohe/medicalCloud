@@ -202,6 +202,7 @@ module.exports = {
                         });
                     }
                 });
+                process.emit('outPatientChangeEvent', r);
                 res.send({ret: 0, data: r})
             });
         }).catch(function (error) {
