@@ -23,7 +23,7 @@ module.exports = {
         employee.password = md5(employee.password);
         employee.hospitalId = req.user.hospitalId;
         employee.createDate = new Date();
-        employeeDAO.findByUsername(employee.mobile).then(function (employees) {
+        employeeDAO.findByUsername(req.user.hospitalId, employee.mobile).then(function (employees) {
             if (employees.length) return res.send({ret: 1, message: '员工已经存在。'});
             employeeDAO.insert(employee).then(function (result) {
                 employee.id = result.insertId;
@@ -53,6 +53,7 @@ module.exports = {
                             return employeeDAO.findJobTitleById(employee.jobTitle)
                         }).then(function (jobTitles) {
                             doctor.jobTitle = jobTitles[0].name;
+                            doctor.clinic = 1;
                             return employeeDAO.insertDoctor(doctor);
                         }).then(function (result) {
                             return res.send({ret: 0, data: employee});
@@ -125,6 +126,7 @@ module.exports = {
                         return employeeDAO.findJobTitleById(employee.jobTitle)
                     }).then(function (jobTitles) {
                         doctor.jobTitle = jobTitles[0].name;
+                        doctor.clinic = 1;
                         return employeeDAO.insertDoctor(doctor);
                     })
                 } else if (e.role == roleId && employee.role == roleId) {
@@ -262,7 +264,7 @@ module.exports = {
 
     getEmployeeByMobile: function (req, res, next) {
         var mobile = req.params.mobile;
-        employeeDAO.findByUsername(mobile).then(function (employees) {
+        employeeDAO.findByUsername(req.user.hospitalId, mobile).then(function (employees) {
             res.send({ret: 0, data: {exists: employees.length > 0}});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});

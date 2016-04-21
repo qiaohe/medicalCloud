@@ -5,13 +5,17 @@ module.exports = {
     insert: function (employee) {
         return db.query(sqlMapping.employee.insert, employee);
     },
-    findByUsername: function (username) {
-        return db.query(sqlMapping.employee.findByUserName, username);
-    },
-    findByName: function (username) {
-        return db.query(sqlMapping.employee.findByName, username);
+    findByUsername: function (hospitalId, username) {
+        return db.query(sqlMapping.employee.findByUserName, [hospitalId, username]);
     },
 
+    findByUsernameAndDomain: function (domainName, userName) {
+        return db.query(sqlMapping.employee.findByUsernameAndDomain, [userName, domainName]);
+    },
+
+    findByName: function (hospitalId, username) {
+        return db.query(sqlMapping.employee.findByName, [hospitalId, username]);
+    },
     updateEmployee: function (employee) {
         return db.query(sqlMapping.employee.updateEmployeeByUid, [employee, employee.id])
     },

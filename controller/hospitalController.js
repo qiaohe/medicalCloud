@@ -384,6 +384,7 @@ module.exports = {
                     item.outpatientStatus = config.outpatientStatus[item.outpatientStatus];
                     item.memberType = config.memberType[item.memberType];
                 });
+                result.doctorId = (items && items.rows.length > 0 ? items.rows[0].doctorId : null);
                 result.waitQueue = items;
                 result.waitQueue.pageIndex = pageIndex;
                 result.waitQueueCount = _.filter(items.rows, function (item) {

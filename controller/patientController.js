@@ -131,7 +131,7 @@ module.exports = {
                     mobile: patient.mobile,
                     createDate: new Date(),
                     //birthday: patient.birthday,
-                    password: md5('password'),
+                    password: md5(patient.patientMobile.substring(patient.patientMobile.length - 6, patient.patientMobile.length)),
                     creator: req.user.id,
                     gender: patient.gender,
                     idCard: patient.idCard,

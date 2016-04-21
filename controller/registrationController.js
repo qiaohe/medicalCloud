@@ -12,6 +12,8 @@ var util = require('util');
 var moment = require('moment');
 var redis = require('../common/redisClient');
 var md5 = require('md5');
+var Promise = require('bluebird');
+var request = Promise.promisifyAll(require('request'));
 function getConditions(req) {
     var conditions = [];
     if (req.query.memberType) conditions.push('r.memberType=' + req.query.memberType);
@@ -91,11 +93,26 @@ module.exports = {
                     name: r.patientName,
                     mobile: r.patientMobile,
                     createDate: new Date(),
-                    password: md5('password'),
+                    password: md5(r.patientMobile.substring(r.patientMobile.length - 6, r.patientMobile.length)),
                     creator: req.user.id
                     //birthday: r.birthday
                 }).then(function (result) {
-                    return result.insertId;
+                    if (result.insertId) {
+                        var content = config.sms.registerTemplate.replace(':code', r.patientMobile.substring(r.patientMobile.length - 4, r.patientMobile.length));
+                        return hospitalDAO.findHospitalById(req.user.hospitalId).then(function (hospitals) {
+                            var hospitalName = hospitals[0].name;
+                            content = content.replace(':hospital', hospitalName);
+                            var option = {mobile: r.patientMobile, text: content, apikey: config.sms.apikey};
+                            request.postAsync({
+                                url: config.sms.providerUrl,
+                                form: option
+                            }).then(function (response, body) {
+                                return result.insertId;
+                            });
+                        })
+                    } else {
+                        return result.insertId;
+                    }
                 });
             }).then(function (result) {
                 r.patientBasicInfoId = result;
@@ -185,6 +202,7 @@ module.exports = {
                         });
                     }
                 });
+                process.emit('outPatientChangeEvent', r);
                 res.send({ret: 0, data: r})
             });
         }).catch(function (error) {
