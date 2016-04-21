@@ -44,6 +44,7 @@ module.exports = {
     sms: {
         providerUrl: 'https://sms.yunpian.com/v1/sms/send.json',
         template: '【云诊宝】您的短信验证码是:code,在30分钟内输入有效。',
+        registerTemplate: '您好，感谢您到:hospital挂号就诊，现在可以使用尾号为:code的手机号登录查看病历信息了；密码默认为手机号后六位。我们竭诚为您服务，祝您早日康复！',
         expireTime: 1800000,
         apikey: '410ac09436843c0270f513a0d84802cc'
     },
@@ -68,7 +69,7 @@ module.exports = {
     sourceType: ['陌生拜访', '市场活动', '门诊转化', '内部转移', '特殊推荐', '广告推广'],
     gender: ['男', '女'],
     outPatientType: ["初诊", "复诊", "院内转诊", "跨院转诊", "远程会诊", "远程初诊", "远程复诊"],
-    outpatientStatus: ['未到', '结束', '已转诊', '已预约复诊', '转诊中', '待诊中', '已取消'],
+    outpatientStatus: ['未到', '结诊', '已转诊', '已预约复诊', '转诊中', '待诊中', '已取消'],
     cashbackType: ['赠劵', '优惠券', '免单'],
     paymentType: ['支付宝', '微信支付', '会员卡', '银行卡', '储值卡', '现金', '代付'],
     consumptionLevel: ['<1000', '1000~3000', '3000~5000', '5000~10000', '>10000'],

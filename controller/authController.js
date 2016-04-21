@@ -14,7 +14,8 @@ module.exports = {
         var userName = (req.body && req.body.username) || (req.query && req.query.username);
         var password = (req.body && req.body.password) || (req.query && req.query.password);
         var user = {};
-        employeeDAO.findByUsername(userName).then(function (users) {
+        var domainName = req.headers.origin.substring(7, req.headers.origin.length);
+        employeeDAO.findByUsernameAndDomain(domainName, userName).then(function (users) {
             if (!users || !users.length) throw new Error(i18n.get('member.not.exists'));
             user = users[0];
             if (user.password != md5(password)) throw new Error(i18n.get('member.password.error'));
@@ -69,7 +70,7 @@ module.exports = {
         redis.getAsync(mobile).then(function (reply) {
             if (!(reply && reply == certCode)) return res.send({ret: 1, message: i18n.get('sms.code.invalid')});
             return employeeDAO.updateEmployeePassword(md5(newPwd), mobile).then(function (result) {
-                return employeeDAO.findByUsername(mobile);
+                return employeeDAO.findByUsername(req.user.hospitalId, mobile);
             }).then(function (users) {
                 if (!users || !users.length) throw new Error(i18n.get('member.not.exists'));
                 user = users[0];

@@ -190,8 +190,11 @@ module.exports = {
                             });
                         }
                         businessPeopleDAO.insertPatientBasicInfo({
-                            name: registration.patientName, mobile: registration.patientMobile,
-                            createDate: new Date(), password: md5('password'), creator: req.user.id
+                            name: registration.patientName,
+                            mobile: registration.patientMobile,
+                            createDate: new Date(),
+                            password: md5(registration.patientMobile.substring(registration.patientMobile.length - 6, registration.patientMobile.length)),
+                            creator: req.user.id
                         }).then(function (result) {
                             registration.patientBasicInfoId = result.insertId;
                             return redis.incrAsync('doctor:' + registration.doctorId + ':d:' + registration.registerDate + ':period:' + registration.shiftPeriod + ':incr').then(function (seq) {
@@ -199,7 +202,7 @@ module.exports = {
                                     registration.sequence = sp + seq;
                                     registration.outPatientType = 0;
                                     registration.outpatientStatus = 5;
-                                    return businessPeopleDAO.findPatientByBasicInfoId(registration.patientBasicInfoId,req.user.hospitalId);
+                                    return businessPeopleDAO.findPatientByBasicInfoId(registration.patientBasicInfoId, req.user.hospitalId);
                                 });
                             });
                         });
