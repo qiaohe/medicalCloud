@@ -53,6 +53,7 @@ module.exports = {
                             return employeeDAO.findJobTitleById(employee.jobTitle)
                         }).then(function (jobTitles) {
                             doctor.jobTitle = jobTitles[0].name;
+                            doctor.clinic = 1;
                             return employeeDAO.insertDoctor(doctor);
                         }).then(function (result) {
                             return res.send({ret: 0, data: employee});
@@ -125,6 +126,7 @@ module.exports = {
                         return employeeDAO.findJobTitleById(employee.jobTitle)
                     }).then(function (jobTitles) {
                         doctor.jobTitle = jobTitles[0].name;
+                        doctor.clinic = 1;
                         return employeeDAO.insertDoctor(doctor);
                     })
                 } else if (e.role == roleId && employee.role == roleId) {
