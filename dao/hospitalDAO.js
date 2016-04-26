@@ -163,6 +163,10 @@ module.exports = {
     },
     findDiscountRateOfDoctor: function (hospitalId, doctorId) {
         return db.query(sqlMapping.doctor.findDiscountRateOfDoctor, [hospitalId, doctorId]);
+    },
+    findAll: function () {
+        return db.query(sqlMapping.hospital.findAll);
     }
+
 
 }

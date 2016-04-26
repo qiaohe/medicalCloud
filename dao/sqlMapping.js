@@ -66,6 +66,7 @@ module.exports = {
         findPerformancesBy: 'select e.id as businessPeopleId, e.`name`, p.yearMonth, actualCount, plannedCount,ROUND(actualCount / plannedCount, 2) as completePercentage from Performance p, Employee e where e.id = p.businessPeopleId and p.businessPeopleId=? order by p.yearMonth'
     },
     hospital: {
+        findAll: 'select id, domainName from Hospital where enabled=1',
         findDepartments: 'select id, name from Department where hospitalId = ?',
         findByNameLike: 'select id, name, tag from Hospital where name like ?',
         findById: 'select id, name, tag, images, address, icon, introduction, trafficRoute, telephone, districtId, provId, cityId from Hospital where id = ?',
