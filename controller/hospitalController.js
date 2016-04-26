@@ -49,7 +49,10 @@ module.exports = {
         return next();
     },
     removeDepartment: function (req, res, next) {
-        hospitalDAO.removeDepartment(req.params.id).then(function (result) {
+        hospitalDAO.countOfEmployeesForDepartment(req.params.id).then(function (result) {
+            if (result[0].count > 0) throw new Error('有员工属于该部门，请选删除员工后重试。');
+            return hospitalDAO.removeDepartment(req.params.id)
+        }).then(function (result) {
             res.send({ret: 0, message: i18n.get('department.remove.success')});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -123,7 +126,7 @@ module.exports = {
     updateHospital: function (req, res, next) {
         var hospital = req.body;
         hospital.id = req.user.hospitalId;
-        hospital.images = (hospital.images && hospital.images.length > 0 ? hospital.images.join(','): null);
+        hospital.images = (hospital.images && hospital.images.length > 0 ? hospital.images.join(',') : null);
         hospitalDAO.updateHospital(hospital).then(function (result) {
             res.send({ret: 0, message: i18n.get('hospital.update.success')});
         }).catch(function (err) {

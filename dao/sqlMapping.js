@@ -67,6 +67,9 @@ module.exports = {
     },
     hospital: {
         findAll: 'select id, domainName from Hospital where enabled=1',
+        countOfEmployeesForDepartment: 'select count(*) as count from Employee where department=?',
+        countOfJobTitleForRole: 'select count(*) as count from JobTitle where role=?',
+        countOfEmployeeForJobTitle: 'select count(*) as count from Employee where role=? and jobTitle=?',
         findDepartments: 'select id, name from Department where hospitalId = ?',
         findByNameLike: 'select id, name, tag from Hospital where name like ?',
         findById: 'select id, name, tag, images, address, icon, introduction, trafficRoute, telephone, districtId, provId, cityId from Hospital where id = ?',
