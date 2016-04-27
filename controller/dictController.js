@@ -165,7 +165,10 @@ module.exports = {
     },
 
     removeRole: function (req, res, next) {
-        hospitalDAO.deleteRole(req.params.id).then(function () {
+        hospitalDAO.countOfJobTitleForRole(req.params.id).then(function (result) {
+            if (result[0].count > 0) throw new Error('该角色已经设置了岗位，请先删除岗位后重试。');
+            return hospitalDAO.deleteRole(req.params.id);
+        }).then(function () {
             res.send({ret: 0, message: i18n.get('role.remove.success')});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -193,7 +196,10 @@ module.exports = {
         return next();
     },
     removeJobTitlesByRole: function (req, res, next) {
-        hospitalDAO.deleteJobTitle(req.params.roleId, req.params.id).then(function () {
+        hospitalDAO.countOfEmployeeForJobTitle(req.params.roleId, req.params.id).then(function (result) {
+            if (result[0].count > 0) throw new Error('改岗位已经分配给员工，请先删除员工后重试。');
+            return hospitalDAO.deleteJobTitle(req.params.roleId, req.params.id);
+        }).then(function () {
             res.send({ret: 0, message: i18n.get('jobTitle.remove.success')});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});

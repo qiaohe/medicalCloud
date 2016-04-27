@@ -6,6 +6,7 @@ var auth = require('./common/auth');
 var logger = require('./common/logger');
 var socketio = require('socket.io');
 var moment = require('moment');
+var redis = require('./common/redisClient');
 var server = restify.createServer(config.server);
 var io = socketio.listen(server.server);
 var _ = require('lodash');
@@ -93,7 +94,11 @@ process.on('refreshEvent', function (data) {
 process.on('outPatientChangeEvent', function (data) {
     return io.sockets.in('d:' + data.doctorId).emit('outPatientChange', data.id);
 });
-
+hospitalDAO.findAll().then(function (result) {
+    result.forEach(function (hospital) {
+        redis.set(hospital.domainName, hospital.id);
+    })
+})
 var kue = require('kue');
 kue.createQueue('orderPayDelayedQueue');
 kue.app.listen(8098);
