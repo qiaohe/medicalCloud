@@ -174,8 +174,8 @@ module.exports = {
                         paidAmount: r.registrationFee,
                         paymentAmount: r.registrationFee,
                         paymentDate: new Date(),
-                        status: (r.registrationType == 3 ? 0 : 1),
-                        paymentType: (r.registrationType == 3 ? null : 5),
+                        status: (r.registrationType != 3 ? 0 : 1),
+                        paymentType: (r.registrationType != 3 ? r.paymentType : 5),
                         createDate: new Date(),
                         type: 0
                     };
