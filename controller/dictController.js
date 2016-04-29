@@ -8,6 +8,7 @@ var businessPeopleDAO = require('../dao/businessPeopleDAO');
 var redis = require('../common/redisClient');
 var i18n = require('../i18n/localeMessage');
 var employeeDAO = require('../dao/employeeDAO');
+var xlsx = require('xlsx');
 module.exports = {
     getDepartments: function (req, res, next) {
         var hospitalId = req.user.hospitalId;
@@ -506,6 +507,14 @@ module.exports = {
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
+        return next();
+    },
+
+    importDrugs: function (req, res, next) {
+        var workbook = xlsx.readFile(req.files['file'].path);
+        var worksheet = workbook.Sheets['Sheet1'];
+        worksheet = xlsx.utils.sheet_to_json(worksheet);
+        res.send({ret: 0, data: worksheet});
         return next();
     },
 

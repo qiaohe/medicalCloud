@@ -4,14 +4,14 @@ module.exports = {
     server: {
         name: 'medical cloud platform',
         version: '0.0.1',
-        host: 'api.hisforce.cn',
+        host: 'localhost',
         port: 8084
     },
     db: {
-        host: '10.161.161.229',
+        host: '121.42.171.213',
         port: '3306',
         user: 'root',
-        password: 'heqiao75518?',
+        password: 'heqiao75518',
         debug: false,
         multipleStatements: true,
         database: 'medicalDB'
@@ -25,7 +25,7 @@ module.exports = {
         prefixOfChargeRole: '收费'
     },
     redis: {
-        host: '10.161.161.229',
+        host: 'localhost',
         port: 6379
     },
     rongcloud: {
