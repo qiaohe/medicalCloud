@@ -59,7 +59,7 @@ module.exports = {
         var wb = new Workbook(), ws = sheet_from_array_of_arrays(items);
         wb.SheetNames.push('Sheet1');
         wb.Sheets['Sheet1'] = ws;
-        var file = 'dugs' + moment().format('YYYY-MM-DD');
+        var file = 'drugs' + moment().format('YYYY-MM-DD');
         XLSX.writeFile(wb, file);
         return file;
     }
