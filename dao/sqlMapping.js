@@ -6,7 +6,7 @@ module.exports = {
         insert: 'insert Employee set ?',
         insertRole: 'insert Role set ?',
         deleteRole: 'delete from Role where id =?',
-        findRoleByName:'select id from Role where hospitalId=? and `name` like ?',
+        findRoleByName: 'select id from Role where hospitalId=? and `name` like ?',
         updateRole: 'update Role set ? where id=?',
         updateJobTitle: 'update JobTitle set ? where id=?',
         insertJobTitle: 'insert JobTitle set ?',
@@ -171,7 +171,9 @@ module.exports = {
         findTokenByUid: 'select token from Device where uid=?'
     },
     dict: {
+        findDrugInventoryHistoryByType: 'select d.*, dh.amount, dh.batchId, dh.`comment`, dh.operateDate, dh.operator, dh.operatorName from DrugInventoryHistory dh left JOIN Drug d on dh.`code` = d.`code` where d.hospitalId=? and dh.type=?',
         insertDisease: 'insert DiseaseDic set ?',
+        insertDrugInventoryHistory: 'insert DrugInventoryHistory set ?',
         updateDisease: 'update DiseaseDic set ? where id=?',
         deleteDisease: 'delete from DiseaseDic where id = ?',
         findDiseases: 'select SQL_CALC_FOUND_ROWS d.*, dep.`name` as departmentName, e.`name` as creatorName from DiseaseDic d left JOIN Department dep on dep.id=d.departmentId left JOIN Employee e on e.id = d.creator where d.hospitalId = ? ',
@@ -194,12 +196,14 @@ module.exports = {
         findDrugsBy: 'select * from Drug where hospitalId=? and ',
         findChargeItemsBy: 'select * from ChargeItem where hospitalId=? and ',
         insertDrug: 'insert Drug set ?',
+        insertDrugByBatch:'INSERT INTO Drug (code, name,company, type, dosageForm, specification,tinyUnit, factor, unit, sellPrice,criticalInventory, hospitalId) VALUES ?',
         updateDrug: 'update Drug set ? where id = ?',
         deleteDrug: 'delete from Drug where id=?',
         findDrugById: 'select * from Drug where id = ?',
         findDrugInventory: 'select SQL_CALC_FOUND_ROWS di.*, d.name, d.company, d.code, d.type, d.dosageForm, d.specification,d.unit,d.tinyUnit,d.factor, d.sellPrice, d.criticalInventory from DrugInventory di left JOIN Drug d on d.id = di.drugId where di.hospitalId = ? order by di.id desc limit ?,?',
         insertDrugInventory: 'insert DrugInventory set ?',
         updateDrugInventory: 'update DrugInventory set ? where id=?',
+        updateDrugRestInventory: 'update Drug set inventory = inventory + ? where id=?',
         deleteDrugInventory: 'delete DrugInventory where id=?',
         findDrugInventoryBy: 'select * from DrugInventory where hospitalId=? and drugId=? and batchNo=?'
         /*
@@ -230,6 +234,7 @@ module.exports = {
         findOrdersByType: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId=? and m.type=? ',
         findOrdersByTypeAndStatus: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType, r.patientId, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId=? and m.type=? and m.status=? limit ?,?',
         findByOrderNos: 'select m.discountRate, m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.status=0 and m.orderNo in ',
+        findByOrderNo: 'select m.discountRate, m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId,m.invoiceSequenceNo, r.hospitalName, m.paidAmount1, m.paidAmount2, m.paidAmount3, m.paymentType1,m.paymentType2, m.paymentType3, m.paidAmount, m.chargedByName, m.chargeDate, m.invoiceSequenceNo from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.orderNo=?',
         findOrderByOrderNo: 'select r.patientBasicInfoId, r.patientMobile, h.patientName, r.hospitalName, r.departmentName, r.doctorName,r.sequence from MedicalOrder m left join Registration r on m.registrationId = r.id left JOIN MedicalHistory h on h.registrationId = m.registrationId where m.orderNo=?'
     }
 };

@@ -98,7 +98,7 @@ hospitalDAO.findAll().then(function (result) {
     result.forEach(function (hospital) {
         redis.set(hospital.domainName, hospital.id);
     })
-})
+});
 var kue = require('kue');
 kue.createQueue('orderPayDelayedQueue');
 kue.app.listen(8098);

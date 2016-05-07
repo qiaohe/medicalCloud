@@ -8,7 +8,10 @@ var businessPeopleDAO = require('../dao/businessPeopleDAO');
 var redis = require('../common/redisClient');
 var i18n = require('../i18n/localeMessage');
 var employeeDAO = require('../dao/employeeDAO');
-var xlsx = require('xlsx');
+var excel = require('../common/excel');
+var fs = require('fs');
+var path = require('path');
+var mime = require('mime');
 module.exports = {
     getDepartments: function (req, res, next) {
         var hospitalId = req.user.hospitalId;
@@ -511,10 +514,24 @@ module.exports = {
     },
 
     importDrugs: function (req, res, next) {
-        var workbook = xlsx.readFile(req.files['file'].path);
-        var worksheet = workbook.Sheets['Sheet1'];
-        worksheet = xlsx.utils.sheet_to_json(worksheet);
-        res.send({ret: 0, data: worksheet});
+        var rows = excel.parse(req.files['file'].path, {hospitalId: req.user.hospitalId});
+        dictionaryDAO.insertDrugByBatch(rows).then(function (result) {
+            res.send({ret: 0, message: '导入药品数据成功，共导入' + rows.length + '行。'});
+        });
+        return next();
+    },
+
+    exportDrugs: function (req, res, next) {
+        var header = ['code编号', 'name名称', '药品名称首字母拼音', 'company生产企业', 'tpye类型', 'dosageForm剂型药品剂型', 'specification药品规格', 'unit单位', 'price售价', '临界库存', '医院'];
+        dictionaryDAO.findDrugsNoPagination(1).then(function (drugs) {
+            var file = excel.export(drugs, header, {hospitalId: 1});
+            var filename = path.basename(file);
+            var mimetype = mime.lookup(file);
+            res.setHeader('Content-disposition', 'attachment; filename=' + filename + '.xlsx');
+            res.setHeader('Content-type', mimetype);
+            var filestream = fs.createReadStream(file);
+            filestream.pipe(res);
+        });
         return next();
     },
 
@@ -563,7 +580,10 @@ module.exports = {
         var conditions = [];
         if (req.query.code) conditions.push('code like \'%' + req.query.code + '%\'');
         if (req.query.type) conditions.push('type=\'' + req.query.type + '\'');
-        if (req.query.name) conditions.push('name like \'%' + req.query.name + '%\'');
+        if (req.query.name) {
+            var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
+            conditions.push((reg.test(req.query.name) ? 'name' : 'pinyin') + ' like \'%' + req.query.name + '%\'');
+        }
         if (req.query.startDate) conditions.push('putOutDate>=\'' + req.query.startDate + ' 00:00:00\'');
         if (req.query.endDate) conditions.push('putOutDate<=\'' + req.query.endDate + ' 23:59:59\'');
         dictionaryDAO.findDrugInventory(hospitalId, conditions, {
@@ -580,24 +600,39 @@ module.exports = {
     addDrugInventory: function (req, res, next) {
         var item = req.body;
         item.hospitalId = req.user.hospitalId;
-        item.putInDate = new Date();
-        item.putIn = req.user.id;
-        item.putInName = req.user.name;
         item.createDate = new Date();
+        var history = {
+            drugId: item.drugId,
+            code: item.code,
+            batchNo: item.batchNo,
+            operator: req.user.id,
+            operatorName: req.user.name,
+            type: 0,
+            hospitalId: req.user.hospitalId,
+            operateDate: new Date(),
+            amount: item.amount
+        };
         dictionaryDAO.findDrugInventoryBy(item.hospitalId, item.drugId, item.batchNo).then(function (result) {
             if (result.length) {
-                result[0].amount = item.amount + result[0].amount;
-                result[0].restAmount = item.restAmount + result[0].restAmount;
-                dictionaryDAO.updateDrugInventory(item).then(function (rs) {
-                    res.send({ret: 0, data: result[0]});
+                item = result[0];
+                item.amount = item.amount + req.body.amount;
+                item.restAmount = item.restAmount + req.body.amount;
+                return dictionaryDAO.updateDrugInventory(item).then(function (rs) {
+                    history.inventoryId = result[0].id;
+                    return dictionaryDAO.insertDrugInventoryHistory(history);
                 });
             } else {
                 item.restAmount = item.amount;
-                dictionaryDAO.insertDrugInventory(item).then(function (result) {
+                return dictionaryDAO.insertDrugInventory(item).then(function (result) {
                     item.id = result.insertId;
-                    res.send({ret: 0, data: item});
-                })
+                    history.inventoryId = item.id;
+                    return dictionaryDAO.insertDrugInventoryHistory(history);
+                });
             }
+        }).then(function (result) {
+            return dictionaryDAO.updateDrugRestInventory(item.drugId, item.amount);
+        }).then(function (result) {
+            res.send({ret: 0, data: item});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
@@ -605,10 +640,17 @@ module.exports = {
 
     updateDrugInventory: function (req, res, next) {
         var item = req.body;
-        item.hospitalId = req.user.hospitalId;
-        item.putOut = req.user.id;
-        item.putOutDate = new Date();
-        item.putOutName = req.user.name;
+        var history = {
+            drugId: item.drugId,
+            code: item.code,
+            batchNo: item.batchNo,
+            operator: req.user.id,
+            operatorName: req.user.name,
+            type: 0,
+            hospitalId: req.user.hospitalId,
+            operateDate: new Date(),
+            amount: item.amount
+        };
         dictionaryDAO.updateDrugInventory(item).then(function (result) {
             res.send({ret: 0, message: '出库更新成功'});
         }).catch(function (err) {
@@ -645,6 +687,12 @@ module.exports = {
     },
     getSysDictByType: function (req, res, next) {
         res.send({ret: 0, data: config[req.params.type]});
+        return next();
+    },
+    getDrugInventoryHistoryByType: function (req, res, next) {
+        dictionaryDAO.findDrugInventoryHistoryByType(req.user.hospitalId, req.params.type).then(function (histories) {
+            res.send({ret: 0, data: histories});
+        });
         return next();
     },
 

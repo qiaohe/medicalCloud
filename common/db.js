@@ -14,7 +14,6 @@ db.query = function (sql, values) {
         return connection.queryAsync(sql, values).then(function (result) {
             return result[0];
         }).catch(function (err) {
-            connection.destory();		
             throw new Error(err);
         });
     });
@@ -31,7 +30,6 @@ db.queryWithCount = function (sql, values) {
             data.count = result[0][0].count;
             return data;
         }).catch(function (err) {
-            connection.destory;
             throw new Error(err);
         });
     });
