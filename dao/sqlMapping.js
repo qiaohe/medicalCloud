@@ -203,6 +203,7 @@ module.exports = {
         findDrugInventory: 'select SQL_CALC_FOUND_ROWS di.*, d.name, d.company, d.code, d.type, d.dosageForm, d.specification,d.unit,d.tinyUnit,d.factor, d.sellPrice, d.criticalInventory from DrugInventory di left JOIN Drug d on d.id = di.drugId where di.hospitalId = ? order by di.id desc limit ?,?',
         insertDrugInventory: 'insert DrugInventory set ?',
         updateDrugInventory: 'update DrugInventory set ? where id=?',
+        updateDrugInventoryBy: 'update DrugInventory set restAmount = restAmount - ? where id=?',
         updateDrugRestInventory: 'update Drug set inventory = inventory + ? where id=?',
         deleteDrugInventory: 'delete DrugInventory where id=?',
         findDrugInventoryBy: 'select * from DrugInventory where hospitalId=? and drugId=? and batchNo=?'

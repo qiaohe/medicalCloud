@@ -107,6 +107,11 @@ module.exports = {
     updateDrugInventory: function (item) {
         return db.query(sqlMapping.dict.updateDrugInventory, [item, item.id]);
     },
+
+    updateDrugInventoryBy: function (id, amount) {
+        return db.query(sqlMapping.dict.updateDrugInventoryBy, [amount, id]);
+    },
+
     updateDrugRestInventory: function (id, amount) {
         return db.query(sqlMapping.dict.updateDrugRestInventory, [+amount, id]);
     },
