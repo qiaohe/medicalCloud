@@ -546,7 +546,6 @@ module.exports = {
         });
         return next();
     },
-
     removeDrug: function (req, res, next) {
         dictionaryDAO.deleteDrug(req.params.id).then(function (result) {
             res.send({ret: 0, message: '删除成功'});
@@ -631,7 +630,7 @@ module.exports = {
                 });
             }
         }).then(function (result) {
-            return dictionaryDAO.updateDrugRestInventory(item.drugId, item.amount);
+            return dictionaryDAO.updateDrugRestInventory(item.drugId, req.body.amount);
         }).then(function (result) {
             res.send({ret: 0, data: item});
         }).catch(function (err) {
@@ -648,16 +647,17 @@ module.exports = {
             operator: req.user.id,
             operatorName: req.user.name,
             type: 1,
-            inventoryId: item.id,
             hospitalId: req.user.hospitalId,
             operateDate: new Date(),
-            amount: item.amount
+            amount: item.amount,
+            inventoryId: item.id,
+            comment: item.comment
         };
-        dictionaryDAO.insertDrugInventoryHistory(history).then(function(result){
-            return dictionaryDAO.updateDrugRestInventory()
-        });
-
-        dictionaryDAO.updateDrugInventory(item).then(function (result) {
+        dictionaryDAO.updateDrugInventoryBy(item.id, +item.amount).then(function (result) {
+            return dictionaryDAO.updateDrugRestInventory(item.drugId, item.amount * (-1));
+        }).then(function (result) {
+            return dictionaryDAO.insertDrugInventoryHistory(history);
+        }).then(function (result) {
             res.send({ret: 0, message: '出库更新成功'});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});

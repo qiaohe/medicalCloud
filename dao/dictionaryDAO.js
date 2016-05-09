@@ -72,6 +72,11 @@ module.exports = {
         var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS * from Drug where hospitalId=? and ' + conditions.join(' and ') + ' order by id desc LIMIT ?, ?' : sqlMapping.dict.findDrugs;
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
+
+    findDrugsNoPagination: function (hospitalId) {
+        return db.query('SELECT code,name, pinyin, company, type, dosageForm, specification, unit, sellPrice, criticalInventory, hospitalId from Drug where hospitalId=?', hospitalId);
+    },
+
     deleteDrug: function (id) {
         return db.query(sqlMapping.dict.deleteDrug, id);
     },
@@ -85,11 +90,15 @@ module.exports = {
         return db.query(sqlMapping.dict.findDrugById, id);
     },
     findDrugInventory: function (hospitalId, conditions, page) {
-        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS di.*, d.name, d.company, d.code, d.type, d.dosageForm, d.specification,d.unit,d.tinyUnit,d.factor, d.sellPrice, d.criticalInventory from DrugInventory di left JOIN Drug d on d.id = di.drugId where di.hospitalId = ? and ' + conditions.join(' and ') + ' order by di.id desc limit ?,?' : sqlMapping.dict.findDrugInventory;
+        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS di.*,d.pinyin, d.name, d.company, d.code, d.type, d.dosageForm, d.specification,d.unit,d.tinyUnit,d.factor, d.sellPrice, d.criticalInventory from DrugInventory di left JOIN Drug d on d.id = di.drugId where di.hospitalId = ? and ' + conditions.join(' and ') + ' order by di.id desc limit ?,?' : sqlMapping.dict.findDrugInventory;
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     insertDrugInventory: function (item) {
         return db.query(sqlMapping.dict.insertDrugInventory, item);
+    },
+
+    insertDrugInventoryHistory: function (history) {
+        return db.query(sqlMapping.dict.insertDrugInventoryHistory, history);
     },
 
     findDrugInventoryBy: function (hospitalId, drugId, batchNo) {
@@ -98,9 +107,22 @@ module.exports = {
     updateDrugInventory: function (item) {
         return db.query(sqlMapping.dict.updateDrugInventory, [item, item.id]);
     },
+
+    updateDrugInventoryBy: function (id, amount) {
+        return db.query(sqlMapping.dict.updateDrugInventoryBy, [amount, id]);
+    },
+
+    updateDrugRestInventory: function (id, amount) {
+        return db.query(sqlMapping.dict.updateDrugRestInventory, [+amount, id]);
+    },
     deleteDrugInventory: function (id) {
         return db.query(sqlMapping.dict.deleteDrugInventory, id);
     },
+
+    findDrugInventoryHistoryByType: function (hospitalId, type) {
+        return db.query(sqlMapping.dict.findDrugInventoryHistoryByType, [hospitalId, type]);
+    },
+
     findDrugsBy: function (hospitalId, condition) {
         var sql = sqlMapping.dict.findDrugsBy;
         if (condition.code) {
@@ -120,5 +142,8 @@ module.exports = {
             sql = sql + (reg.test(condition.name) ? 'name' : 'pinyin') + ' like \'%' + condition.name + '%\'';
         }
         return db.query(sql, hospitalId);
+    },
+    insertDrugByBatch: function (drugs) {
+        return db.query(sqlMapping.dict.insertDrugByBatch, [drugs]);
     }
 }

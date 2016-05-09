@@ -689,7 +689,11 @@ module.exports = [
         handler: dictController.importDrugs,
         secured: 'user'
     },
-
+    {
+        method: "get",
+        path: "/api/export/drugs",
+        handler: dictController.exportDrugs
+    },
     {
         method: "get",
         path: "/api/drugs/search",

@@ -15,6 +15,11 @@ module.exports = {
     findByOrderNos: function (hospitalId, orderNos) {
         return db.query(sqlMapping.order.findByOrderNos + '(' + orderNos + ')', [hospitalId, orderNos]);
     },
+
+    findByOrderNo: function (hospitalId, orderNo) {
+        return db.query(sqlMapping.order.findByOrderNo, [hospitalId, orderNo]);
+    },
+
     findOrdersByStatus: function (hospitalId, status, conditions, page) {
         var sql = sqlMapping.order.findOrdersByStatus;
         if (conditions.length) {

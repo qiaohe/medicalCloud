@@ -13,6 +13,7 @@ var moment = require('moment');
 var util = require('util');
 var queue = require('../common/queue');
 var pusher = require('../domain/NotificationPusher');
+var converter = require('../common/cnyConvert');
 module.exports = {
     saveMedicalHistory: function (req, res, next) {
         var medicalHistory = req.body;
@@ -388,20 +389,50 @@ module.exports = {
     },
 
     chargeOrders: function (req, res, next) {
-        var orders = req.body.orders;
-        Promise.map(orders, function (order) {
-            var order = {
-                orderNo: order,
+        var order = {};
+        var o = req.body;
+        redis.incrAsync('h:' + req.user.hospitalId + ':invoice:' + ':incr').then(function (seq) {
+            return orderDAO.update({
+                orderNo: o.orderNo,
                 status: 1,
                 chargedBy: req.user.id,
                 chargedByName: req.user.name,
                 chargeDate: new Date(),
                 paymentDate: new Date(),
-                paymentType: 5
-            };
-            return orderDAO.updateBy(order)
+                invoiceSequenceNo: _.padLeft(seq, 8, '0'),
+                paymentType1: o.payments[0] ? o.payments[0].paymentType : null,
+                paymentType2: o.payments[1] ? o.payments[1].paymentType : null,
+                paymentType3: o.payments[2] ? o.payments[2].paymentType : null,
+                paidAmount1: o.payments[0] ? o.payments[0].amount : null,
+                paidAmount2: o.payments[1] ? o.payments[1].amount : null,
+                paidAmount3: o.payments[2] ? o.payments[2].amount : null,
+                paidAmount: (o.payments[0] ? o.payments[0].amount : 0) + (o.payments[1] ? o.payments[1].amount : 0) + (o.payments[2] ? o.payments[2].amount : 0)
+            });
         }).then(function () {
-            res.send({ret: 0, message: '收费成功'})
+            return orderDAO.findByOrderNo(req.user.hospitalId, o.orderNo);
+        }).then(function (orders) {
+            order = orders[0];
+            order.type = config.orderType[+order.type];
+            order.payments = [];
+            if (order.paymentType1 != null) order.payments.push({
+                paymentType: config.paymentType[order.paymentType1],
+                amount: order.paidAmount1
+            });
+            if (order.paymentType2 != null) order.payments.push({
+                paymentType: config.paymentType[order.paymentType2],
+                amount: order.paidAmount2
+            });
+            if (order.paymentType3 != null) order.payments.push({
+                paymentType: config.paymentType[order.paymentType3],
+                amount: order.paidAmount3
+            });
+            if (order.type == config.orderType[1]) return medicalDAO.findRecipesByOrderNo(order.orderNo);
+            if (order.type == config.orderType[2]) return medicalDAO.findPrescriptionsByOrderNo(order.orderNo);
+            res.send({ret: 0, data: order});
+        }).then(function (items) {
+            order.items = items;
+            order.cny = converter.toCNY(order.paymentAmount);
+            res.send({ret: 0, data: order});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
