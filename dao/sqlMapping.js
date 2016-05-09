@@ -196,17 +196,19 @@ module.exports = {
         findDrugsBy: 'select * from Drug where hospitalId=? and ',
         findChargeItemsBy: 'select * from ChargeItem where hospitalId=? and ',
         insertDrug: 'insert Drug set ?',
-        insertDrugByBatch:'INSERT INTO Drug (code, name,company, type, dosageForm, specification,tinyUnit, factor, unit, sellPrice,criticalInventory, hospitalId) VALUES ?',
+        insertDrugByBatch: 'INSERT INTO Drug (code, name,company, type, dosageForm, specification,tinyUnit, factor, unit, sellPrice,criticalInventory, hospitalId) VALUES ?',
         updateDrug: 'update Drug set ? where id = ?',
         deleteDrug: 'delete from Drug where id=?',
         findDrugById: 'select * from Drug where id = ?',
-        findDrugInventory: 'select SQL_CALC_FOUND_ROWS di.*, d.name, d.company, d.code, d.type, d.dosageForm, d.specification,d.unit,d.tinyUnit,d.factor, d.sellPrice, d.criticalInventory from DrugInventory di left JOIN Drug d on d.id = di.drugId where di.hospitalId = ? order by di.id desc limit ?,?',
+        findDrugInventoriesByDrug: 'select SQL_CALC_FOUND_ROWS dg.sellPrice, h.*, d.batchNo, d.restAmount from DrugInventoryHistory h left JOIN DrugInventory d on h.inventoryId = d.id left join Drug dg on dg.id = h.drugId where h.drugId=? and h.hospitalId=? limit ?,?',
+        findDrugInventory: 'select SQL_CALC_FOUND_ROWS DISTINCT d.id, d.name, d.company, d.code, d.type, d.dosageForm, d.specification, d.unit, d.tinyUnit, d.factor, d.sellPrice, d.criticalInventory, d.inventory from Drug d JOIN DrugInventory di ON di.drugId=d.id  where d.hospitalId=? limit ?,?',
         insertDrugInventory: 'insert DrugInventory set ?',
         updateDrugInventory: 'update DrugInventory set ? where id=?',
         updateDrugInventoryBy: 'update DrugInventory set restAmount = restAmount - ? where id=?',
         updateDrugRestInventory: 'update Drug set inventory = inventory + ? where id=?',
         deleteDrugInventory: 'delete DrugInventory where id=?',
-        findDrugInventoryBy: 'select * from DrugInventory where hospitalId=? and drugId=? and batchNo=?'
+        findDrugInventoryBy: 'select * from DrugInventory where hospitalId=? and drugId=? and batchNo=?',
+        findDrugInventoryHistories: 'select SQL_CALC_FOUND_ROWS d.company, d.dosageForm, d.specification,d.`name`,d.tinyUnit, d.unit, d.type, h.id, h.amount, h.`comment`, h.drugId, h.operateDate, h.operator, h.operatorName, di.batchNo, di.expireDate, di.purchasePrice, di.restAmount from DrugInventoryHistory h left JOIN DrugInventory di on di.id =h.inventoryId left JOIN Drug d on d.id=h.drugId where h.type = ? and h.hospitalId=? limit ?,?'
         /*
          select SUM(di.restAmount) as inventory, d.*  FROM Drug d left join DrugInventory di on d.id = di.drugId group BY d.id
          */

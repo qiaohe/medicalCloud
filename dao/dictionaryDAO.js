@@ -89,12 +89,23 @@ module.exports = {
     findDrugById: function (id) {
         return db.query(sqlMapping.dict.findDrugById, id);
     },
+
+    findDrugInventoriesByDrug: function (drugId, hospitalId, conditions, page) {
+        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS dg.sellPrice, h.*, d.batchNo, d.restAmount from DrugInventoryHistory h left JOIN DrugInventory d on h.inventoryId = d.id left join Drug dg on dg.id = h.drugId where h.drugId=? and h.hospitalId=?  and ' + conditions.join(' and ') + ' limit ?,?' : sqlMapping.dict.findDrugInventoriesByDrug;
+        return db.queryWithCount(sqlMapping.dict.findDrugInventoriesByDrug, [drugId, hospitalId, page.from, page.size]);
+    },
+
     findDrugInventory: function (hospitalId, conditions, page) {
-        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS di.*,d.pinyin, d.name, d.company, d.code, d.type, d.dosageForm, d.specification,d.unit,d.tinyUnit,d.factor, d.sellPrice, d.criticalInventory from DrugInventory di left JOIN Drug d on d.id = di.drugId where di.hospitalId = ? and ' + conditions.join(' and ') + ' order by di.id desc limit ?,?' : sqlMapping.dict.findDrugInventory;
+        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS DISTINCT d.id,d.name,d.company, d.sellPrice, d.code, d.type, d.dosageForm, d.specification, d.unit, d.tinyUnit, d.factor, d.sellPrice, d.criticalInventory, d.inventory from Drug d JOIN DrugInventory di ON di.drugId=d.id where di.hospitalId = ? and ' + conditions.join(' and ') + ' limit ?,?' : sqlMapping.dict.findDrugInventory;
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     insertDrugInventory: function (item) {
         return db.query(sqlMapping.dict.insertDrugInventory, item);
+    },
+
+    findDrugInventoryHistories: function (type, hospitalId, conditions, page) {
+        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS d.company, d.dosageForm, d.specification,d.`name`,d.tinyUnit, d.unit, d.type, h.id, h.amount, h.`comment`, h.drugId, h.operateDate, h.operator, h.operatorName, di.batchNo, di.expireDate, di.purchasePrice, di.restAmount from DrugInventoryHistory h left JOIN DrugInventory di on di.id =h.inventoryId left JOIN Drug d on d.id=h.drugId where h.type = ? and h.hospitalId=?  and ' + conditions.join(' and ') + ' limit ?,?' : sqlMapping.dict.findDrugInventoryHistories;
+        return db.queryWithCount(sqlMapping.dict.findDrugInventoryHistories, [type, hospitalId, page.from, page.size]);
     },
 
     insertDrugInventoryHistory: function (history) {
