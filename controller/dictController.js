@@ -573,19 +573,35 @@ module.exports = {
         });
         return next();
     },
+
+    getDrugInventoriesByDrug: function (req, res, next) {
+        var drugId = req.params.id;
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        dictionaryDAO.findDrugInventoriesByDrug(drugId, req.user.hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (histories) {
+            histories.rows && histories.rows.length > 0 && histories.rows.forEach(function (history) {
+                history.type = config.inventoryType[+history.type];
+            });
+            histories.pageIndex = pageIndex;
+            res.send({ret: 0, data: histories});
+        });
+        return next();
+    },
+
     getDrugInventory: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var hospitalId = req.user.hospitalId;
         var conditions = [];
-        if (req.query.code) conditions.push('code like \'%' + req.query.code + '%\'');
-        if (req.query.type) conditions.push('type=\'' + req.query.type + '\'');
+        if (req.query.code) conditions.push('d.code like \'%' + req.query.code + '%\'');
+        if (req.query.checked) conditions.push('criticalInventory > inventory');
         if (req.query.name) {
             var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
-            conditions.push((reg.test(req.query.name) ? 'name' : 'pinyin') + ' like \'%' + req.query.name + '%\'');
+            conditions.push((reg.test(req.query.name) ? 'd.name' : 'd.pinyin') + ' like \'%' + req.query.name + '%\'');
         }
-        if (req.query.startDate) conditions.push('putOutDate>=\'' + req.query.startDate + ' 00:00:00\'');
-        if (req.query.endDate) conditions.push('putOutDate<=\'' + req.query.endDate + ' 23:59:59\'');
         dictionaryDAO.findDrugInventory(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
@@ -596,6 +612,25 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
+    },
+
+    getDrugInventoryHistories: function (req, res, next) {
+        var hospitalId = req.user.hospitalId;
+        var type = req.query.type;
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        dictionaryDAO.findDrugInventoryHistories(type, req.user.hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (histories) {
+            histories && histories.length > 0 && histories.forEach(function (history) {
+                history.type = config.inventoryType[+history.type];
+            });
+            histories.pageIndex = pageIndex;
+            res.send({ret: 0, data: histories});
+        });
+        return next();
+
     },
     addDrugInventory: function (req, res, next) {
         var item = req.body;

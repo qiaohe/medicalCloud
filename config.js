@@ -86,5 +86,6 @@ module.exports = {
     sendDrugTemplate: '【%s】您已领取【%s】医生在门诊号%S中开具的药品；请谨遵医嘱，祝您早日康复！',
     prescriptionOrderTemplate: '【%s】您在%s的诊疗费订单已生成，为了顺利完成诊疗，请通过收银窗口支付，或在一小时内完成网上支付。',
     orderStatus: ['未支付', '已支付', '已取消', '完成'],
-    orderType: ["挂号费", "药费", "诊疗费"]
+    orderType: ["挂号费", "药费", "诊疗费"],
+    inventoryType: ['入库', '出库']
 };

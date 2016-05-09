@@ -737,6 +737,19 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "get",
+        path: "/api/drugs/:id/drugInventories",
+        handler: dictController.getDrugInventoriesByDrug,
+        secured: 'user'
+    },
+
+    {
+        method: "get",
+        path: "/api/drugInventoryHistories",
+        handler: dictController.getDrugInventoryHistories,
+        secured: 'user'
+    },
+    {
         method: "post",
         path: "/api/drugInventory",
         handler: dictController.addDrugInventory,
