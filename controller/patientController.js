@@ -135,7 +135,7 @@ module.exports = {
                     creator: req.user.id,
                     gender: patient.gender,
                     idCard: patient.idCard,
-                    headPic: patient.headPic,
+                    headPic: (patient.headPic ? patient.headPic : config.app.defaultHeadPic),
                     address: patient.address,
                     status: 0
                 });

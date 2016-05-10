@@ -22,7 +22,8 @@ module.exports = {
         orderDelayMinutes: 240,
         prefixOfDrugSendRole: '药房',
         prefixOfDoctorRole: '医生',
-        prefixOfChargeRole: '收费'
+        prefixOfChargeRole: '收费',
+        defaultHeadPic: 'http://7xrtp2.com2.z0.glb.qiniucdn.com/headPic.png'
     },
     redis: {
         host: 'localhost',

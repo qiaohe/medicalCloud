@@ -94,7 +94,8 @@ module.exports = {
                     mobile: r.patientMobile,
                     createDate: new Date(),
                     password: md5(r.patientMobile.substring(r.patientMobile.length - 6, r.patientMobile.length)),
-                    creator: req.user.id
+                    creator: req.user.id,
+                    headPic:config.app.defaultHeadPic
                     //birthday: r.birthday
                 }).then(function (result) {
                     if (result.insertId) {

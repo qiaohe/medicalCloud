@@ -194,7 +194,8 @@ module.exports = {
                             mobile: registration.patientMobile,
                             createDate: new Date(),
                             password: md5(registration.patientMobile.substring(registration.patientMobile.length - 6, registration.patientMobile.length)),
-                            creator: req.user.id
+                            creator: req.user.id,
+                            headPic: config.app.defaultHeadPic
                         }).then(function (result) {
                             registration.patientBasicInfoId = result.insertId;
                             return redis.incrAsync('doctor:' + registration.doctorId + ':d:' + registration.registerDate + ':period:' + registration.shiftPeriod + ':incr').then(function (seq) {
