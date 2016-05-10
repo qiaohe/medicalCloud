@@ -12,7 +12,6 @@ var excel = require('../common/excel');
 var fs = require('fs');
 var path = require('path');
 var mime = require('mime');
-var pinyin = require('pinyin');
 module.exports = {
     getDepartments: function (req, res, next) {
         var hospitalId = req.user.hospitalId;
@@ -539,11 +538,6 @@ module.exports = {
     addDrug: function (req, res, next) {
         var item = req.body;
         item.hospitalId = req.user.hospitalId;
-        var s = pinyin(item.name, {
-            style: pinyin.STYLE_FIRST_LETTER,
-            heteronym: false
-        });
-        item.pinyin = s.join('');
         dictionaryDAO.insertDrug(item).then(function (result) {
             item.id = result.insertId;
             res.send({ret: 0, data: item});
