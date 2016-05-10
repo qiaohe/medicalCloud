@@ -208,7 +208,7 @@ module.exports = {
         updateDrugRestInventory: 'update Drug set inventory = inventory + ? where id=?',
         deleteDrugInventory: 'delete DrugInventory where id=?',
         findDrugInventoryBy: 'select * from DrugInventory where hospitalId=? and drugId=? and batchNo=?',
-        findDrugInventoryHistories: 'select SQL_CALC_FOUND_ROWS d.company, d.dosageForm, d.specification,d.`name`,d.tinyUnit, d.unit, d.type, h.id, h.amount, h.`comment`, h.drugId, h.operateDate, h.operator, h.operatorName, di.batchNo, di.expireDate, di.purchasePrice, di.restAmount from DrugInventoryHistory h left JOIN DrugInventory di on di.id =h.inventoryId left JOIN Drug d on d.id=h.drugId where h.type = ? and h.hospitalId=? order by h.operateDate desc limit ?,?'
+        findDrugInventoryHistories: 'select SQL_CALC_FOUND_ROWS d.company,d.code, d.dosageForm, d.specification,d.`name`,d.tinyUnit, d.unit, d.type, h.id, h.amount, h.`comment`, h.drugId, h.operateDate, h.operator, h.operatorName, di.batchNo, di.expireDate, di.purchasePrice, di.restAmount from DrugInventoryHistory h left JOIN DrugInventory di on di.id =h.inventoryId left JOIN Drug d on d.id=h.drugId where h.type = ? and h.hospitalId=? order by h.operateDate desc limit ?,?'
         /*
          select SUM(di.restAmount) as inventory, d.*  FROM Drug d left join DrugInventory di on d.id = di.drugId group BY d.id
          */
