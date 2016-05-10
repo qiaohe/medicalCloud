@@ -578,10 +578,7 @@ module.exports = {
         var drugId = req.params.id;
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        var conditions = [];
-        if (req.query.start) conditions.push('h.operateDate>=\'' + req.query.start + '\'');
-        if (req.query.end) conditions.push('h.operateDate<=\'' + req.query.end + '\'');
-        dictionaryDAO.findDrugInventoriesByDrug(drugId, req.user.hospitalId, conditions, {
+        dictionaryDAO.findDrugInventoriesByDrug(drugId, req.user.hospitalId, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (histories) {
@@ -622,13 +619,7 @@ module.exports = {
         var type = req.query.type;
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        var conditions = [];
-        if (req.query.start) conditions.push('h.operateDate>=\'' + req.query.start + '\'');
-        if (req.query.end) conditions.push('h.operateDate<=\'' + req.query.end + '\'');
-        if (req.query.code) conditions.push('d.code like \'%' + req.query.code + '%\'');
-        var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
-        if (req.query.name) conditions.push((reg.test(req.query.name) ? 'd.name' : 'd.pinyin') + ' like \'%' + req.query.name + '%\'');
-        dictionaryDAO.findDrugInventoryHistories(type, req.user.hospitalId, conditions, {
+        dictionaryDAO.findDrugInventoryHistories(type, req.user.hospitalId, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (histories) {
