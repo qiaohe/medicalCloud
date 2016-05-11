@@ -171,6 +171,7 @@ module.exports = {
         findTokenByUid: 'select token from Device where uid=?'
     },
     dict: {
+        findDrugInventoriesNoPagination: 'select d.code, d.name, d.type, d.specification, di.batchNo, di.amount, di.restAmount, di.purchasePrice, d.unit,d.tinyUnit,di.expireDate, di.createDate, di.operatorName from DrugInventory di left join Drug d on di.drugId =d.id where d.hospitalId=? order by di.createDate desc',
         findDrugInventoryHistoryByType: 'select d.*, dh.amount, dh.batchId, dh.`comment`, dh.operateDate, dh.operator, dh.operatorName from DrugInventoryHistory dh left JOIN Drug d on dh.`code` = d.`code` where d.hospitalId=? and dh.type=?',
         insertDisease: 'insert DiseaseDic set ?',
         insertDrugInventoryHistory: 'insert DrugInventoryHistory set ?',
@@ -209,7 +210,7 @@ module.exports = {
         updateDrugRestInventory: 'update Drug set inventory = inventory + ? where id=?',
         deleteDrugInventory: 'delete DrugInventory where id=?',
         findDrugInventoryBy: 'select * from DrugInventory where hospitalId=? and drugId=? and batchNo=?',
-        findDrugInventoryHistories: 'select SQL_CALC_FOUND_ROWS d.company,d.code, d.dosageForm, d.specification,d.`name`,d.tinyUnit, d.unit, d.type, h.id, h.amount, h.`comment`, h.drugId, h.operateDate, h.operator, h.operatorName, di.batchNo, di.expireDate, di.purchasePrice, di.restAmount from DrugInventoryHistory h left JOIN DrugInventory di on di.id =h.inventoryId left JOIN Drug d on d.id=h.drugId where h.type = ? and h.hospitalId=? order by h.operateDate desc limit ?,?'
+        findDrugInventoryHistories: 'select SQL_CALC_FOUND_ROWS d.company,d.code,d.sellPrice, d.dosageForm, d.specification,d.`name`,d.tinyUnit, d.unit, d.type, h.id, h.amount, h.`comment`, h.drugId, h.operateDate, h.operator, h.operatorName, di.batchNo, di.expireDate, di.purchasePrice, di.restAmount from DrugInventoryHistory h left JOIN DrugInventory di on di.id =h.inventoryId left JOIN Drug d on d.id=h.drugId where h.type = ? and h.hospitalId=? order by h.operateDate desc limit ?,?'
         /*
          select SUM(di.restAmount) as inventory, d.*  FROM Drug d left join DrugInventory di on d.id = di.drugId group BY d.id
          */
@@ -225,7 +226,7 @@ module.exports = {
         findPrescriptionsBy: 'select * from Prescription where registrationId = ?',
         findPrescriptionsByOrderNo: 'select * from Prescription where orderNo = ?',
         findRecipesBy: 'select * from Recipe where registrationId = ?',
-        findDrugInventoryByDrugId: 'select id, drugId, restAmount, batchNo, expireDate from  DrugInventory where drugId=? and expireDate>=? and restAmount>? order by expireDate '
+        findDrugInventoryByDrugId: 'select id, drugId, restAmount, batchNo, expireDate, code from  DrugInventory where drugId=? and expireDate>=? and restAmount>? order by expireDate '
     },
     order: {
         insert: 'insert MedicalOrder set ?',

@@ -692,7 +692,14 @@ module.exports = [
     {
         method: "get",
         path: "/api/export/drugs",
-        handler: dictController.exportDrugs
+        handler: dictController.exportDrugs,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/export/inventories",
+        handler: dictController.exportInventories,
+        secured: 'user'
     },
     {
         method: "get",

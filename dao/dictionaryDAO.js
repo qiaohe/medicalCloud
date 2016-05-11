@@ -72,7 +72,6 @@ module.exports = {
         var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS * from Drug where hospitalId=? and ' + conditions.join(' and ') + ' order by id desc LIMIT ?, ?' : sqlMapping.dict.findDrugs;
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
-
     findDrugsNoPagination: function (hospitalId) {
         return db.query('SELECT code,name, pinyin, company, type, dosageForm, specification, unit, sellPrice, criticalInventory, hospitalId from Drug where hospitalId=?', hospitalId);
     },
@@ -100,17 +99,20 @@ module.exports = {
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
 
-   findDrugInventories: function (hospitalId, conditions, page) {
+    findDrugInventories: function (hospitalId, conditions, page) {
         var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS di.id,d.type,di.operatorName, di.drugId, di.restAmount, di.amount, batchNo, expireDate, purchasePrice, d.`code`, d.`name`, d.company, d.criticalInventory, d.dosageForm,d.factor, d.inventory, d.sellPrice, d.unit, d.tinyUnit, d.specification from DrugInventory di left join Drug d on di.drugId =d.id where d.hospitalId=?  and ' + conditions.join(' and ') + ' order by di.createDate desc limit ?,?' : sqlMapping.dict.findDrugInventories;
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
 
+    findDrugInventoriesNoPagination: function (hospitalId) {
+        return db.query(sqlMapping.dict.findDrugInventoriesNoPagination, hospitalId);
+    },
     insertDrugInventory: function (item) {
         return db.query(sqlMapping.dict.insertDrugInventory, item);
     },
 
     findDrugInventoryHistories: function (type, hospitalId, conditions, page) {
-        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS d.company, d.dosageForm,d.code, d.specification,d.`name`,d.tinyUnit, d.unit, d.type, h.id, h.amount, h.`comment`, h.drugId, h.operateDate, h.operator, h.operatorName, di.batchNo, di.expireDate, di.purchasePrice, di.restAmount from DrugInventoryHistory h left JOIN DrugInventory di on di.id =h.inventoryId left JOIN Drug d on d.id=h.drugId where h.type = ? and h.hospitalId=?  and ' + conditions.join(' and ') + ' order by h.operateDate desc limit ?,?' : sqlMapping.dict.findDrugInventoryHistories;
+        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS d.company, d.dosageForm,d.code, d.specification,d.`name`,d.tinyUnit, d.unit, d.type, h.id, h.amount, h.`comment`, h.drugId, h.operateDate, h.operator, h.operatorName, di.batchNo, di.expireDate, di.purchasePrice, di.restAmount,d.sellPrice from DrugInventoryHistory h left JOIN DrugInventory di on di.id =h.inventoryId left JOIN Drug d on d.id=h.drugId where h.type = ? and h.hospitalId=?  and ' + conditions.join(' and ') + ' order by h.operateDate desc limit ?,?' : sqlMapping.dict.findDrugInventoryHistories;
         return db.queryWithCount(sql, [type, hospitalId, page.from, page.size]);
     },
 

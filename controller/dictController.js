@@ -502,6 +502,7 @@ module.exports = {
         if (req.query.type) conditions.push('type=\'' + req.query.type + '\'');
         var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
         if (req.query.name) conditions.push((reg.test(req.query.name) ? 'name' : 'pinyin') + ' like \'%' + req.query.name + '%\'');
+        if (req.query.prescription) conditions.push('inventory > 0');
         dictionaryDAO.findDrugs(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
@@ -513,7 +514,6 @@ module.exports = {
         });
         return next();
     },
-
     importDrugs: function (req, res, next) {
         var rows = excel.parse(req.files['file'].path, {hospitalId: req.user.hospitalId});
         dictionaryDAO.insertDrugByBatch(rows).then(function (result) {
@@ -524,8 +524,8 @@ module.exports = {
 
     exportDrugs: function (req, res, next) {
         var header = ['code编号', 'name名称', '药品名称首字母拼音', 'company生产企业', 'tpye类型', 'dosageForm剂型药品剂型', 'specification药品规格', 'unit单位', 'price售价', '临界库存', '医院'];
-        dictionaryDAO.findDrugsNoPagination(1).then(function (drugs) {
-            var file = excel.export(drugs, header, {hospitalId: 1});
+        dictionaryDAO.findDrugsNoPagination(req.user.hospitalId).then(function (drugs) {
+            var file = excel.export(drugs, header, {hospitalId: req.user.hospitalId}, 'drugs');
             var filename = path.basename(file);
             var mimetype = mime.lookup(file);
             res.setHeader('Content-disposition', 'attachment; filename=' + filename + '.xlsx');
@@ -535,6 +535,21 @@ module.exports = {
         });
         return next();
     },
+
+    exportInventories: function (req, res, next) {
+        var header = ['编号', '名称', '类别', '规格', '	批次', '入库数量', '库存量', '进价（元）', '单位', '拆零单位', '有效期', '入库日期', '入库人'];
+        dictionaryDAO.findDrugInventoriesNoPagination(req.user.hospitalId).then(function (inventories) {
+            var file = excel.export(inventories, header, {hospitalId: req.user.hospitalId}, 'inventories');
+            var filename = path.basename(file);
+            var mimetype = mime.lookup(file);
+            res.setHeader('Content-disposition', 'attachment; filename=' + filename + '.xlsx');
+            res.setHeader('Content-type', mimetype);
+            var filestream = fs.createReadStream(file);
+            filestream.pipe(res);
+        });
+        return next();
+    },
+
 
     addDrug: function (req, res, next) {
         var item = req.body;
@@ -586,8 +601,8 @@ module.exports = {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var conditions = [];
-        if (req.query.start) conditions.push('h.operateDate>=\'' + req.query.start + '\'');
-        if (req.query.end) conditions.push('h.operateDate<=\'' + req.query.end + '\'');
+        if (req.query.start) conditions.push('h.operateDate>=\'' + req.query.start + ' 00:00:00\'');
+        if (req.query.end) conditions.push('h.operateDate<=\'' + req.query.end + ' 23:59:59\'');
         dictionaryDAO.findDrugInventoriesByDrug(drugId, req.user.hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
@@ -635,6 +650,10 @@ module.exports = {
             var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
             conditions.push((reg.test(req.query.name) ? 'd.name' : 'd.pinyin') + ' like \'%' + req.query.name + '%\'');
         }
+        if (req.query.expireDate) conditions.push('di.expireDate<=\'' + req.query.expireDate + ' 23:59:59\'');
+        if (req.query.start) conditions.push('di.createDate>=\'' + req.query.start + ' 00:00:00\'');
+        if (req.query.end) conditions.push('di.createDate<=\'' + req.query.end + ' 23:59:59\'');
+        if (req.query.greaterThanZero) conditions.push('di.restAmount>0');
         dictionaryDAO.findDrugInventories(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
@@ -653,7 +672,7 @@ module.exports = {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var conditions = [];
-        if (req.query.start) conditions.push('h.operateDate>=\'' + req.query.start + '00:00:00\'');
+        if (req.query.start) conditions.push('h.operateDate>=\'' + req.query.start + ' 00:00:00\'');
         if (req.query.end) conditions.push('h.operateDate<=\'' + req.query.end + ' 23:59:59\'');
         if (req.query.code) conditions.push('d.code like \'%' + req.query.code + '%\'');
         if (req.query.expireDate) conditions.push('di.expireDate<=\'' + req.query.expireDate + ' 23:59:59\'');
