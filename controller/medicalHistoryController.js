@@ -295,7 +295,13 @@ module.exports = {
             if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
             orders.rows.forEach(function (order) {
                 order.memberType = config.memberType[+order.memberType];
-                order.paymentType = config.paymentType[+order.paymentType];
+                var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
+                if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
+                var ps = [];
+                paymentTypes && paymentTypes.forEach(function (item) {
+                    ps.push(config.paymentType[+item]);
+                });
+                order.paymentType = ps.join(',');
                 order.status = config.orderStatus[+order.status];
                 order.type = config.orderType[+order.type];
             });
@@ -345,7 +351,13 @@ module.exports = {
             if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
             orders.rows.forEach(function (order) {
                 order.memberType = config.memberType[+order.memberType];
-                order.paymentType = config.paymentType[+order.paymentType];
+                var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
+                if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
+                var ps = [];
+                paymentTypes && paymentTypes.forEach(function (item) {
+                    ps.push(config.paymentType[+item]);
+                });
+                order.paymentType = ps.join(',');
                 order.status = config.orderStatus[+order.status];
                 order.type = config.orderType[+order.type];
             });
@@ -459,7 +471,24 @@ module.exports = {
                         if (drugInventories.length) {
                             var inventory = drugInventories[0];
                             inventory.restAmount = inventory.restAmount - recipe.quantity;
-                            return dictionaryDAO.updateDrugInventory(inventory);
+                            return dictionaryDAO.updateDrugInventory(inventory).then(function () {
+                                return dictionaryDAO.updateDrugRestInventory(inventory.drugId, recipe.quantity * (-1)).then(function (result) {
+                                    var history = {
+                                        drugId: inventory.drugId,
+                                        code: inventory.code,
+                                        batchNo: inventory.batchNo,
+                                        operator: req.user.id,
+                                        operatorName: req.user.name,
+                                        type: 1,
+                                        hospitalId: req.user.hospitalId,
+                                        operateDate: new Date(),
+                                        amount: recipe.quantity,
+                                        inventoryId: inventory.id,
+                                        comment: '处方'
+                                    };
+                                    return dictionaryDAO.insertDrugInventoryHistory(history);
+                                })
+                            })
                         }
                     })
                 }).then(function (result) {

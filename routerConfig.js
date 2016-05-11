@@ -738,6 +738,12 @@ module.exports = [
     },
     {
         method: "get",
+        path: "/api/drugInventories",
+        handler: dictController.getDrugInventories,
+        secured: 'user'
+    },
+    {
+        method: "get",
         path: "/api/drugs/:id/drugInventories",
         handler: dictController.getDrugInventoriesByDrug,
         secured: 'user'

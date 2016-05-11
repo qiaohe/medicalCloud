@@ -99,6 +99,12 @@ module.exports = {
         var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS DISTINCT d.id,d.name,d.company, d.sellPrice, d.code, d.type, d.dosageForm, d.specification, d.unit, d.tinyUnit, d.factor, d.sellPrice, d.criticalInventory, d.inventory from Drug d JOIN DrugInventory di ON di.drugId=d.id where di.hospitalId = ? and ' + conditions.join(' and ') + ' limit ?,?' : sqlMapping.dict.findDrugInventory;
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
+
+   findDrugInventories: function (hospitalId, conditions, page) {
+        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS di.id,d.type,di.operatorName, di.drugId, di.restAmount, di.amount, batchNo, expireDate, purchasePrice, d.`code`, d.`name`, d.company, d.criticalInventory, d.dosageForm,d.factor, d.inventory, d.sellPrice, d.unit, d.tinyUnit, d.specification from DrugInventory di left join Drug d on di.drugId =d.id where d.hospitalId=?  and ' + conditions.join(' and ') + ' order by di.createDate desc limit ?,?' : sqlMapping.dict.findDrugInventories;
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
+    },
+
     insertDrugInventory: function (item) {
         return db.query(sqlMapping.dict.insertDrugInventory, item);
     },

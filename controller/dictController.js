@@ -624,6 +624,29 @@ module.exports = {
         return next();
     },
 
+    getDrugInventories: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        var hospitalId = req.user.hospitalId;
+        var conditions = [];
+        if (req.query.code) conditions.push('d.code like \'%' + req.query.code + '%\'');
+        if (req.query.checked) conditions.push('di.restAmount > 0');
+        if (req.query.name) {
+            var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
+            conditions.push((reg.test(req.query.name) ? 'd.name' : 'd.pinyin') + ' like \'%' + req.query.name + '%\'');
+        }
+        dictionaryDAO.findDrugInventories(hospitalId, conditions, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (items) {
+            items.pageIndex = pageIndex;
+            res.send({ret: 0, data: items});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
     getDrugInventoryHistories: function (req, res, next) {
         var hospitalId = req.user.hospitalId;
         var type = req.query.type;
@@ -654,6 +677,8 @@ module.exports = {
         var item = req.body;
         item.hospitalId = req.user.hospitalId;
         item.createDate = new Date();
+        item.operatorName = req.user.name;
+        item.operator = req.user.id;
         var history = {
             drugId: item.drugId,
             code: item.code,
@@ -670,6 +695,8 @@ module.exports = {
                 item = result[0];
                 item.amount = item.amount + req.body.amount;
                 item.restAmount = item.restAmount + req.body.amount;
+                item.operatorName = req.user.name;
+                item.operator = req.user.id;
                 return dictionaryDAO.updateDrugInventory(item).then(function (rs) {
                     history.inventoryId = result[0].id;
                     return dictionaryDAO.insertDrugInventoryHistory(history);

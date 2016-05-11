@@ -202,6 +202,7 @@ module.exports = {
         findDrugById: 'select * from Drug where id = ?',
         findDrugInventoriesByDrug: 'select SQL_CALC_FOUND_ROWS dg.sellPrice, h.*, d.batchNo, d.restAmount from DrugInventoryHistory h left JOIN DrugInventory d on h.inventoryId = d.id left join Drug dg on dg.id = h.drugId where h.drugId=? and h.hospitalId=? limit ?,?',
         findDrugInventory: 'select SQL_CALC_FOUND_ROWS DISTINCT d.id, d.name, d.company, d.code, d.type, d.dosageForm, d.specification, d.unit, d.tinyUnit, d.factor, d.sellPrice, d.criticalInventory, d.inventory from Drug d JOIN DrugInventory di ON di.drugId=d.id  where d.hospitalId=? limit ?,?',
+        findDrugInventories: 'select SQL_CALC_FOUND_ROWS di.id, di.operatorName, d.type,di.drugId, di.restAmount, di.amount, batchNo, expireDate, purchasePrice, d.`code`, d.`name`, d.company, d.criticalInventory, d.dosageForm,d.factor, d.inventory, d.sellPrice, d.unit, d.tinyUnit, d.specification from DrugInventory di left join Drug d on di.drugId =d.id where d.hospitalId=? order by di.createDate desc limit ?,?',
         insertDrugInventory: 'insert DrugInventory set ?',
         updateDrugInventory: 'update DrugInventory set ? where id=?',
         updateDrugInventoryBy: 'update DrugInventory set restAmount = restAmount - ? where id=?',
@@ -224,7 +225,7 @@ module.exports = {
         findPrescriptionsBy: 'select * from Prescription where registrationId = ?',
         findPrescriptionsByOrderNo: 'select * from Prescription where orderNo = ?',
         findRecipesBy: 'select * from Recipe where registrationId = ?',
-        findDrugInventoryByDrugId: 'select id, drugId, restAmount, batchNo, expireDate from  DrugInventory where drugId=? and expireDate>=? and putOutDate is null and restAmount>? order by expireDate '
+        findDrugInventoryByDrugId: 'select id, drugId, restAmount, batchNo, expireDate from  DrugInventory where drugId=? and expireDate>=? and restAmount>? order by expireDate '
     },
     order: {
         insert: 'insert MedicalOrder set ?',
