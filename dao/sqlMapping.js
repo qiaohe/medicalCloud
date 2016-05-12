@@ -97,7 +97,7 @@ module.exports = {
     doctor: {
         insert: 'insert Doctor set ?',
         findDoctors: 'select id, name from Doctor where hospitalId=?',
-        findDiscountRateOfDoctor: 'select maxDiscountRate from Employee where hospitalId=? and id=?',
+        findDiscountRateOfDoctor: 'select maxDiscountRate, d.departmentName, d.clinic from Employee e, Doctor d  where e.id = d.employeeId and e.hospitalId=? and e.id=?',
         findDoctorsByHospital: 'select SQL_CALC_FOUND_ROWS d.*, e.birthday, d.clinic, e.mobile from Doctor d, Employee e where e.id = d.employeeId and d.status <> 2 and d.hospitalId = ? order by d.id desc limit ?, ?',
         findDoctorsGroupByDepartment: 'select id, name, departmentName from Doctor where status <> 2 and hospitalId = ?',
         findByDepartment: 'select id, name, departmentName, hospitalName, headPic,registrationFee, speciality,jobTitle from Doctor where hospitalId = ?  and departmentId = ?',
@@ -197,7 +197,7 @@ module.exports = {
         findDrugsBy: 'select * from Drug where hospitalId=? and ',
         findChargeItemsBy: 'select * from ChargeItem where hospitalId=? and ',
         insertDrug: 'insert Drug set ?',
-        insertDrugByBatch: 'INSERT INTO Drug (code, name,company, type, dosageForm, specification,tinyUnit, factor, unit, sellPrice,criticalInventory, hospitalId) VALUES ?',
+        insertDrugByBatch: 'INSERT INTO Drug (code, name,company, type, dosageForm, specification,unit, sellPrice,criticalInventory, hospitalId) VALUES ?',
         updateDrug: 'update Drug set ? where id = ?',
         deleteDrug: 'delete from Drug where id=?',
         findDrugById: 'select * from Drug where id = ?',

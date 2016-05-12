@@ -523,7 +523,7 @@ module.exports = {
     },
 
     exportDrugs: function (req, res, next) {
-        var header = ['code编号', 'name名称', '药品名称首字母拼音', 'company生产企业', 'tpye类型', 'dosageForm剂型药品剂型', 'specification药品规格', 'unit单位', 'price售价', '临界库存', '医院'];
+        var header = ['编号', '名称', '药品名称首字母拼音', '生产企业', '类型', '剂型药品剂型', '药品规格', '单位', '售价', '临界库存'];
         dictionaryDAO.findDrugsNoPagination(req.user.hospitalId).then(function (drugs) {
             var file = excel.export(drugs, header, {hospitalId: req.user.hospitalId}, 'drugs');
             var filename = path.basename(file);

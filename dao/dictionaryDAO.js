@@ -73,7 +73,7 @@ module.exports = {
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
     findDrugsNoPagination: function (hospitalId) {
-        return db.query('SELECT code,name, pinyin, company, type, dosageForm, specification, unit, sellPrice, criticalInventory, hospitalId from Drug where hospitalId=?', hospitalId);
+        return db.query('SELECT code,name, pinyin, company, type, dosageForm, specification, unit, sellPrice, criticalInventory from Drug where hospitalId=?', hospitalId);
     },
 
     deleteDrug: function (id) {
