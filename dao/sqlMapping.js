@@ -226,7 +226,7 @@ module.exports = {
         findPrescriptionsBy: 'select * from Prescription where registrationId = ?',
         findPrescriptionsByOrderNo: 'select * from Prescription where orderNo = ?',
         findRecipesBy: 'select * from Recipe where registrationId = ?',
-        findDrugInventoryByDrugId: 'select id, drugId, restAmount, batchNo, expireDate, code from  DrugInventory where drugId=? and expireDate>=? and restAmount>? order by expireDate '
+        findDrugInventoryByDrugId: 'select id, drugId, restAmount, batchNo, expireDate, code from  DrugInventory where drugId=? and expireDate>=? and restAmount>=? order by expireDate '
     },
     order: {
         insert: 'insert MedicalOrder set ?',

@@ -14,7 +14,7 @@ module.exports = {
         var userName = (req.body && req.body.username) || (req.query && req.query.username);
         var password = (req.body && req.body.password) || (req.query && req.query.password);
         var user = {};
-        var domainName = 'www.hisforce.cn'; //req.headers.origin.substring(7, req.headers.origin.length);
+        var domainName = req.headers.origin.substring(7, req.headers.origin.length);
         employeeDAO.findByUsernameAndDomain(domainName, userName).then(function (users) {
             if (!users || !users.length) throw new Error(i18n.get('member.not.exists'));
             user = users[0];

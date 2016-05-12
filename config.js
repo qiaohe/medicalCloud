@@ -4,14 +4,14 @@ module.exports = {
     server: {
         name: 'medical cloud platform',
         version: '0.0.1',
-        host: 'localhost',
+        host: 'api.hisforce.cn',
         port: 8084
     },
     db: {
-        host: '121.42.171.213',
+        host: '10.161.161.229',
         port: '3306',
         user: 'root',
-        password: 'heqiao75518',
+        password: 'heqiao75518?',
         debug: false,
         multipleStatements: true,
         database: 'medicalDB'
@@ -26,12 +26,12 @@ module.exports = {
         defaultHeadPic: 'http://7xrtp2.com2.z0.glb.qiniucdn.com/headPic.png'
     },
     redis: {
-        host: 'localhost',
+        host: '10.161.161.229',
         port: 6379
     },
     rongcloud: {
-        appKey: 'z3v5yqkbvtei0',
-        appSecret: 'BDcA3iRjgFp'
+        appKey: 'vnroth0kru1bo',
+        appSecret: 'VpGhM1NiOBP3W'
     },
     qiniu: {
         ak: "0d02DpW7tBPiN3TuZYV7WcxmN1C9aCiNZeW9fp5W",
