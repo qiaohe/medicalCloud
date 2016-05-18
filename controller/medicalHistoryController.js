@@ -605,7 +605,7 @@ module.exports = {
             }).then(function (sumResults) {
                 var data = {};
                 data.summaries = [];
-                sumResults[0] && sumResults[0].forEach(function (summary) {
+                sumResults && sumResults.forEach(function (summary) {
                     for (var i = 0; i <= 3; i++) {
                         var field = 'paymentType' + (i === 0 ? '' : i);
                         var amountFiled = 'paidAmount' + (i === 0 ? '' : i);
@@ -618,7 +618,7 @@ module.exports = {
                             } else {
                                 data.summaries.push({
                                     fieldName: config.paymentType[summary[field]],
-                                    sum: summary[amountFiled] + summaryItem.sum
+                                    sum: summary[amountFiled]
                                 });
                             }
                         }
@@ -638,7 +638,7 @@ module.exports = {
                 });
                 orders.pageIndex = pageIndex;
                 data.orders = orders;
-                res.send({ret: 0, data: orders});
+                res.send({ret: 0, data: data});
             })
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
