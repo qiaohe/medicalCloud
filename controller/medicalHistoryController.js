@@ -466,7 +466,7 @@ module.exports = {
         if (status == 3) {
             medicalDAO.findRecipesByOrderNo(orderNo).then(function (recipes) {
                 var expireDate = moment().format('YYYY-MM-DD');
-                Promise.map(recipes, function (recipe) {
+                Promise.each(recipes, function (recipe) {
                     return medicalDAO.findDrugInventoryByDrugId(+recipe.drugId, expireDate, +recipe.quantity).then(function (drugInventories) {
                         if (drugInventories.length) {
                             var inventory = drugInventories[0];
@@ -578,6 +578,12 @@ module.exports = {
             orders.pageIndex = pageIndex;
             orders.fields = [];
             Promise.map(orders.rows, function (order) {
+                var paymentSummary = [];
+                if (order.paymentType1 != null) paymentSummary.push(config.paymentType[order.paymentType1] + ':' + order.paidAmount1);
+                if (order.paymentType2 != null) paymentSummary.push(config.paymentType[order.paymentType2] + ':' + order.paidAmount2);
+                if (order.paymentType3 != null) paymentSummary.push(config.paymentType[order.paymentType3] + ':' + order.paidAmount3);
+                if (order.paymentType != null) paymentSummary.push(config.paymentType[order.paymentType] + ':' + order.paidAmount);
+                order.paymentSummary = paymentSummary.join(',');
                 if (order.type == 2) {
                     return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
                         order.extras = extras;
@@ -589,9 +595,20 @@ module.exports = {
                     })
                 }
             }).then(function () {
+                return orderDAO.sumAccountInfo(req.user.hospitalId);
+            }).then(function(sumResults){
+                var data = {};
+                data.summary = sumResults[0];
+                data.summary
                 orders.rows.length && orders.rows.forEach(function (order) {
                     order.memberType = config.memberType[+order.memberType];
-                    order.paymentType = config.paymentType[+order.paymentType];
+                    var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
+                    if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
+                    var ps = [];
+                    paymentTypes && paymentTypes.forEach(function (item) {
+                        ps.push(config.paymentType[+item]);
+                    });
+                    order.paymentType = ps.join(',');
                     order.status = config.orderStatus[+order.status];
                     order.type = config.orderType[+order.type];
                 });
