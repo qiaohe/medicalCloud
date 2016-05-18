@@ -16,7 +16,7 @@ module.exports = {
         findNoPlanBusinessPeople: 'select id, name from Employee where hospitalId = ? and role = 4 and id not in(select DISTINCT businessPeopleId from Performance where left(yearMonth, 4) =?)',
         updateEmployee: 'update Employee set password=? where mobile = ?',
         updateEmployeeByUid: 'update Employee set ? where id = ?',
-        findEmployees: 'select SQL_CALC_FOUND_ROWS e.id, e.`name`, d.`name` as department, e.mobile, e.gender, e.birthday, job.`name` as jobTitle, role.`name` as role, e.`status`, e.maxDiscountRate  from Employee e LEFT JOIN Department d on d.id = e.department left JOIN Role role on role.id = e.role left JOIN JobTitle job on job.id = e.jobTitle where e.hospitalId =? order by e.id desc limit ?,?',
+        findEmployees: 'select SQL_CALC_FOUND_ROWS e.id, e.`name`, d.`name` as department, e.mobile, e.gender, e.birthday, job.`name` as jobTitle, role.`name` as role, e.`status`, e.admin as isAdmin, e.maxDiscountRate  from Employee e LEFT JOIN Department d on d.id = e.department left JOIN Role role on role.id = e.role left JOIN JobTitle job on job.id = e.jobTitle where e.hospitalId =? order by e.id desc limit ?,?',
         findRoles: 'select id, name from Role where hospitalId = ?',
         findById: 'select * from Employee where id=? and hospitalId =?',
         findByIdWithHospital: 'select e.*, h.name as hospitalName from Employee e, Hospital h where e.hospitalId = h.id and e.hospitalId= ? and  e.id = ?',

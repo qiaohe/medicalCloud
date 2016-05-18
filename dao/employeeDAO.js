@@ -27,7 +27,7 @@ module.exports = {
     findEmployees: function (hospitalId, page, conditions) {
         var sql = sqlMapping.employee.findEmployees;
         if (conditions.length) {
-            sql = 'select SQL_CALC_FOUND_ROWS e.id, e.`name`, d.`name` as department, e.mobile, e.gender, e.birthday, job.`name` as jobTitle, role.`name` as role, e.`status`, e.maxDiscountRate  from Employee e LEFT JOIN Department d on d.id = e.department left JOIN Role role on role.id = e.role left JOIN JobTitle job on job.id = e.jobTitle where e.hospitalId =? and ' + conditions.join(' and ') + ' order by e.id desc limit ?,?';
+            sql = 'select SQL_CALC_FOUND_ROWS e.id, e.`name`, d.`name` as department, e.mobile, e.gender, e.birthday, job.`name` as jobTitle, role.`name` as role, e.`status`, e.maxDiscountRate, e.admin as isAdmin  from Employee e LEFT JOIN Department d on d.id = e.department left JOIN Role role on role.id = e.role left JOIN JobTitle job on job.id = e.jobTitle where e.hospitalId =? and ' + conditions.join(' and ') + ' order by e.id desc limit ?,?';
         }
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
