@@ -14,7 +14,7 @@ function getConditions(req) {
     if (req.query.groupId) conditions.push('p.groupId=' + req.query.groupId);
     if (req.query.consumptionLevel) conditions.push('p.consumptionLevel=' + req.query.consumptionLevel);
     if (req.query.recommender) conditions.push('p.recommender=' + req.query.recommender);
-    if (req.query.name) conditions.push('pb.realName like \'%' + req.query.name + '%\'');
+    if (req.query.realName) conditions.push('pb.realName like \'%' + req.query.name + '%\'');
     if (req.query.mobile) conditions.push('pb.mobile like \'%' + req.query.mobile + '%\'');
     return conditions;
 }
@@ -119,6 +119,7 @@ module.exports = {
                 return businessPeopleDAO.updatePatientBasicInfo({
                     id: basicInfos[0].id,
                     name: patient.name ? patient.name : basicInfos[0].name,
+                    realName: patient.realName ? patient.realName : basicInfos[0].realName,
                     mobile: patient.mobile,
                     gender: patient.gender,
                     idCard: patient.idCard ? patient.idCard : basicInfos[0].idCard,
@@ -128,10 +129,11 @@ module.exports = {
             } else {
                 return businessPeopleDAO.insertPatientBasicInfo({
                     name: patient.name,
+                    realName: patient.realName,
                     mobile: patient.mobile,
                     createDate: new Date(),
                     //birthday: patient.birthday,
-                    password: md5(patient.patientMobile.substring(patient.patientMobile.length - 6, patient.patientMobile.length)),
+                    password: md5(patient.mobile.substring(patient.mobile.length - 6, patient.mobile.length)),
                     creator: req.user.id,
                     gender: patient.gender,
                     idCard: patient.idCard,

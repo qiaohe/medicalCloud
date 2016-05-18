@@ -578,28 +578,52 @@ module.exports = {
             orders.pageIndex = pageIndex;
             orders.fields = [];
             Promise.map(orders.rows, function (order) {
-                var paymentSummary = [];
-                if (order.paymentType1 != null) paymentSummary.push(config.paymentType[order.paymentType1] + ':' + order.paidAmount1);
-                if (order.paymentType2 != null) paymentSummary.push(config.paymentType[order.paymentType2] + ':' + order.paidAmount2);
-                if (order.paymentType3 != null) paymentSummary.push(config.paymentType[order.paymentType3] + ':' + order.paidAmount3);
-                if (order.paymentType != null) paymentSummary.push(config.paymentType[order.paymentType] + ':' + order.paidAmount);
-                order.paymentSummary = paymentSummary.join(',');
+                order.extras = [];
+                for (var i = 0; i <= 3; i++) {
+                    var field = 'paymentType' + (i === 0 ? '' : i);
+                    var amountFiled = 'paidAmount' + (i === 0 ? '' : i);
+                    if (order[field] != null) {
+                        order.extras.push({
+                            fieldName: config.paymentType[order[field]],
+                            sum: order[amountFiled]
+                        });
+                        if (orders.fields.indexOf(config.paymentType[order[field]]) < 0)
+                            orders.fields.push(config.paymentType[order[field]]);
+                    }
+                }
                 if (order.type == 2) {
                     return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
-                        order.extras = extras;
+                        order.extras.push(extras);
                         _.forEach(extras, function (item) {
                             if (orders.fields.indexOf(item.fieldName) < 0)
                                 orders.fields.push(item.fieldName);
-                            //order[item.fieldName] = item.sum;
                         });
                     })
                 }
             }).then(function () {
-                return orderDAO.sumAccountInfo(req.user.hospitalId);
-            }).then(function(sumResults){
+                return orderDAO.findAccountInfo(req.user.hospitalId);
+            }).then(function (sumResults) {
                 var data = {};
-                data.summary = sumResults[0];
-                data.summary
+                data.summaries = [];
+                sumResults[0] && sumResults[0].forEach(function (summary) {
+                    for (var i = 0; i <= 3; i++) {
+                        var field = 'paymentType' + (i === 0 ? '' : i);
+                        var amountFiled = 'paidAmount' + (i === 0 ? '' : i);
+                        if (summary[field] != null) {
+                            var summaryItem = _.find(data.summaries, function (item) {
+                                return item.fieldName == config.paymentType[summary[field]];
+                            });
+                            if (summaryItem) {
+                                summaryItem.sum = summaryItem.sum + summaryItem.sum;
+                            } else {
+                                data.summaries.push({
+                                    fieldName: config.paymentType[summary[field]],
+                                    sum: summary[amountFiled] + summaryItem.sum
+                                });
+                            }
+                        }
+                    }
+                });
                 orders.rows.length && orders.rows.forEach(function (order) {
                     order.memberType = config.memberType[+order.memberType];
                     var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
@@ -613,6 +637,7 @@ module.exports = {
                     order.type = config.orderType[+order.type];
                 });
                 orders.pageIndex = pageIndex;
+                data.orders = orders;
                 res.send({ret: 0, data: orders});
             })
         }).catch(function (err) {

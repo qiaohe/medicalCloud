@@ -58,7 +58,7 @@ module.exports = {
     findOrderByOrderNo: function (orderNo) {
         return db.query(sqlMapping.order.findOrderByOrderNo, [orderNo]);
     },
-    sumAccountInfo: function (hospitalId) {
-        return db.query(sqlMapping.order.sumAccountInfo, hospitalId);
+    findAccountInfo: function (hospitalId) {
+        return db.query(sqlMapping.order.findAccountInfo, hospitalId);
     }
 }
