@@ -29,7 +29,7 @@ module.exports = {
             user.lastLoginDate = result;
             hospitalDAO.findCustomerServiceId(user.hospitalId).then(function (cs) {
                 if (cs && cs.length && cs[0].customerServiceUid && user.id == cs[0].customerServiceUid) {
-                    rongcloudSDK.user.getToken(user.hospitalId + '-' + user.id, user.name, 'http://7xoadl.com2.z0.glb.qiniucdn.com/user58.png', function (err, resultText) {
+                    rongcloudSDK.user.getToken(user.hospitalId + '-cs', user.name, config.app.defaultHeadPic, function (err, resultText) {
                         if (err) throw new Error(err.message);
                         user.rongToken = JSON.parse(resultText).token;
                         res.send({ret: 0, data: user});
@@ -85,7 +85,7 @@ module.exports = {
                 user.lastLoginDate = result;
                 hospitalDAO.findCustomerServiceId(user.hospitalId).then(function (cs) {
                     if (cs && cs.length && cs[0].customerServiceUid && user.id == cs[0].customerServiceUid) {
-                        rongcloudSDK.user.getToken(user.hospitalId + '-' + user.id, user.name, 'http://7xoadl.com2.z0.glb.qiniucdn.com/user58.png', function (err, resultText) {
+                        rongcloudSDK.user.getToken(user.hospitalId + '-cs', user.name, config.app.defaultHeadPic, function (err, resultText) {
                             if (err) throw new Error(err.message);
                             user.rongToken = JSON.parse(resultText).token;
                             res.send({ret: 0, data: user});

@@ -200,6 +200,7 @@ module.exports = {
             return businessPeopleDAO.updatePatientBasicInfo({
                 id: basicInfoId,
                 name: patient.name,
+                realName: patient.realName,
                 mobile: patient.mobile,
                 //birthday: patient.birthday,
                 gender: patient.gender,

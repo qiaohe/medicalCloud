@@ -601,10 +601,10 @@ module.exports = {
                     })
                 }
             }).then(function () {
-                return orderDAO.findAccountInfo(req.user.hospitalId);
+                return orderDAO.findAccountInfo(req.user.hospitalId, conditions);
             }).then(function (sumResults) {
                 var data = {};
-                data.summaries = [];
+                data.summaries = [{fieldName: '总金额', sum: 0.00}];
                 sumResults && sumResults.forEach(function (summary) {
                     for (var i = 0; i <= 3; i++) {
                         var field = 'paymentType' + (i === 0 ? '' : i);
@@ -613,12 +613,14 @@ module.exports = {
                             var summaryItem = _.find(data.summaries, function (item) {
                                 return item.fieldName == config.paymentType[summary[field]];
                             });
+                            var sum = (summary[amountFiled] ? summary[amountFiled] : 0);
+                            data.summaries[0].sum = _.round(data.summaries[0].sum + sum, 2);
                             if (summaryItem) {
-                                summaryItem.sum = summaryItem.sum + summaryItem.sum;
+                                summaryItem.sum = _.round(summaryItem.sum + sum, 2);
                             } else {
                                 data.summaries.push({
                                     fieldName: config.paymentType[summary[field]],
-                                    sum: summary[amountFiled]
+                                    sum: sum
                                 });
                             }
                         }

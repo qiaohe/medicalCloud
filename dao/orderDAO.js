@@ -58,7 +58,9 @@ module.exports = {
     findOrderByOrderNo: function (orderNo) {
         return db.query(sqlMapping.order.findOrderByOrderNo, [orderNo]);
     },
-    findAccountInfo: function (hospitalId) {
-        return db.query(sqlMapping.order.findAccountInfo, hospitalId);
+    findAccountInfo: function (hospitalId, conditions) {
+        var sql = sqlMapping.order.findAccountInfo;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        return db.query(sql, hospitalId);
     }
 }
