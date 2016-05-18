@@ -14,7 +14,7 @@ function getConditions(req) {
     if (req.query.groupId) conditions.push('p.groupId=' + req.query.groupId);
     if (req.query.consumptionLevel) conditions.push('p.consumptionLevel=' + req.query.consumptionLevel);
     if (req.query.recommender) conditions.push('p.recommender=' + req.query.recommender);
-    if (req.query.name) conditions.push('pb.name like \'%' + req.query.name + '%\'');
+    if (req.query.name) conditions.push('pb.realName like \'%' + req.query.name + '%\'');
     if (req.query.mobile) conditions.push('pb.mobile like \'%' + req.query.mobile + '%\'');
     return conditions;
 }

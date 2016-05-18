@@ -18,7 +18,7 @@ module.exports = {
     },
     findPatients: function (hospitalId, page, conditions) {
         var sql = sqlMapping.patient.findPatients;
-        sql = !conditions.length ? sql : 'select SQL_CALC_FOUND_ROWS p.id, pb.`name`, pb.gender, pb.headPic,pb.birthday, pb.mobile, p.memberCardNo,p.memberType,p.source,e.`name` as recommenderName,p.consumptionLevel, gc.`name` as groupName, p.groupId from Patient p left JOIN Employee e on e.id = p.recommender left JOIN GroupCompany gc on gc.id = p.groupId, PatientBasicInfo pb where p.patientBasicInfoId = pb.id and p.hospitalId =? and ' + conditions.join(' and ') + ' order BY p.createDate desc limit ?, ?';
+        sql = !conditions.length ? sql : 'select SQL_CALC_FOUND_ROWS p.id, pb.`realName` as name, pb.gender, pb.headPic,pb.birthday, pb.mobile, p.memberCardNo,p.memberType,p.source,e.`name` as recommenderName,p.consumptionLevel, gc.`name` as groupName, p.groupId from Patient p left JOIN Employee e on e.id = p.recommender left JOIN GroupCompany gc on gc.id = p.groupId, PatientBasicInfo pb where p.patientBasicInfoId = pb.id and p.hospitalId =? and ' + conditions.join(' and ') + ' order BY p.createDate desc limit ?, ?';
         return db.queryWithCount(sql, [+hospitalId, +page.from, +page.size]);
     },
     insertPrePaidHistory: function (history) {

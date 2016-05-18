@@ -140,7 +140,7 @@ module.exports = {
         updateGroupCompany: 'update GroupCompany set ? where id = ?',
         deleteGroupCompany: 'delete from GroupCompany where id = ?',
         insertGroupCompany: 'insert GroupCompany set ?',
-        findPatients: 'select SQL_CALC_FOUND_ROWS p.id, pb.`name`, pb.gender, pb.headPic,pb.birthday, pb.mobile, p.memberCardNo,p.memberType,p.source,e.`name` as recommenderName,p.consumptionLevel, gc.`name` as groupName, p.groupId from Patient p left JOIN Employee e on e.id = p.recommender left JOIN GroupCompany gc on gc.id = p.groupId, PatientBasicInfo pb where p.patientBasicInfoId = pb.id and p.hospitalId =? order BY p.createDate desc limit ?, ?',
+        findPatients: 'select SQL_CALC_FOUND_ROWS p.id, pb.`realName` as name, pb.gender, pb.headPic,pb.birthday, pb.mobile, p.memberCardNo,p.memberType,p.source,e.`name` as recommenderName,p.consumptionLevel, gc.`name` as groupName, p.groupId from Patient p left JOIN Employee e on e.id = p.recommender left JOIN GroupCompany gc on gc.id = p.groupId, PatientBasicInfo pb where p.patientBasicInfoId = pb.id and p.hospitalId =? order BY p.createDate desc limit ?, ?',
         insertPrePaidHistory: 'insert PrepaidHistory set ?',
         updatePatientBalance: 'update Patient set balance = balance + ? where id =?',
         insertTransactionFlow: 'insert TransactionFlow set ?',
