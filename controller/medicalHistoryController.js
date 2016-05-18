@@ -596,6 +596,10 @@ module.exports = {
                 }
             }).then(function () {
                 return orderDAO.sumAccountInfo(req.user.hospitalId);
+            }).then(function(sumResults){
+                var data = {};
+                data.summary = sumResults[0];
+                data.summary
                 orders.rows.length && orders.rows.forEach(function (order) {
                     order.memberType = config.memberType[+order.memberType];
                     var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
