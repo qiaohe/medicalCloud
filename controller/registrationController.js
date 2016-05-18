@@ -91,6 +91,7 @@ module.exports = {
             return businessPeopleDAO.findPatientBasicInfoBy(r.patientMobile).then(function (basicInfos) {
                 return basicInfos.length ? basicInfos[0].id : businessPeopleDAO.insertPatientBasicInfo({
                     name: r.patientName,
+                    realName: r.patientName,
                     mobile: r.patientMobile,
                     createDate: new Date(),
                     password: md5(r.patientMobile.substring(r.patientMobile.length - 6, r.patientMobile.length)),
@@ -100,11 +101,11 @@ module.exports = {
                 }).then(function (result) {
                     if (result.insertId) {
                         var content = config.sms.registerTemplate.replace(':code', r.patientMobile.substring(r.patientMobile.length - 4, r.patientMobile.length));
-                        return hospitalDAO.findHospitalById(req.user.hospitalId).then(function (hospitals) {
+                         return hospitalDAO.findHospitalById(req.user.hospitalId).then(function (hospitals) {
                             var hospitalName = hospitals[0].name;
                             content = content.replace(':hospital', hospitalName);
                             var option = {mobile: r.patientMobile, text: content, apikey: config.sms.apikey};
-                            request.postAsync({
+                            return request.postAsync({
                                 url: config.sms.providerUrl,
                                 form: option
                             }).then(function (response, body) {
