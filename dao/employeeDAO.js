@@ -8,7 +8,9 @@ module.exports = {
     findByUsername: function (hospitalId, username) {
         return db.query(sqlMapping.employee.findByUserName, [hospitalId, username]);
     },
-
+    findByUsernameWithHospital: function (hospitalId, username) {
+        return db.query(sqlMapping.employee.findByUsernameWithHospital, [hospitalId, username]);
+    },
     findByUsernameAndDomain: function (domainName, userName) {
         return db.query(sqlMapping.employee.findByUsernameAndDomain, [userName, domainName]);
     },
