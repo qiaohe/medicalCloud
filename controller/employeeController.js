@@ -171,13 +171,18 @@ module.exports = {
     getEmployees: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        employeeDAO.findEmployees(req.user.hospitalId, {
-            from: (pageIndex - 1) * pageSize,
-            size: pageSize
-        }, getConditions(req)).then(function (empoyees) {
+        var customerServiceUid = {};
+        hospitalDAO.findCustomerServiceId(req.user.hospitalId).then(function (users) {
+            if (users && users.length > 0) customerServiceUid = users[0].customerServiceUid;
+            return employeeDAO.findEmployees(req.user.hospitalId, {
+                from: (pageIndex - 1) * pageSize,
+                size: pageSize
+            }, getConditions(req))
+        }).then(function (empoyees) {
             if (!empoyees.rows.length) res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
             empoyees.rows.forEach(function (employee) {
                 employee.status = config.employeeStatus[employee.status];
+                employee.isCustomerService =(employee.id == customerServiceUid);
                 employee.gender = config.gender[employee.gender];
             });
             empoyees.pageIndex = pageIndex;

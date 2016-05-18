@@ -16,7 +16,7 @@ module.exports = {
         findNoPlanBusinessPeople: 'select id, name from Employee where hospitalId = ? and role = 4 and id not in(select DISTINCT businessPeopleId from Performance where left(yearMonth, 4) =?)',
         updateEmployee: 'update Employee set password=? where mobile = ?',
         updateEmployeeByUid: 'update Employee set ? where id = ?',
-        findEmployees: 'select SQL_CALC_FOUND_ROWS e.id, e.`name`, d.`name` as department, e.mobile, e.gender, e.birthday, job.`name` as jobTitle, role.`name` as role, e.`status`, e.maxDiscountRate  from Employee e LEFT JOIN Department d on d.id = e.department left JOIN Role role on role.id = e.role left JOIN JobTitle job on job.id = e.jobTitle where e.hospitalId =? order by e.id desc limit ?,?',
+        findEmployees: 'select SQL_CALC_FOUND_ROWS e.id, e.`name`, d.`name` as department, e.mobile, e.gender, e.birthday, job.`name` as jobTitle, role.`name` as role, e.`status`, e.admin as isAdmin, e.maxDiscountRate  from Employee e LEFT JOIN Department d on d.id = e.department left JOIN Role role on role.id = e.role left JOIN JobTitle job on job.id = e.jobTitle where e.hospitalId =? order by e.id desc limit ?,?',
         findRoles: 'select id, name from Role where hospitalId = ?',
         findById: 'select * from Employee where id=? and hospitalId =?',
         findByIdWithHospital: 'select e.*, h.name as hospitalName from Employee e, Hospital h where e.hospitalId = h.id and e.hospitalId= ? and  e.id = ?',
@@ -240,6 +240,7 @@ module.exports = {
         findOrdersByTypeAndStatus: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType, r.patientId, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId=? and m.type=? and m.status=? limit ?,?',
         findByOrderNos: 'select m.discountRate, m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.status=0 and m.orderNo in ',
         findByOrderNo: 'select m.discountRate, m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId,m.invoiceSequenceNo, r.hospitalName, m.paidAmount1, m.paidAmount2, m.paidAmount3, m.paymentType1,m.paymentType2, m.paymentType3, m.paidAmount, m.chargedByName, m.chargeDate, m.invoiceSequenceNo from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.orderNo=?',
-        findOrderByOrderNo: 'select r.patientBasicInfoId, r.patientMobile, h.patientName, r.hospitalName, r.departmentName, r.doctorName,r.sequence from MedicalOrder m left join Registration r on m.registrationId = r.id left JOIN MedicalHistory h on h.registrationId = m.registrationId where m.orderNo=?'
+        findOrderByOrderNo: 'select r.patientBasicInfoId, r.patientMobile, h.patientName, r.hospitalName, r.departmentName, r.doctorName,r.sequence from MedicalOrder m left join Registration r on m.registrationId = r.id left JOIN MedicalHistory h on h.registrationId = m.registrationId where m.orderNo=?',
+        sumAccountInfo: 'select sum(paidAmount1) as sumPaidAmount1,sum(paidAmount2) as sumPaidAmount2,sum(paidAmount3) as sumPaidAmount3, sum(paidAmount) as sumPaidAmount FROM  MedicalOrder   where hospitalId= ?'
     }
 };
