@@ -82,6 +82,13 @@ module.exports = [
     },
     {
         method: 'get',
+        path: '/api/doctors/performances',
+        handler: medicalHistoryController.getDoctorPerformances,
+        secured: 'user'
+    },
+
+    {
+        method: 'get',
         path: '/api/years/:year/performances',
         handler: businessPeopleController.getPerformanceByYear,
         secured: 'user'

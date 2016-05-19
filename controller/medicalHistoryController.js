@@ -564,7 +564,8 @@ module.exports = {
         var conditions = [];
         conditions.push('(m.status=1 or m.status=3)');
         //if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
-        //if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.type) conditions.push('m.type=' + req.query.type);
         if (req.query.departmentId) conditions.push('r.departmentId=' + req.query.departmentId);
         if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);
         if (req.query.memberType) conditions.push('r.memberType=' + req.query.memberType);
@@ -591,17 +592,17 @@ module.exports = {
                             orders.fields.push(config.paymentType[order[field]]);
                     }
                 }
-                if (order.type == 2) {
-                    return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
-                        extras && extras.forEach(function (ex) {
-                            order.extras.push(ex);
-                        });
-                        _.forEach(extras, function (item) {
-                            if (orders.fields.indexOf(item.fieldName) < 0)
-                                orders.fields.push(item.fieldName);
-                        });
-                    })
-                }
+                //if (order.type == 2) {
+                //    return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
+                //        extras && extras.forEach(function (ex) {
+                //            order.extras.push(ex);
+                //        });
+                //        _.forEach(extras, function (item) {
+                //            if (orders.fields.indexOf(item.fieldName) < 0)
+                //                orders.fields.push(item.fieldName);
+                //        });
+                //    })
+                //}
             }).then(function () {
                 return orderDAO.findAccountInfo(req.user.hospitalId, conditions);
             }).then(function (sumResults) {
@@ -647,6 +648,10 @@ module.exports = {
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
+        return next();
+    },
+    getDoctorPerformances: function (req, res, next) {
+
         return next();
     }
 }
