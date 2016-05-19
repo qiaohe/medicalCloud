@@ -593,7 +593,9 @@ module.exports = {
                 }
                 if (order.type == 2) {
                     return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
-                        order.extras.push(extras);
+                        extras && extras.forEach(function (ex) {
+                            order.extras.push(ex);
+                        });
                         _.forEach(extras, function (item) {
                             if (orders.fields.indexOf(item.fieldName) < 0)
                                 orders.fields.push(item.fieldName);
