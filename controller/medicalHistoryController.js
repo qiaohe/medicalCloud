@@ -742,11 +742,9 @@ module.exports = {
                             });
                             if (summaryItem) {
                                 summaryItem.sum =  _.round(summaryItem.sum + item.sum, 2);
-                            } else {
-                                data.summaries.push(item);
                             }
                         });
-                    })
+                    });
                     res.send({ret: 0, data: data});
                 })
 
