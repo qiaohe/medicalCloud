@@ -580,8 +580,8 @@ module.exports = {
             orders.fields = [];
             Promise.map(orders.rows, function (order) {
                 order.extras = [];
-                for (var i = 0; i <= 3; i++) {
-                    var hasPaymentType = false;
+                var hasPaymentType = false;
+                for (var i = 1; i <= 3; i++) {
                     var field = 'paymentType' + (i === 0 ? '' : i);
                     var amountFiled = 'paidAmount' + (i === 0 ? '' : i);
                     if (order[field] != null) {
@@ -596,11 +596,11 @@ module.exports = {
                 }
                 if (!hasPaymentType) {
                     order.extras.push({
-                        fieldName: config.paymentType[order['paymentType']],
+                        fieldName: config.paymentType[order.paymentType],
                         sum: order.paidAmount
                     });
-                    if (orders.fields.indexOf(config.paymentType[order['paymentType']]) < 0)
-                        orders.fields.push(config.paymentType[order['paymentType']]);
+                    if (orders.fields.indexOf(config.paymentType[order.paymentType]) < 0)
+                        orders.fields.push(config.paymentType[order.paymentType]);
                 }
 
                 //if (order.type == 2) {
