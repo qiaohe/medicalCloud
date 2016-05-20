@@ -37,6 +37,15 @@ module.exports = {
         sql = sql + ' order by m.createDate desc limit ?, ?';
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
+    findOrdersByWithPerformance: function (hospitalId, conditions, page) {
+        var sql = sqlMapping.order.findOrdersByWithPerformance;
+        if (conditions.length) {
+            sql = sql + ' and ' + conditions.join(' and ');
+        }
+        sql = sql + ' order by m.createDate desc ' + (page ? ' limit ?,?' : '');
+        return page ? db.queryWithCount(sql, [hospitalId, page.from, page.size]) : db.queryWithCount(sql, hospitalId);
+    },
+
     findExtraFeeBy: function (orderNo) {
         return db.query(sqlMapping.order.findExtraFeeBy, orderNo);
     },

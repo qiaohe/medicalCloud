@@ -581,9 +581,11 @@ module.exports = {
             Promise.map(orders.rows, function (order) {
                 order.extras = [];
                 for (var i = 0; i <= 3; i++) {
+                    var hasPaymentType = false;
                     var field = 'paymentType' + (i === 0 ? '' : i);
                     var amountFiled = 'paidAmount' + (i === 0 ? '' : i);
                     if (order[field] != null) {
+                        hasPaymentType = true;
                         order.extras.push({
                             fieldName: config.paymentType[order[field]],
                             sum: order[amountFiled]
@@ -592,6 +594,15 @@ module.exports = {
                             orders.fields.push(config.paymentType[order[field]]);
                     }
                 }
+                if (!hasPaymentType) {
+                    order.extras.push({
+                        fieldName: config.paymentType[order['paymentType']],
+                        sum: order.paidAmount
+                    });
+                    if (orders.fields.indexOf(config.paymentType[order['paymentType']]) < 0)
+                        orders.fields.push(config.paymentType[order['paymentType']]);
+                }
+
                 //if (order.type == 2) {
                 //    return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
                 //        extras && extras.forEach(function (ex) {
@@ -650,8 +661,99 @@ module.exports = {
         });
         return next();
     },
-    getDoctorPerformances: function (req, res, next) {
 
+    getDoctorPerformances: function (req, res, next) {
+        var hospitalId = req.user.hospitalId;
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        var conditions = [];
+        var data = {};
+        conditions.push('(m.status=1 or m.status=3)');
+        if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.type) conditions.push('m.type=' + req.query.type);
+        if (req.query.departmentId) conditions.push('r.departmentId=' + req.query.departmentId);
+        if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);
+        if (req.query.memberType) conditions.push('r.memberType=' + req.query.memberType);
+        //if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
+        if (req.query.startDate) conditions.push('m.paymentDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('m.paymentDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        var fields = ['挂号费', '药费'];
+        dictionaryDAO.findDictItems(req.user.hospitalId, 2, {from: 0, size: 100}).then(function (result) {
+            result.rows && result.rows.length > 0 && result.rows.forEach(function (field) {
+                fields.push(field.value);
+            });
+            return orderDAO.findOrdersByWithPerformance(hospitalId, conditions, {
+                from: (pageIndex - 1) * pageSize,
+                size: pageSize
+            });
+        }).then(function (orders) {
+            orders.pageIndex = pageIndex;
+            orders.fields = fields;
+            Promise.map(orders.rows, function (order) {
+                if (order.type == 2) {
+                    return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
+                        order.extras = extras;
+                    });
+                } else if (order.type = 0) {
+                    order.extras = [{fieldName: "挂号费", sum: order.paidAmount}];
+                } else if (order.type = 1) {
+                    order.extras = [{fieldName: "药费", sum: order.paidAmount}];
+                }
+            }).then(function () {
+                orders.rows.length && orders.rows.forEach(function (order) {
+                    order.memberType = config.memberType[+order.memberType];
+                    var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
+                    if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
+                    var ps = [];
+                    paymentTypes && paymentTypes.forEach(function (item) {
+                        ps.push(config.paymentType[+item]);
+                    });
+                    order.paymentType = ps.join(',');
+                    order.status = config.orderStatus[+order.status];
+                    order.type = config.orderType[+order.type];
+                });
+                orders.pageIndex = pageIndex;
+                data.orders = orders;
+                return orderDAO.findOrdersByWithPerformance(hospitalId, conditions);
+            }).then(function (orders) {
+                Promise.map(orders.rows, function (order) {
+                    if (order.type == 2) {
+                        return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
+                            order.extras = extras;
+                        });
+                    } else if (order.type = 0) {
+                        order.extras = [{fieldName: "挂号费", sum: order.paidAmount}];
+                    } else if (order.type = 1) {
+                        order.extras = [{fieldName: "药费", sum: order.paidAmount}];
+                    }
+                }).then(function(){
+                    data.summaries = [{fieldName: '总金额', sum: 0.00}];
+                    data.orders.fields.forEach(function(f){
+                        data.summaries.push({fieldName: f, sum:0.00});
+                    });
+                    orders  && orders.rows.forEach(function (row) {
+                        var totalItem = _.find(data.summaries, function (summary) {
+                            return summary.fieldName == '总金额';
+                        });
+                        totalItem.sum =  _.round(totalItem.sum + row.paidAmount, 2);
+                        row.extras.forEach(function (item) {
+                            var summaryItem = _.find(data.summaries, function (summary) {
+                                return summary.fieldName == item.fieldName;
+                            });
+                            if (summaryItem) {
+                                summaryItem.sum =  _.round(summaryItem.sum + item.sum, 2);
+                            } else {
+                                data.summaries.push(item);
+                            }
+                        });
+                    })
+                    res.send({ret: 0, data: data});
+                })
+
+            })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
         return next();
     }
 }
