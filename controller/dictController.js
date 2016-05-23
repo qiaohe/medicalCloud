@@ -601,8 +601,8 @@ module.exports = {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var conditions = [];
-        if (req.query.start) conditions.push('h.operateDate>=\'' + req.query.start + ' 00:00:00\'');
-        if (req.query.end) conditions.push('h.operateDate<=\'' + req.query.end + ' 23:59:59\'');
+        if (req.query.startDate) conditions.push('h.operateDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('h.operateDate<=\'' + req.query.endDate + ' 23:59:59\'');
         dictionaryDAO.findDrugInventoriesByDrug(drugId, req.user.hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize

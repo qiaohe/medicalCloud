@@ -620,15 +620,18 @@ module.exports = {
                 var data = {};
                 data.summaries = [{fieldName: '总金额', sum: 0.00}];
                 sumResults && sumResults.forEach(function (summary) {
-                    for (var i = 0; i <= 3; i++) {
-                        var field = 'paymentType' + (i === 0 ? '' : i);
-                        var amountFiled = 'paidAmount' + (i === 0 ? '' : i);
+                    data.summaries[0].sum = _.round(data.summaries[0].sum + summary.paidAmount, 2);
+                    var hasPaymentType =false;
+                    for (var i = 1; i <= 3; i++) {
+                        var field = 'paymentType' + i;
+                        var amountFiled = 'paidAmount' + i;
                         if (summary[field] != null) {
+                            hasPaymentType = true;
                             var summaryItem = _.find(data.summaries, function (item) {
                                 return item.fieldName == config.paymentType[summary[field]];
                             });
-                            var sum = (summary[amountFiled] ? summary[amountFiled] : 0);
-                            data.summaries[0].sum = _.round(data.summaries[0].sum + sum, 2);
+                            var sum = (summary[amountFiled] ? summary[amountFiled] : 0.00);
+                            console.log('sum:' + sum);
                             if (summaryItem) {
                                 summaryItem.sum = _.round(summaryItem.sum + sum, 2);
                             } else {
@@ -637,6 +640,21 @@ module.exports = {
                                     sum: sum
                                 });
                             }
+                        }
+                        console.log(data.summaries);
+                    }
+                    if ((!hasPaymentType) && summary.paymentType) {
+                        var summaryItem1 = _.find(data.summaries, function (item) {
+                            return item.fieldName == config.paymentType[summary.paymentType];
+                        });
+                        var sum1 = (summary.paidAmount ? summary.paidAmount : 0.00);
+                        if (summaryItem1) {
+                            summaryItem1.sum = _.round(summaryItem1.sum + sum1, 2);
+                        } else {
+                            data.summaries.push({
+                                fieldName: config.paymentType[summary.paymentType],
+                                sum: sum1
+                            });
                         }
                     }
                 });
@@ -694,9 +712,9 @@ module.exports = {
                     return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
                         order.extras = extras;
                     });
-                } else if (order.type = 0) {
+                } else if (order.type == 0) {
                     order.extras = [{fieldName: "挂号费", sum: order.paidAmount}];
-                } else if (order.type = 1) {
+                } else if (order.type == 1) {
                     order.extras = [{fieldName: "药费", sum: order.paidAmount}];
                 }
             }).then(function () {
@@ -721,27 +739,27 @@ module.exports = {
                         return orderDAO.findExtraFeeBy(order.orderNo).then(function (extras) {
                             order.extras = extras;
                         });
-                    } else if (order.type = 0) {
+                    } else if (order.type == 0) {
                         order.extras = [{fieldName: "挂号费", sum: order.paidAmount}];
-                    } else if (order.type = 1) {
+                    } else if (order.type == 1) {
                         order.extras = [{fieldName: "药费", sum: order.paidAmount}];
                     }
-                }).then(function(){
+                }).then(function () {
                     data.summaries = [{fieldName: '总金额', sum: 0.00}];
-                    data.orders.fields.forEach(function(f){
-                        data.summaries.push({fieldName: f, sum:0.00});
+                    data.orders.fields.forEach(function (f) {
+                        data.summaries.push({fieldName: f, sum: 0.00});
                     });
-                    orders  && orders.rows.forEach(function (row) {
+                    orders && orders.rows.forEach(function (row) {
                         var totalItem = _.find(data.summaries, function (summary) {
                             return summary.fieldName == '总金额';
                         });
-                        totalItem.sum =  _.round(totalItem.sum + row.paidAmount, 2);
+                        totalItem.sum = _.round(totalItem.sum + row.paidAmount, 2);
                         row.extras.forEach(function (item) {
                             var summaryItem = _.find(data.summaries, function (summary) {
                                 return summary.fieldName == item.fieldName;
                             });
                             if (summaryItem) {
-                                summaryItem.sum =  _.round(summaryItem.sum + item.sum, 2);
+                                summaryItem.sum = _.round(summaryItem.sum + item.sum, 2);
                             }
                         });
                     });
@@ -755,3 +773,50 @@ module.exports = {
         return next();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

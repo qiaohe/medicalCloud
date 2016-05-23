@@ -91,7 +91,7 @@ module.exports = {
 
     findDrugInventoriesByDrug: function (drugId, hospitalId, conditions, page) {
         var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS dg.sellPrice, h.*, d.batchNo, d.restAmount from DrugInventoryHistory h left JOIN DrugInventory d on h.inventoryId = d.id left join Drug dg on dg.id = h.drugId where h.drugId=? and h.hospitalId=?  and ' + conditions.join(' and ') + ' limit ?,?' : sqlMapping.dict.findDrugInventoriesByDrug;
-        return db.queryWithCount(sqlMapping.dict.findDrugInventoriesByDrug, [drugId, hospitalId, page.from, page.size]);
+        return db.queryWithCount(sql, [drugId, hospitalId, page.from, page.size]);
     },
 
     findDrugInventory: function (hospitalId, conditions, page) {
