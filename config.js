@@ -4,14 +4,14 @@ module.exports = {
     server: {
         name: 'medical cloud platform',
         version: '0.0.1',
-        host: 'api.hisforce.cn',
+        host: 'localhost',
         port: 8084
     },
     db: {
-        host: '10.161.161.229',
+        host: 'www.hisforce.cn',
         port: '3306',
         user: 'root',
-        password: 'heqiao75518?',
+        password: 'heqiao75518',
         debug: false,
         multipleStatements: true,
         database: 'medicalDB'
@@ -26,7 +26,7 @@ module.exports = {
         defaultHeadPic: 'http://7xrtp2.com2.z0.glb.qiniucdn.com/headPic.png'
     },
     redis: {
-        host: '10.161.161.229',
+        host: 'localhost',
         port: 6379
     },
     rongcloud: {
@@ -72,7 +72,7 @@ module.exports = {
     outPatientType: ["初诊", "复诊", "院内转诊", "跨院转诊", "远程会诊", "远程初诊", "远程复诊"],
     outpatientStatus: ['未到', '结诊', '已转诊', '已预约复诊', '转诊中', '待诊中', '已取消'],
     cashbackType: ['赠劵', '优惠券', '免单'],
-    paymentType: ['支付宝', '微信支付', '会员卡', '银行卡', '储值卡', '现金', '代付'],
+    paymentType: ['支付宝', '微信支付', '会员卡', '银行卡', '医保', '现金', '代付'],
     consumptionLevel: ['<1000', '1000~3000', '3000~5000', '5000~10000', '>10000'],
     employeeStatus: ['在职', '试用', '离职'],
     registrationNotificationTemplate: '【%s】，您已预约【%s医生】门诊，就诊时间%s。请提前半小时到分诊台，进行取号确认。',
@@ -88,5 +88,6 @@ module.exports = {
     prescriptionOrderTemplate: '【%s】您在%s的诊疗费订单已生成，为了顺利完成诊疗，请通过收银窗口支付，或在一小时内完成网上支付。',
     orderStatus: ['未支付', '已支付', '已取消', '完成'],
     orderType: ["挂号费", "药费", "诊疗费"],
-    inventoryType: ['入库', '出库']
+    inventoryType: ['入库', '出库'],
+    salesManStatus: ['在职', '离职']
 };

@@ -14,7 +14,7 @@ module.exports = {
         var userName = (req.body && req.body.username) || (req.query && req.query.username);
         var password = (req.body && req.body.password) || (req.query && req.query.password);
         var user = {};
-        var domainName = 'www.hisforce.cn'; //req.headers.origin.substring(7, req.headers.origin.length);
+        var domainName = 'www.hisforce.cn';//req.headers.origin.substring(7, req.headers.origin.length);
         employeeDAO.findByUsernameAndDomain(domainName, userName).then(function (users) {
             if (!users || !users.length) throw new Error(i18n.get('member.not.exists'));
             user = users[0];
@@ -29,7 +29,7 @@ module.exports = {
             user.lastLoginDate = result;
             hospitalDAO.findCustomerServiceId(user.hospitalId).then(function (cs) {
                 if (cs && cs.length && cs[0].customerServiceUid && user.id == cs[0].customerServiceUid) {
-                    rongcloudSDK.user.getToken(user.hospitalId + '-cs', user.hospitalName, user.icon, function (err, resultText) {
+                    rongcloudSDK.user.getToken(user.hospitalId + '-999999', user.hospitalName, user.icon, function (err, resultText) {
                         if (err) throw new Error(err.message);
                         user.rongToken = JSON.parse(resultText).token;
                         res.send({ret: 0, data: user});
@@ -85,7 +85,7 @@ module.exports = {
                 user.lastLoginDate = result;
                 hospitalDAO.findCustomerServiceId(user.hospitalId).then(function (cs) {
                     if (cs && cs.length && cs[0].customerServiceUid && user.id == cs[0].customerServiceUid) {
-                        rongcloudSDK.user.getToken(user.hospitalId + '-cs', user.hospitalName, user.icon, function (err, resultText) {
+                        rongcloudSDK.user.getToken(user.hospitalId + '-999999', user.hospitalName, user.icon, function (err, resultText) {
                             if (err) throw new Error(err.message);
                             user.rongToken = JSON.parse(resultText).token;
                             res.send({ret: 0, data: user});

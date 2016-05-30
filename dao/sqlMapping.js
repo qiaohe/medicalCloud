@@ -1,6 +1,6 @@
 module.exports = {
     employee: {
-        findByUserName: 'select e.*, h.`name` as hospitalName, h.icon from Employee e left join Hospital h on e.hospitalId=h.id from Employee where e.hospitalId=? and e.mobile=?',
+        findByUserName: 'select e.*, h.`name` as hospitalName, h.icon from Employee e left join Hospital h on e.hospitalId=h.id where e.hospitalId=? and e.mobile=?',
         findByUsernameWithHospital: 'select e.* from Employee e where hospitalId=? and mobile=?',
         findByUsernameAndDomain: 'select e.*, h.`name` as hospitalName, h.icon from Employee e left join Hospital h on e.hospitalId=h.id where e.mobile=? and h.domainName=? ',
         findByName: 'select * from Employee where hospitalId=? and name=?',
@@ -28,6 +28,19 @@ module.exports = {
         updateDoctorByDepartment: 'update Doctor set departmentName=? where departmentId=?'
     },
     businessPeople: {
+        findSalesMan: 'select SQL_CALC_FOUND_ROWS id,headPic, name, gender, mobile, createDate, `status`, age, `comment`, hiredDate from SalesMan where hospitalId=?',
+        findSalesManRegistrationForOthers: 'select SQL_CALC_FOUND_ROWS id, createDate, businessPeopleId, businessPeopleName, departmentName, departmentId, doctorId, doctorName, patientName, registerDate, outpatientStatus, totalFee from Registration where hospitalId=? and businessPeopleId>0',
+        findCheckIn: 'select SQL_CALC_FOUND_ROWS c.*, s.`name` as salesManName from CheckIn c left JOIN SalesMan s on c.salesMan = s.id where s.hospitalId=?',
+        insertSalesManPerformanceBy: 'insert Performance set ?',
+        updateSalesManPerformance: 'update Performance set ? where id = ?',
+        findSalesManById: 'select * from SalesMan where id = ?',
+        findSalesManPerformanceBy: 'select * from Performance where salesMan=? and yearMonth=?',
+        findSalesManPerformance: 'select * from Performance where salesMan = ? and left(yearMonth, 4) =?',
+        updateSalesMan: 'update SalesMan set ? where id=?',
+        findSalesManBy: 'select * from SalesMan where hospitalId = ? and mobile =?',
+        findSalesManName: 'select id, name from SalesMan where hospitalId = ?',
+        insertSalesMan: 'insert SalesMan set ?',
+        deleteSalesMan: 'delete from SalesMan where id =?',
         deletePerformancesBy: 'delete from Performance where businessPeopleId = ? and left(yearMonth,4) = ?',
         findRegistrationById: 'select * from Registration where id=?',
         updatePatientBasicInfo: 'update PatientBasicInfo set ? where id = ?',
@@ -62,12 +75,13 @@ module.exports = {
         addTransferHistory: 'insert ContactTransferHistory set ?',
         insertPerformance: 'insert Performance set ?',
         updatePerformance: 'update Performance set plannedCount = ? where businessPeopleId= ? and yearMonth = ?',
-        findPerformances: 'select e.id as businessPeopleId, e.`name`, p.yearMonth, actualCount, plannedCount,ROUND(actualCount / plannedCount, 2) as completePercentage from Performance p, Employee e where e.id = p.businessPeopleId and e.hospitalId=? ',
+        findPerformances: 'select SQL_CALC_FOUND_ROWS e.id as salesManId, e.`status`,e.`name`, p.yearMonth, actual, plan,ROUND(actual / plan, 2) as completePercentage, e.checkInCount from Performance p,SalesMan e where e.id = p.salesMan and e.hospitalId=1',
         findBusinessPeopleWithPage: 'select SQL_CALC_FOUND_ROWS distinct p.businessPeopleId, e.name from Performance p, Employee e where e.id = p.businessPeopleId and e.hospitalId=?',
         findPerformancesBy: 'select e.id as businessPeopleId, e.`name`, p.yearMonth, actualCount, plannedCount,ROUND(actualCount / plannedCount, 2) as completePercentage from Performance p, Employee e where e.id = p.businessPeopleId and p.businessPeopleId=? order by p.yearMonth'
     },
     hospital: {
         findAll: 'select id, domainName from Hospital where enabled=1',
+        findAllHospitals: 'select * from Hospital',
         countOfEmployeesForDepartment: 'select count(*) as count from Employee where department=?',
         countOfJobTitleForRole: 'select count(*) as count from JobTitle where role=?',
         countOfEmployeeForJobTitle: 'select count(*) as count from Employee where role=? and jobTitle=?',
@@ -115,6 +129,7 @@ module.exports = {
     },
 
     registration: {
+        updateRegistrationFee: 'update Registration set totalFee = totalFee + ? where id = ?',
         insertRegistrationCancelHistory: 'insert RegistrationCancelHistory set ?',
         addShiftPlan: 'insert ShiftPlan set ?',
         updateShiftPlanBy: 'update ShiftPlan set plannedQuantity=? where doctorId=? and day=? and shiftPeriod=?',

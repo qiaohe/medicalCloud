@@ -535,6 +535,19 @@ module.exports = {
         });
         return next();
     },
+    exportHospitals: function (req, res, next) {
+        var header = ['编号', '名称', '药品名称首字母拼音', '生产企业', '类型', '剂型药品剂型', '药品规格', '单位', '售价', '临界库存'];
+        hospitalDAO.findAllHospitals().then(function (hospitals) {
+            var file = excel.export(hospitals, header, {hospitalId: 1}, 'hospitals');
+            var filename = path.basename(file);
+            var mimetype = mime.lookup(file);
+            res.setHeader('Content-disposition', 'attachment; filename=' + filename + '.xlsx');
+            res.setHeader('Content-type', mimetype);
+            var filestream = fs.createReadStream(file);
+            filestream.pipe(res);
+        });
+        return next();
+    },
 
     exportInventories: function (req, res, next) {
         var header = ['编号', '名称', '类别', '规格', '	批次', '入库数量', '库存量', '进价（元）', '单位', '拆零单位', '有效期', '入库日期', '入库人'];
@@ -817,4 +830,10 @@ module.exports = {
         });
         return next();
     },
+    getSalesMan: function (req, res, next) {
+        var hospitalId = req.user.hospitalId;
+        businessPeopleDAO.findSalesManName(hospitalId).then(function (result) {
+            res.send({ret: 0, data: result});
+        })
+    }
 }

@@ -441,6 +441,8 @@ module.exports = {
             if (order.type == config.orderType[1]) return medicalDAO.findRecipesByOrderNo(order.orderNo);
             if (order.type == config.orderType[2]) return medicalDAO.findPrescriptionsByOrderNo(order.orderNo);
             res.send({ret: 0, data: order});
+        }).then(function (result) {
+            return registrationDAO.updateRegistrationFee(order.registrationId, order.paidAmount);
         }).then(function (items) {
             order.items = items;
             order.cny = converter.toCNY(order.paymentAmount);
@@ -621,7 +623,7 @@ module.exports = {
                 data.summaries = [{fieldName: '总金额', sum: 0.00}];
                 sumResults && sumResults.forEach(function (summary) {
                     data.summaries[0].sum = _.round(data.summaries[0].sum + summary.paidAmount, 2);
-                    var hasPaymentType =false;
+                    var hasPaymentType = false;
                     for (var i = 1; i <= 3; i++) {
                         var field = 'paymentType' + i;
                         var amountFiled = 'paidAmount' + i;
