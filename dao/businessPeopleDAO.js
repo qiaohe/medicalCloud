@@ -79,7 +79,7 @@ module.exports = {
     findCheckIn: function (hospitalId, page, conditions) {
         var sql = sqlMapping.businessPeople.findCheckIn;
         if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
-        sql = sql + ' order by date limit ' + page.from + ',' + page.size;
+        sql = sql + ' order by date desc limit ' + page.from + ',' + page.size;
         return db.queryWithCount(sql, hospitalId);
     },
     insertSalesMan: function (saleman) {
@@ -119,10 +119,23 @@ module.exports = {
         sql = sql + ' order by createDate limit ' + page.from + ',' + page.size;
         return db.queryWithCount(sql, hospitalId);
     },
+
+    sumSalesManRegistrationForOthers: function (hospitalId, conditions) {
+        var sql = sqlMapping.businessPeople.sumSalesManRegistrationForOthers;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        return db.query(sql, hospitalId);
+    },
+
     findPerformances: function (hospitalId, page, conditions) {
         var sql = sqlMapping.businessPeople.findPerformances;
         if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
         sql = sql + ' order by e.id limit ' + page.from + ',' + page.size;
         return db.queryWithCount(sql, hospitalId);
+    },
+
+    sumActualPerformance: function (hospitalId, conditions) {
+        var sql = sqlMapping.businessPeople.sumActualPerformance;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        return db.query(sql, hospitalId);
     }
 }

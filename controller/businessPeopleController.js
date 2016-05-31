@@ -39,7 +39,7 @@ module.exports = {
             status: 0
         });
         businessPeopleDAO.findSalesManBy(req.user.hospitalId, salesMan.mobile).then(function (result) {
-            if (result && result.length > 0) throw new Error('改手机号码已经存在。');
+            if (result && result.length > 0) throw new Error('手机号码已经存在。');
             return businessPeopleDAO.insertSalesMan(salesMan);
         }).then(function (result) {
             salesMan.id = result.insertId;
@@ -133,7 +133,7 @@ module.exports = {
         if (req.query.endDate) conditions.push('createDate<=\'' + req.query.endDate + ' 23:59:59\'');
         if (req.query.salesMan) conditions.push('businessPeopleId=' + req.query.salesMan);
         if (req.query.department) conditions.push('departmentId=' + req.query.department);
-        if (req.query.doctor) conditions.push('departmentId=' + req.query.doctorId);
+        if (req.query.doctor) conditions.push('doctorId=' + req.query.doctor);
         if (req.query.status) conditions.push('outPatientStatus=' + req.query.status);
         if (req.query.patientName) conditions.push('patientName like \'%' + req.query.patientName + '%\'');
         businessPeopleDAO.findSalesManRegistrationForOthers(hospitalId, {
@@ -143,9 +143,12 @@ module.exports = {
             if (registrations.rows.length < 1) return res.send({ret: 0, data: []});
             registrations.pageIndex = pageIndex;
             registrations.rows.forEach(function (registration) {
-                registration.outPatientStatus = config.outpatientStatus[registration.outPatientStatus];
+                registration.outpatientStatus = config.outpatientStatus[+registration.outpatientStatus];
             });
-            res.send({ret: 0, data: registrations});
+            businessPeopleDAO.sumSalesManRegistrationForOthers(hospitalId, conditions).then(function (result) {
+                registrations.sumTotalFee = result[0].sumTotalFee;
+                res.send({ret: 0, data: registrations});
+            });
         }).catch(function (err) {
             res.send({ret: 0, message: err.message});
         });
@@ -169,7 +172,10 @@ module.exports = {
                 p.status = config.salesManStatus[p.status];
             });
             performances.pageIndex = pageIndex;
-            res.send({ret: 0, data: performances});
+            businessPeopleDAO.sumActualPerformance(hospitalId, conditions).then(function (result) {
+                performances.totalActual = result[0].totalActual;
+                res.send({ret: 0, data: performances});
+            })
         });
         return next();
     }
