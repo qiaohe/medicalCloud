@@ -132,6 +132,7 @@ module.exports = {
 
     registration: {
         updateRegistrationFee: 'update Registration set totalFee = totalFee + ? where id = ?',
+        updateSalesManPerformanceByMonth: 'update Performance set actual = actual + ? where salesMan=? and yearMonth=?',
         insertRegistrationCancelHistory: 'insert RegistrationCancelHistory set ?',
         addShiftPlan: 'insert ShiftPlan set ?',
         updateShiftPlanBy: 'update ShiftPlan set plannedQuantity=? where doctorId=? and day=? and shiftPeriod=?',
@@ -258,7 +259,7 @@ module.exports = {
         findOrdersByType: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId=? and m.type=? ',
         findOrdersByTypeAndStatus: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType, r.patientId, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId=? and m.type=? and m.status=? limit ?,?',
         findByOrderNos: 'select m.discountRate, m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.status=0 and m.orderNo in ',
-        findByOrderNo: 'select m.discountRate, m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId,m.invoiceSequenceNo, r.hospitalName, m.paidAmount1, m.paidAmount2, m.paidAmount3, m.paymentType1,m.paymentType2, m.paymentType3, m.paidAmount, m.chargedByName, m.chargeDate, m.invoiceSequenceNo from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.orderNo=?',
+        findByOrderNo: 'select m.discountRate, m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId,m.invoiceSequenceNo, r.hospitalName, m.paidAmount1, m.paidAmount2, m.paidAmount3, m.paymentType1,m.paymentType2, m.paymentType3, m.paidAmount, m.chargedByName, m.chargeDate, m.invoiceSequenceNo, r.businessPeopleId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.orderNo=?',
         findOrderByOrderNo: 'select r.patientBasicInfoId, r.patientMobile, h.patientName, r.hospitalName, r.departmentName, r.doctorName,r.sequence from MedicalOrder m left join Registration r on m.registrationId = r.id left JOIN MedicalHistory h on h.registrationId = m.registrationId where m.orderNo=?',
         findAccountInfo: 'select m.paymentDate, m.paymentType, m.paidAmount, m.paymentType1, m.paidAmount1, m.paymentType2, m.paidAmount2, m.paymentType3, m.paidAmount3, r.memberType, r.createDate, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId=?'
     }

@@ -29,5 +29,8 @@ module.exports = {
     },
     updateRegistrationFee: function(registrationId, fee) {
         return db.query(sqlMapping.registration.updateRegistrationFee, [fee, registrationId]);
+    },
+    updateSalesManPerformanceByMonth: function(salesMan, yearMonth, paidAmount) {
+        return db.query(sqlMapping.registration.updateSalesManPerformanceByMonth, [paidAmount, salesMan, yearMonth]);
     }
 }

@@ -35,13 +35,9 @@ module.exports = {
 
     getBusinessPeople: function (req, res, next) {
         var hospitalId = req.user.hospitalId;
-        var name = req.query.name;
-        businessPeopleDAO.findBusinessPeople(hospitalId, name).then(function (result) {
+        businessPeopleDAO.findSalesManName(hospitalId).then(function (result) {
             res.send({ret: 0, data: result});
-        }).catch(function (err) {
-            res.send({ret: 1, message: err.message});
-        });
-        return next();
+        })
     },
 
     getNoPlanBusinessPeople: function (req, res, next) {
@@ -518,6 +514,8 @@ module.exports = {
         var rows = excel.parse(req.files['file'].path, {hospitalId: req.user.hospitalId});
         dictionaryDAO.insertDrugByBatch(rows).then(function (result) {
             res.send({ret: 0, message: '导入药品数据成功，共导入' + rows.length + '行。'});
+        }).catch(function (err) {
+            res.send({ret: 0, message: err.message});
         });
         return next();
     },

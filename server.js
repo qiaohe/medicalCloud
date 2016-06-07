@@ -13,6 +13,7 @@ var _ = require('lodash');
 var notificationDAO = require('./dao/notificationDAO');
 var hospitalDAO = require('./dao/hospitalDAO');
 restify.CORS.ALLOW_HEADERS.push('Access-Control-Allow-Origin');
+
 server.use(restify.CORS());
 server.opts(/.*/, function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -34,6 +35,8 @@ router.route(server);
 server.on("uncaughtException", function (req, res, route, err) {
     res.send(err);
 });
+
+
 server.listen(config.server.port, config.server.host, function () {
     console.log('%s listening at %s', server.name, server.url);
 });
@@ -100,5 +103,16 @@ hospitalDAO.findAll().then(function (result) {
     })
 });
 var kue = require('kue');
-kue.createQueue('orderPayDelayedQueue');
-kue.app.listen(8098);
+var queue = require('./common/queue');
+
+var job = queue.create('scheduledJob', {}).delay(moment().endOf('day').milliseconds() - moment().milliseconds()).save(function (err) {
+    if (!err) console.log(job.id);
+});
+queue.process('scheduledJob', function (job, done) {
+    hospitalDAO.updateOutPatientStatus(5, 0).then(function (result) {
+        return hospitalDAO.updateOutPatientStatus(7, 1);
+    }).then(function (result) {
+        done();
+    });
+});
+kue.app.listen(8099);

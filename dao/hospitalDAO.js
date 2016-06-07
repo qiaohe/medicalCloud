@@ -179,5 +179,8 @@ module.exports = {
     },
     countOfEmployeeForJobTitle: function (roleId, jobTitleId) {
         return db.query(sqlMapping.hospital.countOfEmployeeForJobTitle, [roleId, jobTitleId]);
+    },
+    updateOutPatientStatus: function (oldStatus, newStatus) {
+        return db.query('UPDATE Registration set outpatientStatus =? WHERE outpatientStatus = ?', [newStatus, oldStatus]);
     }
 }

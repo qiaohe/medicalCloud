@@ -376,6 +376,7 @@ module.exports = {
         var pageSize = +req.query.pageSize;
         hospitalDAO.findDiscountRateOfDoctor(req.user.hospitalId, doctorId).then(function (rates) {
             result.maxDiscountRate = rates.length ? rates[0].maxDiscountRate : null;
+            if (rates && rates.length < 1) throw new Error('当前用户不是医生岗位，无权执行此操作');
             result.departmentName = rates[0].departmentName;
             result.clinic = rates[0].clinic;
             hospitalDAO.findWaitOutpatients(doctorId, today, {

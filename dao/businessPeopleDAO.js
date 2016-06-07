@@ -73,7 +73,7 @@ module.exports = {
     findSalesMan: function (hospitalId, page, conditions) {
         var sql = sqlMapping.businessPeople.findSalesMan;
         if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
-        sql = sql + ' order by createDate limit ' + page.from + ',' + page.size;
+        sql = sql + ' order by createDate desc limit ' + page.from + ',' + page.size;
         return db.queryWithCount(sql, hospitalId);
     },
     findCheckIn: function (hospitalId, page, conditions) {
@@ -116,7 +116,7 @@ module.exports = {
     findSalesManRegistrationForOthers: function (hospitalId, page, conditions) {
         var sql = sqlMapping.businessPeople.findSalesManRegistrationForOthers;
         if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
-        sql = sql + ' order by createDate limit ' + page.from + ',' + page.size;
+        sql = sql + ' order by createDate desc limit ' + page.from + ',' + page.size;
         return db.queryWithCount(sql, hospitalId);
     },
 
