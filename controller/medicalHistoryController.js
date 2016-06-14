@@ -454,6 +454,8 @@ module.exports = {
             if (order.type == config.orderType[1]) return medicalDAO.findRecipesByOrderNo(order.orderNo);
             if (order.type == config.orderType[2]) return medicalDAO.findPrescriptionsByOrderNo(order.orderNo);
             res.send({ret: 0, data: order});
+        }).then(function (result) {
+            return registrationDAO.updateRegistrationFee(order.registrationId, order.paidAmount);
         }).then(function (items) {
             order.items = items;
             order.cny = converter.toCNY(order.paymentAmount);
