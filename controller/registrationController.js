@@ -92,6 +92,7 @@ module.exports = {
                 return basicInfos.length ? basicInfos[0].id : businessPeopleDAO.insertPatientBasicInfo({
                     name: r.patientName,
                     realName: r.patientName,
+                    gender: r.gender,
                     mobile: r.patientMobile,
                     createDate: new Date(),
                     password: md5(r.patientMobile.substring(r.patientMobile.length - 6, r.patientMobile.length)),

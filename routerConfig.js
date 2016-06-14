@@ -76,42 +76,10 @@ module.exports = [
     },
     {
         method: 'get',
-        path: '/api/yearMonth/:yearMonth/performances',
-        handler: businessPeopleController.getPerformanceByMonth,
-        secured: 'user'
-    },
-    {
-        method: 'get',
         path: '/api/doctors/performances',
         handler: medicalHistoryController.getDoctorPerformances,
         secured: 'user'
     },
-
-    {
-        method: 'get',
-        path: '/api/years/:year/performances',
-        handler: businessPeopleController.getPerformanceByYear,
-        secured: 'user'
-    },
-    {
-        method: 'get',
-        path: '/api/contacts',
-        handler: businessPeopleController.getContacts,
-        secured: 'user'
-    },
-    {
-        method: 'post',
-        path: '/api/contacts',
-        handler: businessPeopleController.addContact,
-        secured: 'user'
-    },
-    {
-        method: 'post',
-        path: '/api/contacts/transfer',
-        handler: businessPeopleController.transferContact,
-        secured: 'user'
-    },
-
     {
         method: "get",
         path: "/api/departments",
@@ -152,18 +120,6 @@ module.exports = [
         method: "get",
         path: "/api/doctors/:doctorId",
         handler: hospitalController.getDoctorById,
-        secured: 'user'
-    },
-    {
-        method: "post",
-        path: "/api/preRegistrationForOthers",
-        handler: businessPeopleController.preRegistrationForContact,
-        secured: 'user'
-    },
-    {
-        method: "get",
-        path: "/api/preRegistrationForOthers",
-        handler: businessPeopleController.getPreRegistrationForContact,
         secured: 'user'
     },
     {
@@ -222,6 +178,12 @@ module.exports = [
     },
     {
         method: "get",
+        path: "/api/dict/salesMan",
+        handler: dictController.getSalesMan,
+        secured: 'user'
+    },
+    {
+        method: "get",
         path: "/api/dict/doctors",
         handler: dictController.getDoctors,
         secured: 'user'
@@ -236,13 +198,6 @@ module.exports = [
         method: "get",
         path: "/api/dict/years/:year/noPlan/businessPeoples",
         handler: dictController.getNoPlanBusinessPeople,
-        secured: 'user'
-    },
-
-    {
-        method: "get",
-        path: "/api/businessPeoples/:id/contacts",
-        handler: businessPeopleController.getContactsByBusinessPeopleId,
         secured: 'user'
     },
     {
@@ -704,6 +659,11 @@ module.exports = [
     },
     {
         method: "get",
+        path: "/api/export/hospitals",
+        handler: dictController.exportHospitals
+    },
+    {
+        method: "get",
         path: "/api/export/inventories",
         handler: dictController.exportInventories,
         secured: 'user'
@@ -916,6 +876,71 @@ module.exports = [
         method: "post",
         path: "/api/resetPwd",
         handler: authController.resetPwd
+    },
+    {
+        method: "get",
+        path: "/api/salesMan",
+        handler: businessPeopleController.getSalesMan,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/salesMan",
+        handler: businessPeopleController.getSalesMan,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/salesMan",
+        handler: businessPeopleController.addSalesMan,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/salesMan",
+        handler: businessPeopleController.updateSalesMan,
+        secured: 'user'
+    },
+    {
+        method: "del",
+        path: "/api/salesMan/:id",
+        handler: businessPeopleController.removeSalesMan,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/salesMan/:id/years/:year/performances",
+        handler: businessPeopleController.getSalesManPerformances,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/salesMan/:id",
+        handler: businessPeopleController.getSalesManInfo,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/salesMan/:id/performances",
+        handler: businessPeopleController.addSalesManPerformances,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/checkIns",
+        handler: businessPeopleController.getCheckIn,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/salesManRegistration",
+        handler: businessPeopleController.getSalesManRegistrations,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/salesManSummary",
+        handler: businessPeopleController.getSalesManSummary,
+        secured: 'user'
     }
-
 ];

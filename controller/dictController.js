@@ -35,13 +35,9 @@ module.exports = {
 
     getBusinessPeople: function (req, res, next) {
         var hospitalId = req.user.hospitalId;
-        var name = req.query.name;
-        businessPeopleDAO.findBusinessPeople(hospitalId, name).then(function (result) {
+        businessPeopleDAO.findSalesManName(hospitalId).then(function (result) {
             res.send({ret: 0, data: result});
-        }).catch(function (err) {
-            res.send({ret: 1, message: err.message});
-        });
-        return next();
+        })
     },
 
     getNoPlanBusinessPeople: function (req, res, next) {
@@ -515,9 +511,12 @@ module.exports = {
         return next();
     },
     importDrugs: function (req, res, next) {
-        var rows = excel.parse(req.files['file'].path, {hospitalId: req.user.hospitalId});
+        var headers = ['编号','名称','生产企业','类型','剂型','规格','单位','零售价','临界库存'];
+        var rows = excel.parse(req.files['file'].path, {hospitalId: req.user.hospitalId}, headers);
         dictionaryDAO.insertDrugByBatch(rows).then(function (result) {
             res.send({ret: 0, message: '导入药品数据成功，共导入' + rows.length + '行。'});
+        }).catch(function (err) {
+            res.send({ret: 0, message: err.message});
         });
         return next();
     },
@@ -526,6 +525,19 @@ module.exports = {
         var header = ['编号', '名称', '药品名称首字母拼音', '生产企业', '类型', '剂型药品剂型', '药品规格', '单位', '售价', '临界库存'];
         dictionaryDAO.findDrugsNoPagination(req.user.hospitalId).then(function (drugs) {
             var file = excel.export(drugs, header, {hospitalId: req.user.hospitalId}, 'drugs');
+            var filename = path.basename(file);
+            var mimetype = mime.lookup(file);
+            res.setHeader('Content-disposition', 'attachment; filename=' + filename + '.xlsx');
+            res.setHeader('Content-type', mimetype);
+            var filestream = fs.createReadStream(file);
+            filestream.pipe(res);
+        });
+        return next();
+    },
+    exportHospitals: function (req, res, next) {
+        var header = ['编号', '名称', '药品名称首字母拼音', '生产企业', '类型', '剂型药品剂型', '药品规格', '单位', '售价', '临界库存'];
+        hospitalDAO.findAllHospitals().then(function (hospitals) {
+            var file = excel.export(hospitals, header, {hospitalId: 1}, 'hospitals');
             var filename = path.basename(file);
             var mimetype = mime.lookup(file);
             res.setHeader('Content-disposition', 'attachment; filename=' + filename + '.xlsx');
@@ -817,4 +829,10 @@ module.exports = {
         });
         return next();
     },
+    getSalesMan: function (req, res, next) {
+        var hospitalId = req.user.hospitalId;
+        businessPeopleDAO.findSalesManName(hospitalId).then(function (result) {
+            res.send({ret: 0, data: result});
+        })
+    }
 }

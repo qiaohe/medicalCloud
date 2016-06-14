@@ -24,54 +24,59 @@ module.exports = {
         delete medicalHistory.diseaseId;
         var r = {};
         if (!req.body.templateId) delete req.body.templateId;
-        if (medicalHistory.id) {
-            delete req.body.createDate;
-            medicalDAO.updateMedicalHistory(req.body).then(function (result) {
-                res.send({ret: 0, data: req.body})
-            }).catch(function (err) {
-                res.send({ret: 1, message: err.message});
-            });
-        } else {
-            registrationDAO.findRegistrationsById(medicalHistory.registrationId).then(function (registrations) {
-                r = registrations[0];
-                medicalHistory = _.assign(medicalHistory, {
-                    doctorId: r.doctorId,
-                    doctorName: r.doctorName,
-                    departmentId: r.departmentId,
-                    departmentName: r.departmentName,
-                    patientName: medicalHistory.patientName ? medicalHistory.patientName : r.patientName,
-                    patientMobile: r.patientMobile,
-                    patientId: r.patientId,
-                    gender: medicalHistory.gender ? medicalHistory.gender : r.gender,
-                    age: r.age,
-                    patientBasicInfoId: r.patientBasicInfoId
+        registrationDAO.updateRegistration({
+            id: medicalHistory.registrationId,
+            outpatientStatus: 7
+        }).then(function (result) {
+            if (medicalHistory.id) {
+                delete req.body.createDate;
+                medicalDAO.updateMedicalHistory(req.body).then(function (result) {
+                    res.send({ret: 0, data: req.body})
+                }).catch(function (err) {
+                    res.send({ret: 1, message: err.message});
                 });
-                return medicalDAO.insertMedicalHistory(medicalHistory);
-            }).then(function (result) {
-                medicalHistory.id = result.insertId;
-                deviceDAO.findTokenByUid(medicalHistory.patientBasicInfoId).then(function (tokens) {
-                    if (tokens.length && tokens[0]) {
-                        var notificationBody = util.format(config.medicalHistoryTemplate, medicalHistory.patientName + (medicalHistory.gender == 0 ? '先生' : '女士'),
-                            r.hospitalName + medicalHistory.departmentName + medicalHistory.doctorName);
-                        pusher.push({
-                            body: notificationBody,
-                            uid: medicalHistory.patientBasicInfoId,
-                            patientName: medicalHistory.patientName,
-                            patientMobile: medicalHistory.patientMobile,
-                            title: '病历提醒',
-                            hospitalId: r.hospitalId,
-                            type: 2,
-                            audience: {registration_id: [tokens[0].token]}
-                        }, function (err, result) {
-                            if (err) throw err;
-                        });
-                    }
+            } else {
+                registrationDAO.findRegistrationsById(medicalHistory.registrationId).then(function (registrations) {
+                    r = registrations[0];
+                    medicalHistory = _.assign(medicalHistory, {
+                        doctorId: r.doctorId,
+                        doctorName: r.doctorName,
+                        departmentId: r.departmentId,
+                        departmentName: r.departmentName,
+                        patientName: medicalHistory.patientName ? medicalHistory.patientName : r.patientName,
+                        patientMobile: r.patientMobile,
+                        patientId: r.patientId,
+                        gender: medicalHistory.gender ? medicalHistory.gender : r.gender,
+                        age: r.age,
+                        patientBasicInfoId: r.patientBasicInfoId
+                    });
+                    return medicalDAO.insertMedicalHistory(medicalHistory);
+                }).then(function (result) {
+                    medicalHistory.id = result.insertId;
+                    deviceDAO.findTokenByUid(medicalHistory.patientBasicInfoId).then(function (tokens) {
+                        if (tokens.length && tokens[0]) {
+                            var notificationBody = util.format(config.medicalHistoryTemplate, medicalHistory.patientName + (medicalHistory.gender == 0 ? '先生' : '女士'),
+                                r.hospitalName + medicalHistory.departmentName + medicalHistory.doctorName);
+                            pusher.push({
+                                body: notificationBody,
+                                uid: medicalHistory.patientBasicInfoId,
+                                patientName: medicalHistory.patientName,
+                                patientMobile: medicalHistory.patientMobile,
+                                title: '病历提醒',
+                                hospitalId: r.hospitalId,
+                                type: 2,
+                                audience: {registration_id: [tokens[0].token]}
+                            }, function (err, result) {
+                                if (err) throw err;
+                            });
+                        }
+                    });
+                    return res.send({ret: 0, data: medicalHistory});
+                }).catch(function (err) {
+                    res.send({ret: 1, message: err.message});
                 });
-                return res.send({ret: 0, data: medicalHistory});
-            }).catch(function (err) {
-                res.send({ret: 1, message: err.message});
-            });
-        }
+            }
+        });
         return next();
     },
 
@@ -130,6 +135,10 @@ module.exports = {
                 return registrationDAO.findRegistrationsById(registrationId);
             }).then(function (registrations) {
                 var registration = registrations[0];
+                return registrationDAO.updateRegistration({
+                    id: registration.id,
+                    outpatientStatus: 7
+                });
                 //deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
                 //    if (tokens.length && tokens[0]) {
                 //        var notificationBody = util.format(config.recipeOrderTemplate, registration.patientName + (registration.gender == 0 ? '先生' : '女士'),
@@ -207,6 +216,10 @@ module.exports = {
                 return registrationDAO.findRegistrationsById(registrationId);
             }).then(function (registrations) {
                 var registration = registrations[0];
+                return registrationDAO.updateRegistration({
+                    id: registration.id,
+                    outpatientStatus: 7
+                });
                 //deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
                 //    if (tokens.length && tokens[0]) {
                 //        var notificationBody = util.format(config.prescriptionOrderTemplate,
@@ -444,7 +457,15 @@ module.exports = {
         }).then(function (items) {
             order.items = items;
             order.cny = converter.toCNY(order.paymentAmount);
-            res.send({ret: 0, data: order});
+            return registrationDAO.updateRegistrationFee(order.registrationId, order.paidAmount);
+        }).then(function (result) {
+            if (order.businessPeopleId && order.businessPeopleId > 0) {
+                registrationDAO.updateSalesManPerformanceByMonth(order.businessPeopleId, moment().format('YYYYMM'), order.paidAmount).then(function (result) {
+                    res.send({ret: 0, data: order});
+                });
+            } else {
+                res.send({ret: 0, data: order});
+            }
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
@@ -621,7 +642,7 @@ module.exports = {
                 data.summaries = [{fieldName: '总金额', sum: 0.00}];
                 sumResults && sumResults.forEach(function (summary) {
                     data.summaries[0].sum = _.round(data.summaries[0].sum + summary.paidAmount, 2);
-                    var hasPaymentType =false;
+                    var hasPaymentType = false;
                     for (var i = 1; i <= 3; i++) {
                         var field = 'paymentType' + i;
                         var amountFiled = 'paidAmount' + i;

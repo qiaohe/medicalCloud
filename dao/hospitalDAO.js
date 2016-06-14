@@ -167,6 +167,10 @@ module.exports = {
     findAll: function () {
         return db.query(sqlMapping.hospital.findAll);
     },
+    findAllHospitals: function () {
+        return db.query(sqlMapping.hospital.findAllHospitals);
+    },
+
     countOfEmployeesForDepartment: function (departmentId) {
         return db.query(sqlMapping.hospital.countOfEmployeesForDepartment, departmentId);
     },
@@ -175,5 +179,8 @@ module.exports = {
     },
     countOfEmployeeForJobTitle: function (roleId, jobTitleId) {
         return db.query(sqlMapping.hospital.countOfEmployeeForJobTitle, [roleId, jobTitleId]);
+    },
+    updateOutPatientStatus: function (oldStatus, newStatus) {
+        return db.query('UPDATE Registration set outpatientStatus =? WHERE outpatientStatus = ?', [newStatus, oldStatus]);
     }
 }
