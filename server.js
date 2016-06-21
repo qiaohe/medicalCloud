@@ -109,8 +109,10 @@ var job = queue.create('scheduledJob', {}).delay(moment().endOf('day').milliseco
     if (!err) console.log(job.id);
 });
 queue.process('scheduledJob', function (job, done) {
-    hospitalDAO.updateOutPatientStatus().then(function (result) {
-    })
-    done();
+    hospitalDAO.updateOutPatientStatus(5, 0).then(function (result) {
+        return hospitalDAO.updateOutPatientStatus(7, 1);
+    }).then(function (result) {
+        done();
+    });
 });
 kue.app.listen(8099);

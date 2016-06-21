@@ -454,8 +454,6 @@ module.exports = {
             if (order.type == config.orderType[1]) return medicalDAO.findRecipesByOrderNo(order.orderNo);
             if (order.type == config.orderType[2]) return medicalDAO.findPrescriptionsByOrderNo(order.orderNo);
             res.send({ret: 0, data: order});
-        }).then(function (result) {
-            return registrationDAO.updateRegistrationFee(order.registrationId, order.paidAmount);
         }).then(function (items) {
             order.items = items;
             order.cny = converter.toCNY(order.paymentAmount);
@@ -588,6 +586,7 @@ module.exports = {
         conditions.push('(m.status=1 or m.status=3)');
         //if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
         if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.chargedBy) conditions.push('m.chargedBy=' + req.query.chargedBy);
         if (req.query.type) conditions.push('m.type=' + req.query.type);
         if (req.query.departmentId) conditions.push('r.departmentId=' + req.query.departmentId);
         if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);

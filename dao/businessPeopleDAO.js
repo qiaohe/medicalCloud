@@ -2,34 +2,6 @@
 var db = require('../common/db');
 var sqlMapping = require('./sqlMapping');
 module.exports = {
-    findPerformanceByMonth: function (businessPeopleId, yearMonth) {
-        return db.query(sqlMapping.businessPeople.findPerformanceByMonth, [businessPeopleId, yearMonth]);
-    },
-    findPerformanceByYear: function (businessPeopleId, year) {
-        return db.query(sqlMapping.businessPeople.findPerformanceByYear, [businessPeopleId, year]);
-    },
-    findContactsBy: function (businessPeopleId) {
-        return db.query(sqlMapping.businessPeople.findContactsBy, businessPeopleId);
-    },
-    findContactsByPagable: function (businessPeopleId, page, conditions) {
-        var sql = sqlMapping.businessPeople.findContactsByPagable;
-        sql = !conditions.length ? sql : 'select SQL_CALC_FOUND_ROWS ic.id, ic.mobile, ic.name, ic.createDate, ic.inviteTimes, ic.source, ic.inviteResult,gc.`name` as groupName from InvitationContact ic left join GroupCompany gc on gc.id = ic.groupId where ic.businessPeopleId=? and ' + conditions.join(' and ') + ' limit ?, ?';
-        return db.queryWithCount(sql, [businessPeopleId, page.from, page.size]);
-    },
-
-    insertContact: function (contact) {
-        return db.query(sqlMapping.businessPeople.insertContact, contact);
-    },
-
-    findContactBusinessPeopleIdAndMobile: function (businessPeopleId, mobile) {
-        return db.query(sqlMapping.businessPeople.findContactBusinessPeopleIdAndMobile, [businessPeopleId, mobile]);
-    },
-    findContactById: function (contactId) {
-        return db.query(sqlMapping.businessPeople.findContactById, contactId);
-    },
-    updateContact: function (contactId) {
-        return db.query(sqlMapping.businessPeople.updateContact, contactId);
-    },
     insertInvitation: function (invitation) {
         return db.query(sqlMapping.businessPeople.insertInvitation, invitation);
     },
@@ -73,13 +45,6 @@ module.exports = {
         if (mobile !== undefined) return db.query(sqlMapping.businessPeople.findRegistrationsByUidAndMobile, [uid, mobile, page.from, page.size]);
         return db.query(sqlMapping.businessPeople.findRegistrationsByUid, [uid, page.from, page.size]);
     },
-    findBusinessPeople: function (hospitalId, name) {
-        var sql = sqlMapping.employee.findByRole;
-        if (name) {
-            sql = sql + ' and name like \'%' + name + '%\'';
-        }
-        return db.query(sql, [4, hospitalId]);
-    },
     findNoPlanBusinessPeople: function (hospitalId, year) {
         return db.query(sqlMapping.employee.findNoPlanBusinessPeople, [hospitalId, year]);
     },
@@ -98,14 +63,79 @@ module.exports = {
     updateShiftPeriod: function (name, periodId) {
         return db.query(sqlMapping.businessPeople.updateShiftPeriod, [name, periodId]);
     },
-    transferContact: function (toBusinessPeopleId, contacts) {
-        return db.query(sqlMapping.businessPeople.transferContact + '(' + contacts + ')', [toBusinessPeopleId, contacts]);
-    },
 
     addTransferHistory: function (history) {
         return db.query(sqlMapping.businessPeople.addTransferHistory, history);
     },
     updatePatientBasicInfo: function (patientBasicInfo) {
         return db.query(sqlMapping.businessPeople.updatePatientBasicInfo, [patientBasicInfo, patientBasicInfo.id])
+    },
+    findSalesMan: function (hospitalId, page, conditions) {
+        var sql = sqlMapping.businessPeople.findSalesMan;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' order by createDate desc limit ' + page.from + ',' + page.size;
+        return db.queryWithCount(sql, hospitalId);
+    },
+    findCheckIn: function (hospitalId, page, conditions) {
+        var sql = sqlMapping.businessPeople.findCheckIn;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' order by date desc limit ' + page.from + ',' + page.size;
+        return db.queryWithCount(sql, hospitalId);
+    },
+    insertSalesMan: function (saleman) {
+        return db.query(sqlMapping.businessPeople.insertSalesMan, saleman);
+    },
+
+    deleteSalesMan: function (salesManId) {
+        return db.query(sqlMapping.businessPeople.deleteSalesMan, salesManId);
+    },
+    updateSalesMan: function (salesMan) {
+        return db.query(sqlMapping.businessPeople.updateSalesMan, [salesMan, salesMan.id]);
+    },
+    findSalesManBy: function (hospitalId, mobile) {
+        return db.query(sqlMapping.businessPeople.findSalesManBy, [hospitalId, mobile]);
+    },
+    findSalesManName: function (hospitalId) {
+        return db.query(sqlMapping.businessPeople.findSalesManName, hospitalId);
+    },
+    findSalesManPerformance: function (salesManId, year) {
+        return db.query(sqlMapping.businessPeople.findSalesManPerformance, [salesManId, year]);
+    },
+    findSalesManPerformanceBy: function (saleman, yearMonth) {
+        return db.query(sqlMapping.businessPeople.findSalesManPerformanceBy, [saleman, yearMonth]);
+    },
+    insertSalesManPerformance: function (performance) {
+        return db.query(sqlMapping.businessPeople.insertSalesManPerformanceBy, performance);
+    },
+    updateSalesManPerformance: function (performance) {
+        return db.query(sqlMapping.businessPeople.updateSalesManPerformance, [performance, performance.id]);
+    },
+    findSalesManById: function (salesManId) {
+        return db.query(sqlMapping.businessPeople.findSalesManById, salesManId);
+    },
+    findSalesManRegistrationForOthers: function (hospitalId, page, conditions) {
+        var sql = sqlMapping.businessPeople.findSalesManRegistrationForOthers;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' order by createDate desc limit ' + page.from + ',' + page.size;
+        return db.queryWithCount(sql, hospitalId);
+    },
+
+    sumSalesManRegistrationForOthers: function (hospitalId, conditions) {
+        var sql = sqlMapping.businessPeople.sumSalesManRegistrationForOthers;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        return db.query(sql, hospitalId);
+    },
+
+    findPerformances: function (hospitalId, page, conditions) {
+        var sql = sqlMapping.businessPeople.findPerformances;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' order by e.id limit ' + page.from + ',' + page.size;
+        return db.queryWithCount(sql, hospitalId);
+    },
+
+    sumActualPerformance: function (hospitalId, conditions) {
+        var sql = sqlMapping.businessPeople.sumActualPerformance;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        return db.query(sql, hospitalId);
     }
 }

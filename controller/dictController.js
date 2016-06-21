@@ -792,6 +792,16 @@ module.exports = {
         });
         return next();
     },
+    searchMedicalTemplates: function (req, res, next) {
+        var name = req.query.name;
+        dictionaryDAO.findMedicalTemplatesBy(req.user.hospitalId, name).then(function (result) {
+            res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
     getChargeItemsBy: function (req, res, next) {
         var name = req.query.name;
         var code = req.query.code;
@@ -822,7 +832,7 @@ module.exports = {
         return next();
     },
     getChargers: function (req, res, next) {
-        employeeDAO.findByRoleName(req.user.hospitalId, config.app.prefixOfChargeRole).then(function (chargers) {
+        employeeDAO.findChargers(req.user.hospitalId).then(function (chargers) {
             res.send({ret: 0, data: chargers});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});

@@ -170,7 +170,9 @@ module.exports = {
     findAllHospitals: function () {
         return db.query(sqlMapping.hospital.findAllHospitals);
     },
-
+    findByIdWithGroupMessage: function (hospitalId) {
+        return db.query(sqlMapping.hospital.findByIdWithGroupMessage, hospitalId);
+    },
     countOfEmployeesForDepartment: function (departmentId) {
         return db.query(sqlMapping.hospital.countOfEmployeesForDepartment, departmentId);
     },

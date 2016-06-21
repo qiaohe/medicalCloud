@@ -24,5 +24,17 @@ module.exports = {
     },
     findSequencesBy: function (doctorId, sequence, registerDate) {
         return db.query(sqlMapping.notification.findSequencesBy, [doctorId, sequence, registerDate]);
+    },
+    insertGroupMessage: function (groupMessage) {
+        return db.query(sqlMapping.notification.insertGroupMessage, groupMessage);
+    },
+    findGroupMessages: function (hospitalId, page) {
+        return db.queryWithCount(sqlMapping.notification.findGroupMessages, [hospitalId, page.from, page.size]);
+    },
+    findPatients: function (hospitalId, gender, patients) {
+        var sql = sqlMapping.notification.findPatients;
+        if (patients && patients.length > 0) sql = sql + ' or pi.id in(' + patients.join(',') + ')';
+        if (gender != null) sql = sql + ' and pi.gender=' + gender;
+        return db.query(sql, hospitalId);
     }
 }
