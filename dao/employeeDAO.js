@@ -85,5 +85,9 @@ module.exports = {
     findRoleByName: function (hospitalId, roleName) {
         var sql = 'select id from Role where hospitalId=? and `name` like \'%' + roleName + '%\'';
         return db.query(sql, hospitalId);
+    },
+    findChargers: function(hospitalId) {
+        var sql = 'select DISTINCT chargedBy, chargedByName from MedicalOrder where hospitalId=? and  chargedBy is not NULL';
+        return db.query(sql, hospitalId);
     }
 }

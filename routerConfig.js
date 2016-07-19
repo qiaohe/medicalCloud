@@ -7,6 +7,7 @@ var registrationController = require('./controller/registrationController');
 var dictController = require('./controller/dictController');
 var patientController = require('./controller/patientController');
 var medicalHistoryController = require('./controller/medicalHistoryController');
+var deviceController = require('./controller/deviceController');
 
 module.exports = [
     {
@@ -45,7 +46,7 @@ module.exports = [
     },
     {
         method: "get",
-        path: "/api/employees/mobile/:mobile",
+        path: "/api/employees/search",
         handler: employeeController.getEmployeeByMobile,
         secured: 'user'
     },
@@ -604,6 +605,12 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "get",
+        path: "/api/medicalTemplates/search",
+        handler: dictController.searchMedicalTemplates,
+        secured: 'user'
+    },
+    {
         method: "del",
         path: "/api/medicalTemplates/:id",
         handler: dictController.removeMedicalTemplate,
@@ -942,5 +949,29 @@ module.exports = [
         path: "/api/salesManSummary",
         handler: businessPeopleController.getSalesManSummary,
         secured: 'user'
-    }
+    },
+    {
+        method: "get",
+        path: "/api/groupMessages",
+        handler: deviceController.getGroupMessages,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/groupMessages",
+        handler: deviceController.addGroupMessage,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/groupMessages/patients",
+        handler: deviceController.getPatientsOfGroupMessage,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/groupMessages/summary",
+        handler: deviceController.getMessageSummary,
+        secured: 'user'
+    },
 ];

@@ -182,7 +182,7 @@ module.exports = {
             if (!empoyees.rows.length) res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
             empoyees.rows.forEach(function (employee) {
                 employee.status = config.employeeStatus[employee.status];
-                employee.isCustomerService =(employee.id == customerServiceUid);
+                employee.isCustomerService = (employee.id == customerServiceUid);
                 employee.gender = config.gender[employee.gender];
             });
             empoyees.pageIndex = pageIndex;
@@ -268,9 +268,9 @@ module.exports = {
     },
 
     getEmployeeByMobile: function (req, res, next) {
-        var mobile = req.params.mobile;
+        var mobile = req.query.mobile;
         employeeDAO.findByUsername(req.user.hospitalId, mobile).then(function (employees) {
-            res.send({ret: 0, data: {exists: employees.length > 0}});
+            res.send({ret: 0, data: employees});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });

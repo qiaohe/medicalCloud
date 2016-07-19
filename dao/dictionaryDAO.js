@@ -152,13 +152,15 @@ module.exports = {
         }
         return db.query(sql + ' limit 0 , 20', hospitalId);
     },
+    findMedicalTemplatesBy: function (hospitalId, name) {
+        return db.query(sqlMapping.dict.findMedicalTemplatesBy, [hospitalId, name]);
+    },
     findChargeItemsBy: function (hospitalId, condition) {
         var sql = sqlMapping.dict.findChargeItemsBy;
         if (condition.code) {
             sql = sql + ' code like \'%' + condition.code + '%\'';
         } else if (condition.name) {
-            var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
-            sql = sql + (reg.test(condition.name) ? 'name' : 'pinyin') + ' like \'%' + condition.name + '%\'';
+            sql = sql + ' name like \'%' + condition.name + '%\'';
         }
         return db.query(sql, hospitalId);
     },

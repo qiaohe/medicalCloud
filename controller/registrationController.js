@@ -66,7 +66,7 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (registrations) {
-            registrations.rows && registrations.rows.forEach(function (registration) {
+            registrations && registrations.rows && registrations.rows.forEach(function (registration) {
                 registration.registrationType = config.registrationType[registration.registrationType];
                 registration.gender = config.gender[registration.gender];
                 registration.memberType = config.memberType[registration.memberType];
