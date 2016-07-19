@@ -89,7 +89,7 @@ module.exports = {
         }).then(function (groupMessages) {
             if (groupMessages.rows.length < 1) return res.send({ret: 0, data: []});
             groupMessages.rows.forEach(function (gm) {
-                gm.target = (!!gm.gender ? config.gender[gm.gender] : '所有人');
+                gm.target = (gm.gender != null ? config.gender[gm.gender] : '所有人');
                 delete gm.gender;
             });
             groupMessages.pageIndex = pageIndex;
@@ -103,11 +103,11 @@ module.exports = {
         var favoriteQueue = 'h:' + req.user.hospitalId + ':favorite:' + 'patients';
         var gender = req.query.gender;
         redis.zrangeAsync([favoriteQueue, 0, -1]).then(function (patientIdList) {
-            return notificationDAO.findPatients(req.user.hospitalId, gender ? gender : null, patientIdList);
+            return notificationDAO.findPatients(req.user.hospitalId, !!gender ? gender : null, patientIdList);
         }).then(function (patients) {
             if (patients && patients.length < 1) return res.send({ret: 0, data: []});
             Promise.map(patients, function (patient) {
-                patient.gender = (patient.gender ? config.gender[patient.gender] : config.gender[0]);
+                patient.gender = (!!patient.gender ? config.gender[+patient.gender] : config.gender[0]);
                 return redis.zrankAsync(favoriteQueue, patient.uid).then(function (index) {
                     patient.favorited = (index != null);
                     patient.outPatiented = (!patient.favorited)

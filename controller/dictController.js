@@ -80,7 +80,7 @@ module.exports = {
             return businessPeopleDAO.findShiftPeriods(period.hospitalId);
         }).then(function (shiftPeriods) {
             Promise.map(shiftPeriods, function (period, index) {
-                redis.setAsync('h:' + req.user.hospitalId + ':p:' + period.id, String.fromCharCode(65 + index))
+                return redis.setAsync('h:' + req.user.hospitalId + ':p:' + period.id, String.fromCharCode(65 + index))
             }).then(function (result) {
                 res.send({ret: 0, data: {id: result.insertId, name: period.name}});
             })

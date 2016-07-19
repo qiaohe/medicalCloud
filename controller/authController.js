@@ -67,6 +67,7 @@ module.exports = {
         var mobile = req.body.username;
         var certCode = req.body.certCode;
         var newPwd = req.body.password;
+        var user = {};
         redis.getAsync(mobile).then(function (reply) {
             if (!(reply && reply == certCode)) return res.send({ret: 1, message: i18n.get('sms.code.invalid')});
             return employeeDAO.updateEmployeePassword(md5(newPwd), mobile).then(function (result) {

@@ -50,6 +50,7 @@ module.exports = {
                         age: r.age,
                         patientBasicInfoId: r.patientBasicInfoId
                     });
+                    redis.publish('settlement.queue', r.id);
                     return medicalDAO.insertMedicalHistory(medicalHistory);
                 }).then(function (result) {
                     medicalHistory.id = result.insertId;
@@ -135,6 +136,7 @@ module.exports = {
                 return registrationDAO.findRegistrationsById(registrationId);
             }).then(function (registrations) {
                 var registration = registrations[0];
+                redis.publish('settlement.queue', registration.id);
                 return registrationDAO.updateRegistration({
                     id: registration.id,
                     outpatientStatus: 7
@@ -216,6 +218,7 @@ module.exports = {
                 return registrationDAO.findRegistrationsById(registrationId);
             }).then(function (registrations) {
                 var registration = registrations[0];
+                redis.publish('settlement.queue', registration.id);
                 return registrationDAO.updateRegistration({
                     id: registration.id,
                     outpatientStatus: 7
@@ -460,8 +463,16 @@ module.exports = {
             return registrationDAO.updateRegistrationFee(order.registrationId, order.paidAmount);
         }).then(function (result) {
             if (order.businessPeopleId && order.businessPeopleId > 0) {
-                registrationDAO.updateSalesManPerformanceByMonth(order.businessPeopleId, moment().format('YYYYMM'), order.paidAmount).then(function (result) {
-                    res.send({ret: 0, data: order});
+                registrationDAO.findRegistrationsById(order.registrationId).then(function (registrations) {
+                    var r = registrations[0];
+                    if (r.registrationType == 8) {
+                        redis.publish('settlement.queue', order.orderNo);
+                        res.send({ret: 0, data: order});
+                    } else {
+                        registrationDAO.updateSalesManPerformanceByMonth(order.businessPeopleId, moment().format('YYYYMM'), order.paidAmount).then(function (result) {
+                            res.send({ret: 0, data: order});
+                        });
+                    }
                 });
             } else {
                 res.send({ret: 0, data: order});
