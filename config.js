@@ -4,14 +4,14 @@ module.exports = {
     server: {
         name: 'medical cloud platform',
         version: '0.0.1',
-        host: 'api.hisforce.cn',
-        port: 8084
+        host: '121.42.171.213',
+        port: 8083
     },
     db: {
-        host: '10.161.161.229',
+        host: 'www.hisforce.cn',
         port: '3306',
         user: 'root',
-        password: 'heqiao75518?',
+        password: 'heqiao75518',
         debug: false,
         multipleStatements: true,
         database: 'medicalDB'
@@ -26,7 +26,7 @@ module.exports = {
         defaultHeadPic: 'http://7xrtp2.com2.z0.glb.qiniucdn.com/headPic.png'
     },
     redis: {
-        host: '10.161.161.229',
+        host: '127.0.0.1',
         port: 6379
     },
     rongcloud: {
@@ -70,7 +70,7 @@ module.exports = {
     sourceType: ['陌生拜访', '市场活动', '门诊转化', '内部转移', '特殊推荐', '广告推广'],
     gender: ['男', '女'],
     outPatientType: ["初诊", "复诊", "院内转诊", "跨院转诊", "远程会诊", "远程初诊", "远程复诊"],
-    outpatientStatus: ['未到', '结诊', '已转诊', '已预约复诊', '转诊中', '待诊中', '已取消','就诊中'],
+    outpatientStatus: ['未到', '结诊', '已转诊', '已预约复诊', '转诊中', '待诊中', '已取消', '就诊中'],
     cashbackType: ['赠劵', '优惠券', '免单'],
     paymentType: ['支付宝', '微信支付', '会员卡', '银行卡', '医保', '现金', '代付'],
     consumptionLevel: ['<1000', '1000~3000', '3000~5000', '5000~10000', '>10000'],

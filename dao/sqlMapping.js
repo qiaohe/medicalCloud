@@ -13,7 +13,7 @@ module.exports = {
         insertJobTitle: 'insert JobTitle set ?',
         deleteJobTitle: 'delete from JobTitle where role=? and id= ?',
         findByRole: 'select id, name from Employee where role=? and hospitalId=?',
-        findByRoleName: 'select e.`name`, e.id from Employee e left JOIN Role r on e.role = r.id where e.hospitalId=? and r.`name` like ?',
+        findByRoleName: 'select e.`name`, e.id from Employee e left JOIN Role r on e.role = r.id where e.hospitalId=? and r.`name` like ',
         findNoPlanBusinessPeople: 'select id, name from Employee where hospitalId = ? and role = 4 and id not in(select DISTINCT businessPeopleId from Performance where left(yearMonth, 4) =?)',
         updateEmployee: 'update Employee set password=? where mobile = ?',
         updateEmployeeByUid: 'update Employee set ? where id = ?',
@@ -102,6 +102,7 @@ module.exports = {
         findJobTitleMenuItem: 'select * from JobTitleMenuItem where jobTitleId=? and menuItem=?',
         findMenusByJobTitle: 'select m.`name`, m.id from JobTitleMenuItem i left JOIN Menu m on m.id = i.menuItem where i.jobTitleId=?',
         findMenus: 'select id, name from Menu',
+        findShareSetting: 'select recommendationFee from Hospital where id = ?',
         findMyMenus: 'select u.name, u.id, u.pid, u.routeUri, u.icon from Employee e left JOIN JobTitleMenuItem m on m.jobTitleId = e.jobTitle left join Menu u on u.id = m.menuItem  where e.id = ? order by u.pid, u.sortIndex'
     },
 
@@ -132,7 +133,7 @@ module.exports = {
     },
 
     registration: {
-        updateRegistrationFee: 'update Registration set totalFee = totalFee + ? where id = ?',
+        updateRegistrationFee: 'update Registration set totalFee = totalFee + ?, ? where id =?',
         updateSalesManPerformanceByMonth: 'update Performance set actual = actual + ? where salesMan=? and yearMonth=?',
         insertRegistrationCancelHistory: 'insert RegistrationCancelHistory set ?',
         addShiftPlan: 'insert ShiftPlan set ?',
@@ -269,6 +270,7 @@ module.exports = {
         findAccountInfo: 'select m.paymentDate, m.paymentType, m.paidAmount, m.paymentType1, m.paidAmount1, m.paymentType2, m.paidAmount2, m.paymentType3, m.paidAmount3, r.memberType, r.createDate, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId=?'
     },
     angelGuiderTransactionFlow: {
-        findAll:'select af.* from AngelGuiderTransactionFlow af left join AngelGuiderShare sh on sh.id = af.shareId left join Account ac on ac.id = af.accountId and ac.type = 1 where  ac.uid=? limit ?,?'
+        findAll:'select SQL_CALC_FOUND_ROWS af.id, af.createDate,af.amount, se.amount as originAmount, af.flowNo, af.`status`, af.transactionCode, af.`comment`, af.`status`, ac.accountName, se.patientName, se.type, se.angelGuiderName, se.agentShare, se.angelGuiderShare, se.platformShare, se.prescriptionShare,se.recipeShare,se.hospitalName, se.hospitalPayableAmount, af.currentBalance  from AngelGuiderTransactionFlow af left join AngelGuiderShare sh on sh.id = af.shareId left join Account ac on ac.id = af.accountId and ac.type = 1 left JOIN AngelGuiderShare se on se.id = af.shareId where ac.uid=? ',
+        findAccount: 'select balance, availableBalance from Account where type = 1 and uid =?'
     }
 };
