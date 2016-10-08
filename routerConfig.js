@@ -683,6 +683,13 @@ module.exports = [
     },
     {
         method: "get",
+        path: "/api/drugs/code/:code",
+        handler: dictController.getDrugsByCode,
+        secured: 'user'
+    },
+    
+    {
+        method: "get",
         path: "/api/chargeItems/search",
         handler: dictController.getChargeItemsBy,
         secured: 'user'
@@ -691,6 +698,12 @@ module.exports = [
         method: "del",
         path: "/api/drugs/:id",
         handler: dictController.removeDrug,
+        secured: 'user'
+    },
+    {
+        method: "del",
+        path: "/api/drugs",
+        handler: dictController.removeDrugs,
         secured: 'user'
     },
     {
@@ -974,4 +987,11 @@ module.exports = [
         handler: deviceController.getMessageSummary,
         secured: 'user'
     },
+    {
+        method: "get",
+        path: "/api/transactionFlows",
+        handler: hospitalController.getTransactionFlows,
+        secured: 'user'
+    },
+
 ];

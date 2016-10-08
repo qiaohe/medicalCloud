@@ -80,7 +80,7 @@ module.exports = {
             return businessPeopleDAO.findShiftPeriods(period.hospitalId);
         }).then(function (shiftPeriods) {
             Promise.map(shiftPeriods, function (period, index) {
-                redis.setAsync('h:' + req.user.hospitalId + ':p:' + period.id, String.fromCharCode(65 + index))
+                return redis.setAsync('h:' + req.user.hospitalId + ':p:' + period.id, String.fromCharCode(65 + index))
             }).then(function (result) {
                 res.send({ret: 0, data: {id: result.insertId, name: period.name}});
             })
@@ -376,7 +376,7 @@ module.exports = {
         var pageSize = +req.query.pageSize;
         var hospitalId = req.user.hospitalId;
         var conditions = [];
-        if (req.query.name) conditions.push('dic.`name` like \'%' + req.query.name + '%\'');
+        if (req.query.name) conditions.push('m.`name` like \'%' + req.query.name + '%\'');
         if (req.query.departmentId) conditions.push('m.departmentId=' + req.query.departmentId);
         dictionaryDAO.findMedicalTemplates(hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
@@ -511,7 +511,7 @@ module.exports = {
         return next();
     },
     importDrugs: function (req, res, next) {
-        var headers = ['编号','名称','生产企业','类型','剂型','规格','单位','零售价','临界库存'];
+        var headers = ['编号', '名称', '生产企业', '类型', '剂型', '规格', '单位', '售价', '临界库存'];
         var rows = excel.parse(req.files['file'].path, {hospitalId: req.user.hospitalId}, headers);
         dictionaryDAO.insertDrugByBatch(rows).then(function (result) {
             res.send({ret: 0, message: '导入药品数据成功，共导入' + rows.length + '行。'});
@@ -582,6 +582,24 @@ module.exports = {
     },
     removeDrug: function (req, res, next) {
         dictionaryDAO.deleteDrug(req.params.id).then(function (result) {
+            res.send({ret: 0, message: '删除成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    removeDrugs: function (req, res, next) {
+        var drugs = [];
+        if (_.isArray(req.query.drugs)) {
+            _.forEach(req.query.drugs, function (item) {
+                drugs.push(item);
+            });
+        } else {
+            drugs.push(+req.query.drugs);
+        }
+        Promise.map(drugs, function (drug) {
+            return dictionaryDAO.deleteDrug(drug)
+        }).then(function (result) {
             res.send({ret: 0, message: '删除成功'});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -792,6 +810,16 @@ module.exports = {
         });
         return next();
     },
+    getDrugsByCode: function (req, res, next) {
+        var code = req.params.code;
+        dictionaryDAO.findDrugsByCode(req.user.hospitalId, code).then(function (result) {
+            res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
     searchMedicalTemplates: function (req, res, next) {
         var name = req.query.name;
         dictionaryDAO.findMedicalTemplatesBy(req.user.hospitalId, name).then(function (result) {
@@ -805,7 +833,11 @@ module.exports = {
     getChargeItemsBy: function (req, res, next) {
         var name = req.query.name;
         var code = req.query.code;
-        dictionaryDAO.findChargeItemsBy(req.user.hospitalId, {name: name, code: code}).then(function (result) {
+        dictionaryDAO.findChargeItemsBy(req.user.hospitalId, {
+            name: name,
+            code: code,
+            wholeWordsOnly: (req.query.wholeWordsOnly ? true : false)
+        }).then(function (result) {
             res.send({ret: 0, data: result});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -824,7 +856,7 @@ module.exports = {
     },
 
     getDrugSenders: function (req, res, next) {
-        employeeDAO.findByRoleName(req.user.hospitalId, config.app.prefixOfDrugSendRole).then(function (senders) {
+        employeeDAO.findDrugSenders(req.user.hospitalId).then(function (senders) {
             res.send({ret: 0, data: senders});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});

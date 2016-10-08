@@ -5,7 +5,6 @@ var i18n = require('../i18n/localeMessage');
 var businessPeopleDAO = require('../dao/businessPeopleDAO');
 var md5 = require('md5');
 var Promise = require('bluebird');
-
 function getConditions(req) {
     var conditions = [];
     if (req.query.status) conditions.push('status=' + req.query.status);

@@ -1,6 +1,7 @@
 "use strict";
 var db = require('../common/db');
 var sqlMapping = require('./sqlMapping');
+var config = require('../config');
 module.exports = {
     findRegistrations: function (hospitalId, conditions, page) {
         var sql = sqlMapping.registration.findRegistrations;
@@ -27,10 +28,17 @@ module.exports = {
     insertCancelHistory: function (cancelHistory) {
         return db.query(sqlMapping.registration.insertRegistrationCancelHistory, cancelHistory);
     },
-    updateRegistrationFee: function(registrationId, fee) {
-        return db.query(sqlMapping.registration.updateRegistrationFee, [fee, registrationId]);
+    updateRegistrationFee: function (registrationId, order) {
+        // var fee = {};
+        // fee[order.type == config.orderType[1] ? 'recipeFee' : 'preScriptionFee'] = order.paidAmount;
+        var sql = 'update Registration set totalFee = totalFee + ?,' + (order.type == config.orderType[1] ? 'recipeFee' : 'preScriptionFee') + '=' +
+        (order.type == config.orderType[1] ? 'recipeFee' : 'preScriptionFee') +'+? where id =?';
+        return db.query(sql, [order.paidAmount, order.paidAmount, registrationId]);
     },
-    updateSalesManPerformanceByMonth: function(salesMan, yearMonth, paidAmount) {
+    updateSalesManPerformanceByMonth: function (salesMan, yearMonth, paidAmount) {
         return db.query(sqlMapping.registration.updateSalesManPerformanceByMonth, [paidAmount, salesMan, yearMonth]);
+    },
+    findShareSetting: function (hospitalId) {
+        return db.query(sqlMapping.hospital.findShareSetting, hospitalId);
     }
 }

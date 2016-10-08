@@ -14,8 +14,8 @@ module.exports = {
         return db.query(sqlMapping.medical.findMedicalHistoryBy, rid);
     },
 
-    findMedicalHistoryByPatientId: function (patientId) {
-        return db.query(sqlMapping.medical.findMedicalHistoryByPatientId, patientId);
+    findMedicalHistoryByPatientId: function (patientId, page) {
+        return db.query(sqlMapping.medical.findMedicalHistoryByPatientId, [patientId, page.from, page.size]);
     },
 
     findRecipesByOrderNo: function (orderNo) {

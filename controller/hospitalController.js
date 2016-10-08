@@ -148,17 +148,21 @@ module.exports = {
     getShiftPlansOfDoctor: function (req, res, next) {
         var doctorId = +req.params.doctorId;
         var hospitalId = req.user.hospitalId;
-        hospitalDAO.findShiftPlansBy(hospitalId, doctorId).then(function (plans) {
+        var month = req.query.month;
+        var result = {};
+        hospitalDAO.findShiftPlansBy(hospitalId, doctorId, month).then(function (plans) {
+            result.plans = _.map(plans, _.clone);
             var planItems = _.groupBy(plans, function (plan) {
                 var d = plan.day;
                 delete plan.day;
                 return moment(d).format('YYYY-MM-DD');
             });
-            var result = [];
+            var summary = [];
             for (var item in planItems) {
                 var pq = _.sum(planItems[item], 'plannedQuantity');
-                result.push({day: item, title: pq});
+                summary.push({day: item, title: pq});
             }
+            result.summary = summary;
             return res.send({ret: 0, data: result});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -580,6 +584,29 @@ module.exports = {
             res.send({ret: 0, data: hospitals[0]});
         }).catch(function (err) {
             res.send({ret: 1, data: err.message});
+        });
+        return next();
+    },
+    getTransactionFlows: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        var conditions = [];
+        var data = {};
+        if (req.query.startDate) conditions.push('af.createDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('af.createDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        if (req.query.transactionCode) conditions.push('af.transactionCode=' + req.query.transactionCode);
+        hospitalDAO.findAngelGuidersTransactionFlows(req.user.hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }, conditions).then(function (flows) {
+            data = flows;
+            data.pageIndex = pageIndex;
+            return hospitalDAO.findAccountInfo(req.user.hospitalId);
+        }).then(function (accounts) {
+            data.account = (accounts && accounts.length > 0 ? accounts[0] : {});
+            return res.send({ret: 0, data: data});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     }

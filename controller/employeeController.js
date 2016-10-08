@@ -80,11 +80,12 @@ module.exports = {
     },
 
     deleteEmployee: function (req, res, next) {
-        //employeeDAO.updateEmployee({id: req.params.id, status: 2}).then(function (result) {
-        //    res.send({ret: 0, message: i18n.get('employee.remove.success')});
-        //});
         employeeDAO.deleteEmployee(req.params.id).then(function () {
             return employeeDAO.deleteDoctorBy(req.params.id);
+        }).then(function (result) {
+            return redis.getAsync('uid:' + req.params.id + ':token');
+        }).then(function(token){
+            return redis.delAsync(token);
         }).then(function () {
             res.send({ret: 0, message: i18n.get('employee.remove.success')});
         }).catch(function (err) {
@@ -179,7 +180,7 @@ module.exports = {
                 size: pageSize
             }, getConditions(req))
         }).then(function (empoyees) {
-            if (!empoyees.rows.length) res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            if (!empoyees.rows.length) res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             empoyees.rows.forEach(function (employee) {
                 employee.status = config.employeeStatus[employee.status];
                 employee.isCustomerService = (employee.id == customerServiceUid);
@@ -206,7 +207,7 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }, conditions).then(function (doctors) {
-            if (!doctors.rows.length) res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            if (!doctors.rows.length) res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             doctors.rows && doctors.rows.forEach(function (doctor) {
                 doctor.gender = config.gender[doctor.gender];
                 doctor.images = doctor.images && doctor.images.split(',');

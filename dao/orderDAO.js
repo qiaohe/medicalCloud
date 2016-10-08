@@ -72,4 +72,5 @@ module.exports = {
         if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
         return db.query(sql, hospitalId);
     }
+    
 }

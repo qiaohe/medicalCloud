@@ -33,8 +33,12 @@ module.exports = {
     },
     findPatients: function (hospitalId, gender, patients) {
         var sql = sqlMapping.notification.findPatients;
-        if (patients && patients.length > 0) sql = sql + ' or pi.id in(' + patients.join(',') + ')';
-        if (gender != null) sql = sql + ' and pi.gender=' + gender;
+        if (patients && patients.length > 0) {
+            sql = sql + ' or pi.id in(' + patients.join(',') + '))';
+        } else {
+            sql = sql + ')';
+        }
+        if (gender !== null) sql = sql + ' and pi.gender=' + gender;
         return db.query(sql, hospitalId);
     }
 }

@@ -30,7 +30,7 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }, conditions).then(function (companies) {
-            if (!companies.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            if (!companies.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             companies.rows.forEach(function (company) {
                 company.source = config.sourceType[company.source];
                 company.cashbackType = config.cashbackType[company.cashbackType];
@@ -95,7 +95,7 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }, getConditions(req)).then(function (patients) {
-            if (!patients.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            if (!patients.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             patients.rows.forEach(function (p) {
                 p.memberType = config.memberType[p.memberType];
                 p.source = config.sourceType[p.source];
@@ -284,7 +284,7 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (flows) {
-            if (!flows.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            if (!flows.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             flows.rows && flows.rows.forEach(function (flow) {
                 flow.paymentType = config.paymentType[flow.paymentType];
                 flow.type = config.transactionType[flow.type];
@@ -305,7 +305,7 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (registrations) {
-            if (!registrations.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            if (!registrations.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             registrations.rows && registrations.rows.forEach(function (registration) {
                 registration.registrationType = config.registrationType[registration.registrationType];
                 registration.status = registration.status == null ? null : config.registrationStatus[registration.status];

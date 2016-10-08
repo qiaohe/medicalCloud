@@ -100,7 +100,7 @@ module.exports = {
     },
 
     findDrugInventories: function (hospitalId, conditions, page) {
-        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS di.id,d.type,di.operatorName, di.drugId, di.restAmount, di.amount, batchNo, expireDate, purchasePrice, d.`code`, d.`name`, d.company, d.criticalInventory, d.dosageForm,d.factor, d.inventory, d.sellPrice, d.unit, d.tinyUnit, d.specification from DrugInventory di left join Drug d on di.drugId =d.id where d.hospitalId=?  and ' + conditions.join(' and ') + ' order by di.createDate desc limit ?,?' : sqlMapping.dict.findDrugInventories;
+        var sql = conditions.length ? 'select SQL_CALC_FOUND_ROWS di.id,d.type,di.operatorName,di.createDate, di.drugId, di.restAmount, di.amount, batchNo, expireDate, purchasePrice, d.`code`, d.`name`, d.company, d.criticalInventory, d.dosageForm,d.factor, d.inventory, d.sellPrice, d.unit, d.tinyUnit, d.specification from DrugInventory di left join Drug d on di.drugId =d.id where d.hospitalId=?  and ' + conditions.join(' and ') + ' order by di.createDate desc limit ?,?' : sqlMapping.dict.findDrugInventories;
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     },
 
@@ -152,15 +152,28 @@ module.exports = {
         }
         return db.query(sql + ' limit 0 , 20', hospitalId);
     },
+    findDrugsByCode: function (hospitalId, code) {
+        return db.query('select * from Drug where hospitalId=? and code=?', [hospitalId, code]);
+    },
     findMedicalTemplatesBy: function (hospitalId, name) {
         return db.query(sqlMapping.dict.findMedicalTemplatesBy, [hospitalId, name]);
     },
     findChargeItemsBy: function (hospitalId, condition) {
         var sql = sqlMapping.dict.findChargeItemsBy;
         if (condition.code) {
-            sql = sql + ' code like \'%' + condition.code + '%\'';
-        } else if (condition.name) {
-            sql = sql + ' name like \'%' + condition.name + '%\'';
+            if (condition.wholeWordsOnly) {
+                sql = sql + ' code = \'' + condition.code + '\'';
+            }
+            else {
+                sql = sql + ' code like \'%' + condition.code + '%\'';
+            }
+        }
+        else if (condition.name) {
+            if (condition.wholeWordsOnly) {
+                sql = sql + ' name = \'' + condition.name + '\'';
+            } else {
+                sql = sql + ' name like \'%' + condition.name + '%\'';
+            }
         }
         return db.query(sql, hospitalId);
     },

@@ -80,14 +80,19 @@ module.exports = {
         return db.query(sqlMapping.employee.updateDoctorByDepartment, [name, id]);
     },
     findByRoleName: function (hospitalId, roleName) {
-        return db.query(sqlMapping.employee.findByRoleName, [hospitalId, '\'%' + roleName + '%\'']);
+        var sql = sqlMapping.employee.findByRoleName + '\'%' + roleName + '%\'';
+        return db.query(sql, hospitalId);
     },
     findRoleByName: function (hospitalId, roleName) {
         var sql = 'select id from Role where hospitalId=? and `name` like \'%' + roleName + '%\'';
         return db.query(sql, hospitalId);
     },
-    findChargers: function(hospitalId) {
+    findChargers: function (hospitalId) {
         var sql = 'select DISTINCT chargedBy, chargedByName from MedicalOrder where hospitalId=? and  chargedBy is not NULL';
+        return db.query(sql, hospitalId);
+    },
+    findDrugSenders: function (hospitalId) {
+        var sql = 'select DISTINCT drugSenderName as name, drugSender as id from MedicalOrder where hospitalId = ? and drugSenderName is not null';
         return db.query(sql, hospitalId);
     }
 }

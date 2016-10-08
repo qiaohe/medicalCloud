@@ -14,13 +14,14 @@ module.exports = {
         var userName = (req.body && req.body.username) || (req.query && req.query.username);
         var password = (req.body && req.body.password) || (req.query && req.query.password);
         var user = {};
-        var domainName = 'www.hisforce.cn';//req.headers.origin.substring(7, req.headers.origin.length);
+        var domainName = req.headers.origin.substring(7, req.headers.origin.length);
         employeeDAO.findByUsernameAndDomain(domainName, userName).then(function (users) {
             if (!users || !users.length) throw new Error(i18n.get('member.not.exists'));
             user = users[0];
             if (user.password != md5(password)) throw new Error(i18n.get('member.password.error'));
             var token = uuid.v4();
             redis.set(token, JSON.stringify(user));
+            redis.set('uid:' + user.id + ':token', token);
             redis.expire(token, config.app.tokenExpire);
             user.token = token;
             return redis.getAsync('uid:' + user.id + ':lastLogin');
@@ -48,6 +49,8 @@ module.exports = {
         var token = req.body['x-auth-token'] || req.query['x-auth-token'] || req.headers['x-auth-token'];
         if (!token) return res.send(401, i18n.get('token.not.provided'));
         redis.delAsync(token).then(function () {
+            return redis.delAsync('uid:' + req.user.id + ':token');
+        }).then(function (result) {
             res.send({ret: 0, message: i18n.get('logout.success')});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -67,6 +70,7 @@ module.exports = {
         var mobile = req.body.username;
         var certCode = req.body.certCode;
         var newPwd = req.body.password;
+        var user = {};
         redis.getAsync(mobile).then(function (reply) {
             if (!(reply && reply == certCode)) return res.send({ret: 1, message: i18n.get('sms.code.invalid')});
             return employeeDAO.updateEmployeePassword(md5(newPwd), mobile).then(function (result) {

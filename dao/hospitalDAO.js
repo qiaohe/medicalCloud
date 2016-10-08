@@ -73,8 +73,10 @@ module.exports = {
     updateShiftPlan: function (shiftPlan) {
         return db.query(sqlMapping.registration.updateShiftPlanBy, [shiftPlan.plannedQuantity, shiftPlan.doctorId, shiftPlan.day, shiftPlan.shiftPeriod]);
     },
-    findShiftPlansBy: function (hospitalId, doctorId) {
-        return db.query(sqlMapping.registration.findShiftPlans, [hospitalId, doctorId]);
+    findShiftPlansBy: function (hospitalId, doctorId, month) {
+        var startDate = month + '-01';
+        var endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+        return db.query(sqlMapping.registration.findShiftPlans, [hospitalId, doctorId, startDate, endDate]);
     },
     findShiftPlansByDay: function (hospitalId, doctorId, day) {
         return db.query(sqlMapping.registration.findShiftPlansByDay, [+hospitalId, +doctorId, day]);
@@ -113,7 +115,7 @@ module.exports = {
 
     findHistoryOutpatients: function (doctorId, page, conditions) {
         var sql = sqlMapping.doctor.findHistoryOutpatients;
-        sql = !conditions.length ? (sql + ' limit ?, ?') : 'select SQL_CALC_FOUND_ROWS concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , sp.`name`) as registerDate, r.id, r.patientName, r.patientMobile, r.gender, r.age, r.sequence, r.registrationType, r.`comment`, r.outPatientType, r.createDate, r.businessPeopleName as recommender, r.outpatientStatus from Registration r LEFT JOIN  PatientBasicInfo p on p.id = r.patientBasicInfoId left JOIN ShiftPeriod sp on sp.id = r.shiftPeriod LEFT JOIN Doctor d ON d.id = r.doctorId where d.employeeId = ? and r.outPatientStatus = 1  and ' + conditions.join(' and ') + ' order by r.registerDate, r.sequence limit ?, ?';
+        sql = !conditions.length ? (sql + ' limit ?, ?') : 'select SQL_CALC_FOUND_ROWS concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , sp.`name`) as registerDate, r.id, r.patientName, r.patientMobile, r.gender, r.age, r.sequence, r.registrationType, r.`comment`, r.outPatientType, r.createDate, r.businessPeopleName as recommender, r.outpatientStatus from Registration r LEFT JOIN  PatientBasicInfo p on p.id = r.patientBasicInfoId left JOIN ShiftPeriod sp on sp.id = r.shiftPeriod LEFT JOIN Doctor d ON d.id = r.doctorId where d.employeeId = ? and ' + conditions.join(' and ') + ' order by r.registerDate desc, r.sequence limit ?, ?';
         return db.queryWithCount(sql, [doctorId, page.from, page.size]);
     },
     insertRole: function (role) {
@@ -164,6 +166,13 @@ module.exports = {
     findDiscountRateOfDoctor: function (hospitalId, doctorId) {
         return db.query(sqlMapping.doctor.findDiscountRateOfDoctor, [hospitalId, doctorId]);
     },
+    findAngelGuidersTransactionFlows: function (hospitalId, page, conditions) {
+        var sql = sqlMapping.angelGuiderTransactionFlow.findAll;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' order by af.createDate desc limit ?,?';
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
+    },
+
     findAll: function () {
         return db.query(sqlMapping.hospital.findAll);
     },
@@ -184,5 +193,8 @@ module.exports = {
     },
     updateOutPatientStatus: function (oldStatus, newStatus) {
         return db.query('UPDATE Registration set outpatientStatus =? WHERE outpatientStatus = ?', [newStatus, oldStatus]);
+    },
+    findAccountInfo: function (hospitalId) {
+        return db.query(sqlMapping.angelGuiderTransactionFlow.findAccount, hospitalId);
     }
 }
