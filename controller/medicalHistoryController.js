@@ -320,7 +320,7 @@ module.exports = {
         var recipes = req.body.data;
         Promise.map(recipes, function (recipe) {
             var oldRecipe = {};
-            medicalDAO.findRecipe(recipe.id).then(function (recipes) {
+            return medicalDAO.findRecipe(recipe.id).then(function (recipes) {
                 var oldRecipe = recipes[0];
                 return orderDAO.updateTotalPrice(oldRecipe.orderNo, recipe.totalPrice - oldRecipe.totalPrice)
             }).then(function (result) {
@@ -380,7 +380,7 @@ module.exports = {
         var prescriptions = req.body.data;
         Promise.map(prescriptions, function (prescription) {
             var oldPrescription = {};
-            medicalDAO.findPrescription(prescription.id).then(function (prescriptions) {
+            return medicalDAO.findPrescription(prescription.id).then(function (prescriptions) {
                 oldPrescription = prescriptions[0];
                 return orderDAO.findByOrderNo(req.user.hospitalId, oldPrescription.orderNo);
             }).then(function (orders) {
