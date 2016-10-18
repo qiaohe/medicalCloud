@@ -58,5 +58,17 @@ module.exports = {
     },
     findDrugInventoryByDrugId: function (drugId, expireDate, quantity) {
         return db.query(sqlMapping.medical.findDrugInventoryByDrugId, [drugId, expireDate, quantity]);
+    },
+    addOutsideProcess: function (p) {
+        return db.query(sqlMapping.medical.addOutsideProcess, p);
+    },
+    updateOutsideProcess: function (p) {
+        return db.query(sqlMapping.medical.updateOutsideProcess, [p, p.id]);
+    },
+    deleteOutsideProcess: function (id) {
+        return db.query(sqlMapping.medical.deleteOutsideProcess, id);
+    },
+    findOutsideProcesses: function (hospitalId, page) {
+        return db.queryWithCount(sqlMapping.medical.findOutsideProcesses, [hospitalId, page.from, page.size]);
     }
 }

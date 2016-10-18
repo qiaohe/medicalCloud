@@ -1098,4 +1098,40 @@ module.exports = [
         handler: dictController.removeDrugCategory,
         secured: 'user'
     },
+    {
+        method: "post",
+        path: "/api/outsideProcesses",
+        handler: medicalHistoryController.addOutsideProcess,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/outsideProcesses",
+        handler: medicalHistoryController.getOutsideProcesses,
+        secured: 'user'
+    },
+    {
+        method: "del",
+        path: "/api/outsideProcesses/:id",
+        handler: medicalHistoryController.removeOutsideProcess,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/outsideProcesses",
+        handler: medicalHistoryController.updateOutsideProcess,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/appointments",
+        handler: registrationController.getAppointments,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/appointments",
+        handler: registrationController.updateAppointments,
+        secured: 'user'
+    }
 ];

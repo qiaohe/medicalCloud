@@ -965,52 +965,48 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    }
+    },
+    addOutsideProcess: function (req, res, next) {
+        var p = _.assign(req.body, {createDate: new Date(), creator: req.user.id, hospitalId: req.user.hospitalId});
+        if (!req.body.doctor) p = _.assign(p, {doctor: req.user.id, doctorName: req.user.name});
+        medicalDAO.addOutsideProcess(p).then(function (result) {
+            p.id = result.insertId;
+            res.send({ret: 0, data: p, message: '添加成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    updateOutsideProcess: function (req, res, next) {
+        var p = req.body;
+        delete p.createDate;
+        delete p.creator;
+        medicalDAO.updateOutsideProcess(p).then(function (result) {
+            res.send({ret: 0, data: p, message: '修改成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    removeOutsideProcess: function (req, res, next) {
+        medicalDAO.deleteOutsideProcess(req.params.id).then(function (result) {
+            res.send({ret: 0, message: '删除成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    getOutsideProcesses: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        medicalDAO.findOutsideProcesses(req.user.hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (ps) {
+            res.send({ret: 0, data: ps});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

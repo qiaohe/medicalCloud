@@ -152,7 +152,8 @@ module.exports = {
         findRegistrationsById: 'select * from Registration where id=?',
         findRegistrationsByIdWithDetail: 'select r.*, d.floor, doc.clinic from Registration r left JOIN Department d on d.id = r.departmentId left JOIN Doctor doc on doc.id = r.doctorId where r.id=?',
         findCurrentQueueByRegId: 'select r.id,r.nurse,doctorName, departmentName, patientName, registrationType, outPatientType, outpatientStatus, p.balance, p.memberType from Registration r LEFT JOIN Patient p on p.id =r.patientId where r.id =?',
-        findRegistrationsBy: 'select SQL_CALC_FOUND_ROWS r.id,r.outpatientStatus, r.patientMobile,r.patientName,r.gender, p.balance, p.memberCardNo, r.memberType, r.doctorName, r.`comment`, r.registrationFee, r.registrationType, r.departmentName, concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , s.`name`) as registerDate, r.outPatientType, r.status, r.sequence, e.name as businessPeopleName, r.outpatientStatus from Registration r LEFT JOIN SalesMan e on e.id=r.businessPeopleId left JOIN ShiftPeriod s ON s.id= r.shiftPeriod, Patient p where r.patientId =p.id and r.hospitalId = ? and r.registerDate=? order by r.id desc limit ?, ?'
+        findRegistrationsBy: 'select SQL_CALC_FOUND_ROWS r.id,r.outpatientStatus, r.patientMobile,r.patientName,r.gender, p.balance, p.memberCardNo, r.memberType, r.doctorName, r.`comment`, r.registrationFee, r.registrationType, r.departmentName, concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , s.`name`) as registerDate, r.outPatientType, r.status, r.sequence, e.name as businessPeopleName, r.outpatientStatus from Registration r LEFT JOIN SalesMan e on e.id=r.businessPeopleId left JOIN ShiftPeriod s ON s.id= r.shiftPeriod, Patient p where r.patientId =p.id and r.hospitalId = ? and r.registerDate=? order by r.id desc limit ?, ?',
+        findAppointments: 'select SQL_CALC_FOUND_ROWS * from Appointment'
     },
     patient: {
         findPatientByMemberCard: 'select id from Patient where memberCardNo = ?',
@@ -269,7 +270,11 @@ module.exports = {
         removePrescription: 'delete from Prescription where id =? and registrationId = ?',
         findPrescriptionsByOrderNo: 'select p.*, m.status from Prescription p left JOIN MedicalOrder m on m.orderNo = p.orderNo where p.orderNo = ?',
         findRecipesBy: 'select r.*, m.`status` from Recipe r left JOIN MedicalOrder m on m.orderNo = r.orderNo where r.registrationId = ?',
-        findDrugInventoryByDrugId: 'select id, drugId, restAmount, batchNo, expireDate, code from  DrugInventory where drugId=? and expireDate>=? and restAmount>=? order by expireDate '
+        findDrugInventoryByDrugId: 'select id, drugId, restAmount, batchNo, expireDate, code from  DrugInventory where drugId=? and expireDate>=? and restAmount>=? order by expireDate ',
+        addOutsideProcess: 'insert OutsideProcess set ?',
+        updateOutsideProcess: 'update OutsideProcess set ? where id = ?',
+        deleteOutsideProcess: 'delete from OutsideProcess where id = ?',
+        findOutsideProcesses: 'select SQL_CALC_FOUND_ROWS * from OutsideProcess where hospitalId =? order by createDate desc limit ?,?'
     },
     order: {
         insert: 'insert MedicalOrder set ?',

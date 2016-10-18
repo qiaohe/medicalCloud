@@ -32,7 +32,7 @@ module.exports = {
         // var fee = {};
         // fee[order.type == config.orderType[1] ? 'recipeFee' : 'preScriptionFee'] = order.paidAmount;
         var sql = 'update Registration set totalFee = totalFee + ?,' + (order.type == config.orderType[1] ? 'recipeFee' : 'preScriptionFee') + '=' +
-        (order.type == config.orderType[1] ? 'recipeFee' : 'preScriptionFee') +'+? where id =?';
+            (order.type == config.orderType[1] ? 'recipeFee' : 'preScriptionFee') + '+? where id =?';
         return db.query(sql, [order.paidAmount, order.paidAmount, registrationId]);
     },
     updateSalesManPerformanceByMonth: function (salesMan, yearMonth, paidAmount) {
@@ -40,5 +40,8 @@ module.exports = {
     },
     findShareSetting: function (hospitalId) {
         return db.query(sqlMapping.hospital.findShareSetting, hospitalId);
+    },
+    findAppointments: function (hospitalId, page) {
+        return db.queryWithCount(sqlMapping.registration.findAppointments, [hospitalId, page.from, page.size]);
     }
 }

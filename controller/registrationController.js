@@ -97,12 +97,12 @@ module.exports = {
                     createDate: new Date(),
                     password: md5(r.patientMobile.substring(r.patientMobile.length - 6, r.patientMobile.length)),
                     creator: req.user.id,
-                    headPic:config.app.defaultHeadPic
+                    headPic: config.app.defaultHeadPic
                     //birthday: r.birthday
                 }).then(function (result) {
                     if (result.insertId) {
                         var content = config.sms.registerTemplate.replace(':code', r.patientMobile.substring(r.patientMobile.length - 4, r.patientMobile.length));
-                         return hospitalDAO.findHospitalById(req.user.hospitalId).then(function (hospitals) {
+                        return hospitalDAO.findHospitalById(req.user.hospitalId).then(function (hospitals) {
                             var hospitalName = hospitals[0].name;
                             content = content.replace(':hospital', hospitalName);
                             var option = {mobile: r.patientMobile, text: content, apikey: config.sms.apikey};
@@ -338,6 +338,22 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
 
+        return next();
+    },
+    getAppointments: function (req, res, next) {
+        var pageIndex = req.query.pageIndex;
+        var pageSize = req.query.pageSize;
+        registrationDAO.findAppointments(req.user.hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (appointments) {
+            res.end({ret: 0, data: appointments})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    updateAppointments: function (req, res, next) {
         return next();
     }
 }
