@@ -539,6 +539,43 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "get",
+        path: "/api/departments/diseases",
+        handler: dictController.getDiseasesOfDepartments,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/departments/:id/diseases",
+        handler: dictController.getDiseasesOfDepartment,
+        secured: 'user'
+    },
+
+    {
+        method: "get",
+        path: "/api/diseases/:id/types/:type/diseasesWords",
+        handler: dictController.getDiseaseDicWords,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/dict/diseasesWords",
+        handler: dictController.addDiseaseDicWord,
+        secured: 'user'
+    },
+    {
+        method: "del",
+        path: "/api/dict/diseasesWords/:id",
+        handler: dictController.removeDiseaseDicWord,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/dict/diseasesWords",
+        handler: dictController.updateDiseaseDicWord,
+        secured: 'user'
+    },
+    {
         method: "post",
         path: "/api/dict/diseases",
         handler: dictController.addDiseaseDic,
@@ -687,7 +724,7 @@ module.exports = [
         handler: dictController.getDrugsByCode,
         secured: 'user'
     },
-    
+
     {
         method: "get",
         path: "/api/chargeItems/search",
@@ -798,15 +835,53 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "put",
+        path: "/api/recipes",
+        handler: medicalHistoryController.updateRecipes,
+        secured: 'user'
+    },
+    {
         method: "get",
         path: "/api/registrations/:id/recipes",
         handler: medicalHistoryController.getRecipes,
         secured: 'user'
     },
     {
+        method: "put",
+        path: "/api/registrations/:id/recipes",
+        handler: medicalHistoryController.updateRecipe,
+        secured: 'user'
+    },
+    {
+        method: "del",
+        path: "/api/registrations/:id/recipes/:recipeId",
+        handler: medicalHistoryController.removeRecipe,
+        secured: 'user'
+    },
+
+    {
+        method: "put",
+        path: "/api/registrations/:id/prescriptions",
+        handler: medicalHistoryController.updatePrescription,
+        secured: 'user'
+    },
+    {
+        method: "del",
+        path: "/api/registrations/:id/prescriptions/:prescriptionId",
+        handler: medicalHistoryController.removePrescription,
+        secured: 'user'
+    },
+
+    {
         method: "post",
         path: "/api/prescriptions",
         handler: medicalHistoryController.savePrescription,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/prescriptions",
+        handler: medicalHistoryController.updatePrescriptions,
         secured: 'user'
     },
     {
@@ -993,5 +1068,34 @@ module.exports = [
         handler: hospitalController.getTransactionFlows,
         secured: 'user'
     },
-
+    {
+        method: "get",
+        path: "/api/nurses",
+        handler: employeeController.getNurses,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/drugCategories/types/:type",
+        handler: dictController.getDrugCategories,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/drugCategories",
+        handler: dictController.addDrugCategory,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/drugCategories",
+        handler: dictController.updateDrugCategory,
+        secured: 'user'
+    },
+    {
+        method: "del",
+        path: "/api/drugCategories/:id",
+        handler: dictController.removeDrugCategory,
+        secured: 'user'
+    },
 ];

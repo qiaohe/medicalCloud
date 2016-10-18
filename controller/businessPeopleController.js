@@ -121,6 +121,8 @@ module.exports = {
         businessPeopleDAO.findSalesManById(salesman).then(function (result) {
             if (result.length < 1) return res.send({ret: 0, message: '业务员不存在。'})
             res.send({ret: 0, data: result[0]});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -176,6 +178,8 @@ module.exports = {
                 performances.totalActual = result[0].totalActual;
                 res.send({ret: 0, data: performances});
             })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     }

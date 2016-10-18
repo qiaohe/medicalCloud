@@ -5,6 +5,10 @@ module.exports = {
     insert: function (order) {
         return db.query(sqlMapping.order.insert, order);
     },
+    removeOrder: function (orderNo) {
+        return db.query(sqlMapping.order.removeOrder, orderNo);
+    },
+
     findOrdersByType: function (hospitalId, type, conditions, page) {
         var sql = !conditions.length ? sqlMapping.order.findOrdersByType : sqlMapping.order.findOrdersByType + 'and ' + conditions.join(' and ');
         return db.queryWithCount(sql + ' order by sendDrugDate desc limit ?,?', [hospitalId, type, page.from, page.size]);
@@ -21,7 +25,7 @@ module.exports = {
     },
 
     findOrdersByStatus: function (hospitalId, status, conditions, page) {
-        var sql = sqlMapping.order.findOrdersByStatus;
+        var sql = sqlMapping.order.findOrdersByStatus + (status != 1 ? ' and m.status = ?' : ' and (m.status in(?, 3))');
         if (conditions.length) {
             sql = sql + ' and ' + conditions.join(' and ');
         }
@@ -53,6 +57,9 @@ module.exports = {
         return db.query(sqlMapping.order.update, [order, order.orderNo]);
     },
 
+    updateTotalPrice: function (orderNo, totalPrice) {
+        return db.query(sqlMapping.order.updateTotalPrice, [totalPrice, orderNo]);
+    },
     updateBy: function (order) {
         return db.query(sqlMapping.order.updateBy, [order, order.orderNo]);
     },
@@ -72,5 +79,5 @@ module.exports = {
         if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
         return db.query(sql, hospitalId);
     }
-    
+
 }

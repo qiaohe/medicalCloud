@@ -84,7 +84,7 @@ module.exports = {
             return employeeDAO.deleteDoctorBy(req.params.id);
         }).then(function (result) {
             return redis.getAsync('uid:' + req.params.id + ':token');
-        }).then(function(token){
+        }).then(function (token) {
             return redis.delAsync(token);
         }).then(function () {
             res.send({ret: 0, message: i18n.get('employee.remove.success')});
@@ -275,6 +275,16 @@ module.exports = {
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
+        return next();
+    },
+    getNurses: function (req, res, next) {
+        var hospitalId = req.user.hospitalId;
+        employeeDAO.findByRoleName(hospitalId, '护士').then(function (result) {
+            if (result && result.length < 1) return res.send({ret: 0, data: []})
+            res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        })
         return next();
     }
 }

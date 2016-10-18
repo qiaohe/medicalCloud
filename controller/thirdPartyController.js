@@ -21,6 +21,8 @@ module.exports = {
             return redis.expireAsync(option.mobile, smsConfig.expireTime);
         }).then(function (reply) {
             res.send({ret: 0, message: i18n.get('sms.send.success')});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },

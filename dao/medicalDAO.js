@@ -15,12 +15,32 @@ module.exports = {
     },
 
     findMedicalHistoryByPatientId: function (patientId, page) {
-        return db.query(sqlMapping.medical.findMedicalHistoryByPatientId, [patientId, page.from, page.size]);
+        return db.queryWithCount(sqlMapping.medical.findMedicalHistoryByPatientId, [patientId, page.from, page.size]);
+    },
+    findPrescription: function (id) {
+        return db.query(sqlMapping.medical.findPrescription, id);
     },
 
     findRecipesByOrderNo: function (orderNo) {
         return db.query(sqlMapping.medical.findRecipesByOrderNo, orderNo);
     },
+    removeRecipe: function (rid, recipeId) {
+        return db.query(sqlMapping.medical.removeRecipe, [rid, recipeId]);
+    },
+    findRecipe: function (recipeId) {
+        return db.query(sqlMapping.medical.findRecipe, recipeId);
+    },
+    updateRecipe: function (recipe) {
+        return db.query(sqlMapping.medical.updateRecipe, [recipe, recipe.id]);
+    },
+    updatePrescription: function (prescription) {
+        return db.query(sqlMapping.medical.updatePrescription, [prescription, prescription.id]);
+    },
+
+    removePrescription: function (rid, prescriptionId) {
+        return db.query(sqlMapping.medical.removePrescription, [rid, prescriptionId]);
+    },
+
     findPrescriptionsByOrderNo: function (orderNo) {
         return db.query(sqlMapping.medical.findPrescriptionsByOrderNo, orderNo);
     },

@@ -1,4 +1,3 @@
-"use strict";
 var config = require('../config');
 var _ = require('lodash');
 var hospitalDAO = require('../dao/hospitalDAO');
@@ -13,6 +12,35 @@ var fs = require('fs');
 var path = require('path');
 var mime = require('mime');
 var pinyin = require('pinyin');
+function createTree(node, categories) {
+    var items = _.filter(categories, function (item) {
+        return item.pid == (node == null ? -1 : node.id);
+    });
+    if (items.length < 1) return;
+    items && items.length && items.forEach(function (e) {
+        return createTree(e, categories);
+    });
+    if (node) node.subItems = items;
+    return items;
+}
+
+function getChildren(id, categories) {
+    var result = [];
+    // result.push(id);
+    var items = _.filter(categories, function (item) {
+        return item.pid == id;
+    });
+    if (items.length < 1) return result;
+    items && items.length && items.forEach(function (e) {
+        result.push(e.id);
+        var b = getChildren(e.id, categories);
+        b && b.length && b.forEach(function (item1) {
+            result.push(item1);
+        })
+    });
+    return result;
+}
+
 module.exports = {
     getDepartments: function (req, res, next) {
         var hospitalId = req.user.hospitalId;
@@ -117,6 +145,8 @@ module.exports = {
     getRegistrationFee: function (req, res, next) {
         hospitalDAO.findDoctorById(req.params.doctorId).then(function (doctors) {
             return res.send({ret: 0, data: {id: doctors[0].id, registrationFee: doctors[0].registrationFee}});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -142,6 +172,8 @@ module.exports = {
     getCities: function (req, res, next) {
         hospitalDAO.findCities(req.params.province).then(function (cities) {
             res.send({ret: 0, data: cities});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -478,15 +510,32 @@ module.exports = {
         var conditions = [];
         if (req.query.name) conditions.push('name like \'%' + req.query.name + '%\'');
         if (req.query.categoryId) conditions.push('categoryId=' + req.query.categoryId);
-        dictionaryDAO.findChargeItems(hospitalId, conditions, {
-            from: (pageIndex - 1) * pageSize,
-            size: pageSize
-        }).then(function (items) {
-            items.pageIndex = pageIndex;
-            res.send({ret: 0, data: items});
-        }).catch(function (err) {
-            res.send({ret: 1, message: err.message});
-        });
+        if (req.query.category) {
+            dictionaryDAO.findDrugCategories(req.user.hospitalId, 1).then(function (categories) {
+                var idList = getChildren(+req.query.category, categories);
+                idList.push(+req.query.category);
+                conditions.push('category in (' + idList.join(',') + ')');
+                dictionaryDAO.findChargeItems(hospitalId, conditions, {
+                    from: (pageIndex - 1) * pageSize,
+                    size: pageSize
+                }).then(function (items) {
+                    items.pageIndex = pageIndex;
+                    res.send({ret: 0, data: items});
+                }).catch(function (err) {
+                    res.send({ret: 1, message: err.message});
+                });
+            })
+        } else {
+            dictionaryDAO.findChargeItems(hospitalId, conditions, {
+                from: (pageIndex - 1) * pageSize,
+                size: pageSize
+            }).then(function (items) {
+                items.pageIndex = pageIndex;
+                res.send({ret: 0, data: items});
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
+            });
+        }
         return next();
     },
     getDrugs: function (req, res, next) {
@@ -499,15 +548,32 @@ module.exports = {
         var reg = new RegExp("[\\u4E00-\\u9FFF]+", "g");
         if (req.query.name) conditions.push((reg.test(req.query.name) ? 'name' : 'pinyin') + ' like \'%' + req.query.name + '%\'');
         if (req.query.prescription) conditions.push('inventory > 0');
-        dictionaryDAO.findDrugs(hospitalId, conditions, {
-            from: (pageIndex - 1) * pageSize,
-            size: pageSize
-        }).then(function (items) {
-            items.pageIndex = pageIndex;
-            res.send({ret: 0, data: items});
-        }).catch(function (err) {
-            res.send({ret: 1, message: err.message});
-        });
+        if (req.query.category) {
+            dictionaryDAO.findDrugCategories(req.user.hospitalId, 0).then(function (categories) {
+                var idList = getChildren(+req.query.category, categories);
+                idList.push(+req.query.category);
+                conditions.push('category in (' + idList.join(',') + ')');
+                dictionaryDAO.findDrugs(hospitalId, conditions, {
+                    from: (pageIndex - 1) * pageSize,
+                    size: pageSize
+                }).then(function (items) {
+                    items.pageIndex = pageIndex;
+                    res.send({ret: 0, data: items});
+                }).catch(function (err) {
+                    res.send({ret: 1, message: err.message});
+                });
+            });
+        } else {
+            dictionaryDAO.findDrugs(hospitalId, conditions, {
+                from: (pageIndex - 1) * pageSize,
+                size: pageSize
+            }).then(function (items) {
+                items.pageIndex = pageIndex;
+                res.send({ret: 0, data: items});
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
+            });
+        }
         return next();
     },
     importDrugs: function (req, res, next) {
@@ -531,6 +597,8 @@ module.exports = {
             res.setHeader('Content-type', mimetype);
             var filestream = fs.createReadStream(file);
             filestream.pipe(res);
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -544,6 +612,8 @@ module.exports = {
             res.setHeader('Content-type', mimetype);
             var filestream = fs.createReadStream(file);
             filestream.pipe(res);
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -558,6 +628,8 @@ module.exports = {
             res.setHeader('Content-type', mimetype);
             var filestream = fs.createReadStream(file);
             filestream.pipe(res);
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -642,6 +714,8 @@ module.exports = {
             });
             histories.pageIndex = pageIndex;
             res.send({ret: 0, data: histories});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -718,6 +792,8 @@ module.exports = {
             });
             histories.pageIndex = pageIndex;
             res.send({ret: 0, data: histories});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
 
@@ -851,6 +927,8 @@ module.exports = {
     getDrugInventoryHistoryByType: function (req, res, next) {
         dictionaryDAO.findDrugInventoryHistoryByType(req.user.hospitalId, req.params.type).then(function (histories) {
             res.send({ret: 0, data: histories});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -875,6 +953,135 @@ module.exports = {
         var hospitalId = req.user.hospitalId;
         businessPeopleDAO.findSalesManName(hospitalId).then(function (result) {
             res.send({ret: 0, data: result});
-        })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+    },
+    addDiseaseDicWord: function (req, res, next) {
+        var w = _.assign(req.body, {createDate: new Date(), creator: req.user.id, hospitalId: req.user.hospitalId});
+        dictionaryDAO.insertDiseaseWord(w).then(function (result) {
+            w.id = result.insertId;
+            res.send({ret: 0, data: w, message: '添加成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    updateDiseaseDicWord: function (req, res, next) {
+        var w = req.body;
+        dictionaryDAO.updateDiseaseWord({id: w.id, word: w.word}).then(function (result) {
+            res.send({ret: 0, data: w, message: '更新成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    removeDiseaseDicWord: function (req, res, next) {
+        dictionaryDAO.deleteDiseaseWord(req.params.id).then(function (result) {
+            res.send({ret: 0, message: '删除成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    getDiseasesOfDepartments: function (req, res, next) {
+        dictionaryDAO.findDiseases(req.user.hospitalId, [], {from: 0, size: 100000}).then(function (diseases) {
+            if (!diseases.rows.length) return res.send({ret: 0, data: []});
+            var data = _.groupBy(diseases.rows, 'departmentName');
+            var result = [];
+            for (var key in data) {
+                result.push({
+                    department: key, diseases: _.map(data[key], function (item) {
+                        return {id: item.id, name: item.name};
+                    })
+                })
+            }
+            res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    getDiseasesOfDepartment: function (req, res, next) {
+        dictionaryDAO.findDiseasesOfDepartment(req.params.id).then(function (diseases) {
+            res.send({ret: 0, data: diseases});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+    getDiseaseDicWords: function (req, res, next) {
+        dictionaryDAO.findDiseaseDicWords(req.params.id, req.params.type).then(function (diseases) {
+            var data = _.groupBy(diseases, function (item) {
+                return item.subType;
+            });
+            var result = [];
+            for (var key in data) {
+                var subType = config.diseaseWordType[+req.params.type];
+                var n = subType[Object.getOwnPropertyNames(subType)[0]][+key];
+                result.push({
+                    type: {id: key, name: n}, words: _.map(data[key], function (item) {
+                        return {id: item.id, name: item.word};
+                    })
+                })
+            }
+            res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    addDrugCategory: function (req, res, next) {
+        var category = {
+            name: req.body.name,
+            pid: (req.body.pid ? req.body.pid : -1),
+            hospitalId: req.user.hospitalId,
+            type: req.body.type
+        };
+        dictionaryDAO.findDrugCategoryByPidAndName(req.user.hospitalId, category.pid, category.name, category.type).then(function (cs) {
+            if (cs.length && cs.length > 0) throw new Error('分类名重复。');
+            return dictionaryDAO.insertDrugCategory(category);
+        }).then(function (result) {
+            category.id = result.insertId;
+            res.send({ret: 0, data: category, message: '添加成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+    updateDrugCategory: function (req, res, next) {
+        dictionaryDAO.updateDrugCategory(req.body).then(function (result) {
+            res.send({ret: 0, message: '更新成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+    removeDrugCategory: function (req, res, next) {
+        dictionaryDAO.deleteDrugCategory(req.params.id).then(function (result) {
+            res.send({ret: 0, message: '更新成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+    getDrugCategories: function (req, res, next) {
+        var id = req.query.id;
+        dictionaryDAO.findDrugCategories(req.user.hospitalId, req.params.type).then(function (categories) {
+            if (id) {
+                return dictionaryDAO.findDrugCategoriesById(req.user.hospitalId, id, req.params.type).then(function (cs) {
+                    res.send({ret: 0, data: createTree(cs[0], categories)});
+                })
+            } else {
+                res.send({ret: 0, data: createTree(null, categories)});
+            }
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
     }
 }

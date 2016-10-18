@@ -130,7 +130,7 @@ module.exports = {
                     amount: amount,
                     paidAmount: 0.00,
                     paymentAmount: amount,
-                    status: 0,
+                    status: amount > 0 ? 0 : 1,
                     //paymentType: 1,
                     createDate: new Date(),
                     type: 1
@@ -206,15 +206,16 @@ module.exports = {
                 }).delay(config.app.orderDelayMinutes * 60 * 1000).save(function (err) {
                     if (!err) console.log(job.id);
                 });
+                var amount = _.sum(newItems, 'totalPrice');
                 var o = {
                     orderNo: orderNo,
                     discountRate: +req.body.discountRate,
                     registrationId: registrationId,
                     hospitalId: hospitalId,
-                    amount: _.sum(newItems, 'totalPrice'),
+                    amount: amount,
                     paidAmount: 0.00,
-                    paymentAmount: _.sum(newItems, 'receivable'),
-                    status: 0,
+                    paymentAmount: amount,
+                    status: amount > 0 ? 0 : 1,
                     //paymentType: 1,
                     createDate: new Date(),
                     type: 2
@@ -232,7 +233,7 @@ module.exports = {
                         recommendationFee: ((fees && fees.length > 0) ? fees[0].recommendationFee : 0)
                     });
                 });
-                
+
                 //deviceDAO.findTokenByUid(registration.patientBasicInfoId).then(function (tokens) {
                 //    if (tokens.length && tokens[0]) {
                 //        var notificationBody = util.format(config.prescriptionOrderTemplate,
@@ -264,13 +265,23 @@ module.exports = {
         var rid = req.params.id;
         medicalDAO.findMedicalHistoryBy(rid).then(function (result) {
             res.send({ret: 0, data: result[0]});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
     getMedicalHistoriesByPatientId: function (req, res, next) {
         var patientId = req.params.id;
-        medicalDAO.findMedicalHistoryByPatientId(patientId).then(function (result) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        medicalDAO.findMedicalHistoryByPatientId(patientId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (result) {
+            result.pageIndex = pageIndex;
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -284,6 +295,125 @@ module.exports = {
                 result.push({orerNo: p, drugs: data[p]});
             }
             res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    updateRecipe: function (req, res, next) {
+        var recipe = req.body;
+        var oldRecipe = {};
+        medicalDAO.findRecipe(recipe.id).then(function (recipes) {
+            var oldRecipe = recipes[0];
+            return orderDAO.updateTotalPrice(oldRecipe.orderNo, recipe.totalPrice - oldRecipe.totalPrice)
+        }).then(function (result) {
+            return medicalDAO.updateRecipe(recipe);
+        }).then(function (result) {
+            res.send({ret: 0, message: '更新成功。'})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+    updateRecipes: function (req, res, next) {
+        var recipes = req.body.data;
+        Promise.map(recipes, function (recipe) {
+            var oldRecipe = {};
+            medicalDAO.findRecipe(recipe.id).then(function (recipes) {
+                var oldRecipe = recipes[0];
+                return orderDAO.updateTotalPrice(oldRecipe.orderNo, recipe.totalPrice - oldRecipe.totalPrice)
+            }).then(function (result) {
+                return medicalDAO.updateRecipe(recipe);
+            });
+        }).then(function (result) {
+            res.send({ret: 0, message: '更新成功。'})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+    removeRecipe: function (req, res, next) {
+        var rid = req.params.id;
+        var recipeId = req.params.recipeId;
+        medicalDAO.findRecipe(recipeId).then(function (recipes) {
+            var recipe = recipes[0];
+            return orderDAO.findByOrderNo(req.user.hospitalId, recipe.orderNo).then(function (orders) {
+                var o = orders[0];
+                if (Math.abs(o.amount - recipe.totalPrice) < 0.00001) {
+                    return orderDAO.removeOrder(recipe.orderNo);
+                } else {
+                    return orderDAO.updateTotalPrice(recipe.orderNo, recipe.totalPrice * -1);
+                }
+            })
+        }).then(function (result) {
+            return medicalDAO.removeRecipe(rid, recipeId);
+        }).then(function (result) {
+            res.send({ret: 0, message: '删除成功。'})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+    updatePrescription: function (req, res, next) {
+        var prescription = req.body;
+        var oldPrescription = {};
+        medicalDAO.findPrescription(prescription.id).then(function (prescriptions) {
+            oldPrescription = prescriptions[0];
+            return orderDAO.findByOrderNo(req.user.hospitalId, oldPrescription.orderNo);
+        }).then(function (orders) {
+            var order = orders[0];
+            return orderDAO.updateTotalPrice(order.orderNo, prescription.totalPrice - oldPrescription.totalPrice)
+        }).then(function (result) {
+            return medicalDAO.updatePrescription(prescription);
+        }).then(function (result) {
+            res.send({ret: 0, message: '更新成功。'})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+    updatePrescriptions: function (req, res, next) {
+        var prescriptions = req.body.data;
+        Promise.map(prescriptions, function (prescription) {
+            var oldPrescription = {};
+            medicalDAO.findPrescription(prescription.id).then(function (prescriptions) {
+                oldPrescription = prescriptions[0];
+                return orderDAO.findByOrderNo(req.user.hospitalId, oldPrescription.orderNo);
+            }).then(function (orders) {
+                var order = orders[0];
+                return orderDAO.updateTotalPrice(order.orderNo, prescription.totalPrice - oldPrescription.totalPrice)
+            }).then(function (result) {
+                return medicalDAO.updatePrescription(prescription);
+            });
+
+        }).then(function (result) {
+            res.send({ret: 0, message: '更新成功。'})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+    },
+
+    removePrescription: function (req, res, next) {
+        var rid = req.params.id;
+        var prescriptionId = req.params.prescriptionId;
+        medicalDAO.findPrescription(prescriptionId).then(function (prescriptions) {
+            var prescription = prescriptions[0];
+            return orderDAO.findByOrderNo(req.user.hospitalId, prescription.orderNo).then(function (orders) {
+                var o = orders[0];
+                if (Math.abs(o.amount - prescription.totalPrice) < 0.00001) {
+                    return orderDAO.removeOrder(prescription.orderNo);
+                } else {
+                    return orderDAO.updateTotalPrice(prescription.orderNo, prescription.totalPrice * -1);
+                }
+            })
+        }).then(function (result) {
+            return medicalDAO.removePrescription(rid, prescriptionId);
+        }).then(function (result) {
+            res.send({ret: 0, message: '删除成功。'})
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
@@ -318,7 +448,7 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (orders) {
-            if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             orders.rows.forEach(function (order) {
                 order.memberType = config.memberType[+order.memberType];
                 var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
@@ -345,7 +475,7 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (orders) {
-            if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             orders.pageIndex = pageSize;
             orders.rows.forEach(function (order) {
                 order.memberType = config.memberType[+order.memberType];
@@ -374,9 +504,11 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (orders) {
-            if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
-            orders.rows.forEach(function (order) {
+            if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
+            Promise.map(orders.rows, function (order) {
                 order.memberType = config.memberType[+order.memberType];
+                order.status = config.orderStatus[+order.status];
+                order.type = config.orderType[+order.type];
                 var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
                 if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
                 var ps = [];
@@ -384,13 +516,31 @@ module.exports = {
                     ps.push(config.paymentType[+item]);
                 });
                 order.paymentType = ps.join(',');
-                order.status = config.orderStatus[+order.status];
-                order.type = config.orderType[+order.type];
+                order.payments = [];
+                if (order.paymentType1 != null) order.payments.push({
+                    paymentType: config.paymentType[order.paymentType1],
+                    amount: order.paidAmount1
+                });
+                if (order.paymentType2 != null) order.payments.push({
+                    paymentType: config.paymentType[order.paymentType2],
+                    amount: order.paidAmount2
+                });
+                if (order.paymentType3 != null) order.payments.push({
+                    paymentType: config.paymentType[order.paymentType3],
+                    amount: order.paidAmount3
+                });
+                if (order.type == '药费') return medicalDAO.findRecipesByOrderNo(order.orderNo).then(function (items) {
+                    order.items = items;
+                });
+                if (order.type == '诊疗费') return medicalDAO.findPrescriptionsByOrderNo(order.orderNo).then(function (items) {
+                    order.items = items;
+                });
+            }).then(function (result) {
+                orders.pageIndex = pageIndex;
+                res.send({ret: 0, data: orders});
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
             });
-            orders.pageIndex = pageIndex;
-            res.send({ret: 0, data: orders});
-        }).catch(function (err) {
-            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -420,7 +570,6 @@ module.exports = {
                 res.send({ret: 0, data: orders});
             })
         }).catch(function (err) {
-
             res.send({ret: 1, message: err.message});
         });
         return next();
@@ -436,6 +585,7 @@ module.exports = {
                 chargedBy: req.user.id,
                 chargedByName: req.user.name,
                 chargeDate: new Date(),
+                comment: o.comment,
                 paymentDate: new Date(),
                 invoiceSequenceNo: _.padLeft(seq, 8, '0'),
                 paymentType1: o.payments[0] ? o.payments[0].paymentType : null,
@@ -453,15 +603,15 @@ module.exports = {
             order.type = config.orderType[+order.type];
             order.payments = [];
             if (order.paymentType1 != null) order.payments.push({
-                paymentType: config.paymentType[order.paymentType1],
+                paymentType: order.paymentType1,
                 amount: order.paidAmount1
             });
             if (order.paymentType2 != null) order.payments.push({
-                paymentType: config.paymentType[order.paymentType2],
+                paymentType: order.paymentType2,
                 amount: order.paidAmount2
             });
             if (order.paymentType3 != null) order.payments.push({
-                paymentType: config.paymentType[order.paymentType3],
+                paymentType: order.paymentType3,
                 amount: order.paidAmount3
             });
             if (order.type == config.orderType[1]) return medicalDAO.findRecipesByOrderNo(order.orderNo);
@@ -592,7 +742,7 @@ module.exports = {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (records) {
-            if (!records.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: 0, count: 0}});
+            if (!records.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             records.pageIndex = pageIndex;
             res.send({ret: 0, data: records});
         }).catch(function (err) {

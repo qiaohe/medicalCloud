@@ -5,6 +5,11 @@ module.exports = {
     insertDisease: function (diseaseDic) {
         return db.query(sqlMapping.dict.insertDisease, diseaseDic);
     },
+
+    findDiseasesOfDepartment: function (id) {
+        return db.query(sqlMapping.dict.findDiseasesOfDepartment, id);
+    },
+
     deleteDisease: function (id) {
         return db.query(sqlMapping.dict.deleteDisease, id);
     },
@@ -16,6 +21,18 @@ module.exports = {
     },
     updateDisease: function (diseaseDic) {
         return db.query(sqlMapping.dict.updateDisease, [diseaseDic, diseaseDic.id]);
+    },
+    findDiseaseDicWords: function (id, type) {
+        return db.query(sqlMapping.dict.findDiseaseDicWords, [id, type]);
+    },
+    insertDiseaseWord: function (word) {
+        return db.query(sqlMapping.dict.insertDiseaseWord, word);
+    },
+    updateDiseaseWord: function (word) {
+        return db.query(sqlMapping.dict.updateDiseaseWord, [word, word.id]);
+    },
+    deleteDiseaseWord: function (id) {
+        return db.query(sqlMapping.dict.deleteDiseaseWord, id);
     },
     insertDictItem: function (item) {
         return db.query(sqlMapping.dict.insertDictItem, item);
@@ -179,5 +196,23 @@ module.exports = {
     },
     insertDrugByBatch: function (drugs) {
         return db.query(sqlMapping.dict.insertDrugByBatch, [drugs]);
+    },
+    findDrugCategoryByPidAndName: function (hospitalId, pid, name, type) {
+        return db.query(sqlMapping.dict.findDrugCategoryByPidAndName, [hospitalId, pid, name, type]);
+    },
+    insertDrugCategory: function (category) {
+        return db.query(sqlMapping.dict.insertDrugCategory, category);
+    },
+    updateDrugCategory: function (category) {
+        return db.query(sqlMapping.dict.updateDrugCategory, [category, category.id]);
+    },
+    deleteDrugCategory: function (id) {
+        return db.query(sqlMapping.dict.deleteDrugCategory, id);
+    },
+    findDrugCategories: function (hospitalId, type) {
+        return db.query(sqlMapping.dict.findDrugCategories, [hospitalId, type]);
+    },
+    findDrugCategoriesById: function (hospitalId, id, type) {
+        return db.query(sqlMapping.dict.findDrugCategoriesById, [hospitalId, type, id]);
     }
 }

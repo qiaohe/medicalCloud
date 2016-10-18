@@ -309,6 +309,8 @@ module.exports = {
         var rid = req.params.rid;
         registrationDAO.findRegistrationsByIdWithDetail(rid).then(function (result) {
             res.send({ret: 0, data: result[0]});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },

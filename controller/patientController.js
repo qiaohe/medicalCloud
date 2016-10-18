@@ -209,6 +209,9 @@ module.exports = {
                 address: patient.address
             });
         }).then(function () {
+            return patientDAO.findPatientByMemberCard(patient.memberCardNo);
+        }).then(function (patients) {
+            if (patients.length && patients[0].id != patient.id) throw new Error('会员卡号已经存在，请重新输入。');
             return patientDAO.updatePatient({
                 id: patient.id,
                 memberType: patient.memberType,
@@ -218,8 +221,9 @@ module.exports = {
                 cashbackType: patient.cashbackType,
                 maxDiscountRate: patient.maxDiscountRate,
                 source: patient.source,
+                memberCardNo: patient.memberCardNo,
                 comment: patient.comment
-            })
+            });
         }).then(function () {
             res.send({ret: 0, message: i18n.get('patient.update.success')});
         }).catch(function (err) {

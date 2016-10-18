@@ -4,7 +4,7 @@ module.exports = {
     server: {
         name: 'medical cloud platform',
         version: '0.0.1',
-        host: '121.42.171.213',
+        host: 'localhost',
         port: 8083
     },
     db: {
@@ -89,5 +89,10 @@ module.exports = {
     orderStatus: ['未支付', '已支付', '已取消', '完成'],
     orderType: ["挂号费", "药费", "诊疗费"],
     inventoryType: ['入库', '出库'],
-    salesManStatus: ['在职', '离职']
+    salesManStatus: ['在职', '离职'],
+    diseaseWordType: [{'主诉、现病史、既往病史': ['部位', '性质', '时间', '其他']},
+        {'检查': ['部位', '诊法', '症状', '程度']},
+        {'诊断': ['诊断', '性质', '程度', '其他']},
+        {'治疗方案': ['背牙', '充填', '药物', '其他']},
+        {'医嘱': ['性质', '注意', '程度', '其他']}]
 };
