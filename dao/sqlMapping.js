@@ -17,7 +17,7 @@ module.exports = {
         findNoPlanBusinessPeople: 'select id, name from Employee where hospitalId = ? and role = 4 and id not in(select DISTINCT businessPeopleId from Performance where left(yearMonth, 4) =?)',
         updateEmployee: 'update Employee set password=? where mobile = ?',
         updateEmployeeByUid: 'update Employee set ? where id = ?',
-        findEmployees: 'select SQL_CALC_FOUND_ROWS e.id, e.`name`, d.`name` as department, e.mobile, e.gender, e.birthday, job.`name` as jobTitle, role.`name` as role, e.`status`, e.admin as isAdmin, e.maxDiscountRate  from Employee e LEFT JOIN Department d on d.id = e.department left JOIN Role role on role.id = e.role left JOIN JobTitle job on job.id = e.jobTitle where e.hospitalId =? order by e.id desc limit ?,?',
+        findEmployees: 'select SQL_CALC_FOUND_ROWS e.id, e.`name`, e.mobile, e.gender, e.birthday, job.`name` as jobTitle, role.`name` as role, e.`status`, e.admin as isAdmin, e.maxDiscountRate  from Employee e left JOIN Role role on role.id = e.role left JOIN JobTitle job on job.id = e.jobTitle where e.hospitalId =? order by e.id desc limit ?,?',
         findRoles: 'select id, name from Role where hospitalId = ?',
         findById: 'select * from Employee where id=? and hospitalId =?',
         findByIdWithHospital: 'select e.*, h.name as hospitalName from Employee e, Hospital h where e.hospitalId = h.id and e.hospitalId= ? and  e.id = ?',
@@ -116,7 +116,7 @@ module.exports = {
     doctor: {
         insert: 'insert Doctor set ?',
         findDoctors: 'select id, name from Doctor where hospitalId=?',
-        findDiscountRateOfDoctor: 'select maxDiscountRate, d.departmentName, d.clinic from Employee e, Doctor d  where e.id = d.employeeId and e.hospitalId=? and e.id=?',
+        findDiscountRateOfDoctor: 'select maxDiscountRate, d.clinic from Employee e, Doctor d  where e.id = d.employeeId and e.hospitalId=? and e.id=?',
         findDoctorsByHospital: 'select SQL_CALC_FOUND_ROWS d.*, e.birthday, d.clinic, e.mobile from Doctor d, Employee e where e.id = d.employeeId and d.status <> 2 and d.hospitalId = ? order by d.id desc limit ?, ?',
         findDoctorsGroupByDepartment: 'select id, name, departmentName from Doctor where status <> 2 and hospitalId = ?',
         findByDepartment: 'select id, name, departmentName, hospitalName, headPic,registrationFee, speciality,jobTitle from Doctor where hospitalId = ?  and departmentId = ?',
@@ -127,9 +127,12 @@ module.exports = {
         updateBy: 'update Doctor set ? where employeeId = ?',
         delete: 'delete from Doctor where id=?',
         deleteDoctorBy: 'delete from Doctor where employeeId =?',
-        findWaitOutpatients: 'select SQL_CALC_FOUND_ROWS concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , sp.`name`) as registerDate, r.id, r.patientName, r.patientMobile, r.gender, r.age, r.sequence, r.registrationType, r.`comment`, r.outPatientType, r.createDate, r.businessPeopleName as recommender, r.outpatientStatus, pi.balance, pi.memberType,pi.memberCardNo, r.patientId, d.clinic, d.id as doctorId, r.nurse, e.name as nurseName from Registration r LEFT JOIN  PatientBasicInfo p on p.id = r.patientBasicInfoId left JOIN ShiftPeriod sp on sp.id = r.shiftPeriod LEFT JOIN Patient pi on pi.id = r.patientId LEFT JOIN Doctor d ON d.id = r.doctorId left join Employee e on e.id = r.nurse where d.employeeId = ? and r.registerDate=? and r.status<>4 and r.sequence is not null order by field(r.outpatientStatus, 5, 0, 1), r.shiftPeriod, r.createDate limit ?, ?',
+        findWaitOutpatients: 'select SQL_CALC_FOUND_ROWS concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , sp.`name`) as registerDate, r.id, r.patientName, r.patientMobile, r.gender, r.age, r.sequence, r.registrationType, r.`comment`, r.outPatientType, r.createDate, r.businessPeopleName as recommender, r.outpatientStatus, pi.balance, pi.memberType,pi.memberCardNo, r.patientId, d.clinic, d.id as doctorId, r.nurse, e.name as nurseName, pi.medicalRecordNo from Registration r LEFT JOIN  PatientBasicInfo p on p.id = r.patientBasicInfoId left JOIN ShiftPeriod sp on sp.id = r.shiftPeriod LEFT JOIN Patient pi on pi.id = r.patientId LEFT JOIN Doctor d ON d.id = r.doctorId left join Employee e on e.id = r.nurse where d.employeeId = ? and r.registerDate=? and r.status<>4 and r.sequence is not null order by field(r.outpatientStatus, 5, 0, 1), r.shiftPeriod, r.createDate limit ?, ?',
         findFinishedCountByDate: 'select count(*) as count from Registration r where r.doctorId = ? and r.registerDate=? and r.outPatientStatus=1',
-        findHistoryOutpatients: 'select SQL_CALC_FOUND_ROWS concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , sp.`name`) as registerDate, r.id, r.patientName, r.patientMobile, r.gender, r.age, r.sequence, r.registrationType, r.`comment`, r.outPatientType, r.createDate, r.businessPeopleName as recommender, r.outpatientStatus from Registration r LEFT JOIN  PatientBasicInfo p on p.id = r.patientBasicInfoId left JOIN ShiftPeriod sp on sp.id = r.shiftPeriod LEFT JOIN Doctor d ON d.id = r.doctorId where d.employeeId = ? order by r.registerDate desc , r.sequence'
+        findHistoryOutpatients: 'select SQL_CALC_FOUND_ROWS concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , sp.`name`) as registerDate, r.id, r.patientName, r.patientMobile, r.gender, r.age, r.sequence, r.registrationType, r.`comment`, r.outPatientType, r.createDate, r.businessPeopleName as recommender, r.outpatientStatus from Registration r LEFT JOIN  PatientBasicInfo p on p.id = r.patientBasicInfoId left JOIN ShiftPeriod sp on sp.id = r.shiftPeriod LEFT JOIN Doctor d ON d.id = r.doctorId where d.employeeId = ? order by r.registerDate desc , r.sequence',
+        insertDoctorDepartment: 'insert DoctorDepartment set ?',
+        findDepartmentsOfDoctor: 'select d.id, d.`name` from DoctorDepartment dd left join Department d on dd.departmentId = d.id where dd.doctorId = ?',
+        deleteDoctorDepartment: 'delete from DoctorDepartment where doctorId = ?'
     },
 
     registration: {
@@ -151,9 +154,11 @@ module.exports = {
         findRegistrations: 'select SQL_CALC_FOUND_ROWS r.id,r.outpatientStatus, r.patientMobile,r.patientName,r.gender, p.balance,p.source, p.memberCardNo, r.memberType, r.doctorName, r.`comment`, r.registrationFee, r.registrationType, r.departmentName, concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , s.`name`) as registerDate, r.createDate, r.outPatientType, r.status, r.sequence, r.businessPeopleName, r.outpatientStatus from Registration r LEFT JOIN SalesMan e on e.id=r.businessPeopleId left JOIN ShiftPeriod s ON s.id= r.shiftPeriod left join Patient p on p.id=r.patientId left join Doctor d on d.id=r.doctorId where r.patientId =p.id and r.status <>4 and r.hospitalId = ? order by r.id desc limit ?, ?',
         findRegistrationsById: 'select * from Registration where id=?',
         findRegistrationsByIdWithDetail: 'select r.*, d.floor, doc.clinic from Registration r left JOIN Department d on d.id = r.departmentId left JOIN Doctor doc on doc.id = r.doctorId where r.id=?',
-        findCurrentQueueByRegId: 'select r.id,r.nurse,doctorName, departmentName, patientName, registrationType, outPatientType, outpatientStatus, p.balance, p.memberType from Registration r LEFT JOIN Patient p on p.id =r.patientId where r.id =?',
+        findCurrentQueueByRegId: 'select r.id,doctorName, departmentName, patientName, registrationType, outPatientType, outpatientStatus, p.balance, p.memberType from Registration r LEFT JOIN Patient p on p.id =r.patientId where r.id =?',
         findRegistrationsBy: 'select SQL_CALC_FOUND_ROWS r.id,r.outpatientStatus, r.patientMobile,r.patientName,r.gender, p.balance, p.memberCardNo, r.memberType, r.doctorName, r.`comment`, r.registrationFee, r.registrationType, r.departmentName, concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , s.`name`) as registerDate, r.outPatientType, r.status, r.sequence, e.name as businessPeopleName, r.outpatientStatus from Registration r LEFT JOIN SalesMan e on e.id=r.businessPeopleId left JOIN ShiftPeriod s ON s.id= r.shiftPeriod, Patient p where r.patientId =p.id and r.hospitalId = ? and r.registerDate=? order by r.id desc limit ?, ?',
-        findAppointments: 'select SQL_CALC_FOUND_ROWS * from Appointment'
+        findAppointments: 'select  SQL_CALC_FOUND_ROWS a.*, p.medicalRecordNo, p.memberCardNo, p.memberType, p.source, po.`name`, po.realName, po.gender,po.mobile from Appointment a left JOIN Patient p on p.id = a.patientId left join PatientBasicInfo po on po.id = p.patientBasicInfoId where a.hospitalId=? ',
+        addAppointment: 'insert Appointment set ?',
+        findPatientsOfDoctorPeriod: 'select distinct patientName from Registration where doctorId=? and shiftPeriod =?'
     },
     patient: {
         findPatientByMemberCard: 'select id from Patient where memberCardNo = ?',
@@ -275,7 +280,7 @@ module.exports = {
         addOutsideProcess: 'insert OutsideProcess set ?',
         updateOutsideProcess: 'update OutsideProcess set ? where id = ?',
         deleteOutsideProcess: 'delete from OutsideProcess where id = ?',
-        findOutsideProcesses: 'select SQL_CALC_FOUND_ROWS o.*, p.medicalRecordNo, po.`name`, po.gender, po.realName from OutsideProcess o left JOIN Patient p on p.id = o.patientId left JOIN PatientBasicInfo po on po.id=p.patientBasicInfoId  where o.hospitalId =? '
+        findOutsideProcesses: 'select SQL_CALC_FOUND_ROWS o.*, p.medicalRecordNo, po.`name`, po.gender, po.realName, po.mobile from OutsideProcess o left JOIN Patient p on p.id = o.patientId left JOIN PatientBasicInfo po on po.id=p.patientBasicInfoId  where o.hospitalId =? '
     },
     order: {
         insert: 'insert MedicalOrder set ?',

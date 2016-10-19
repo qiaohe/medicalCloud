@@ -341,19 +341,53 @@ module.exports = {
         return next();
     },
     getAppointments: function (req, res, next) {
-        var pageIndex = req.query.pageIndex;
-        var pageSize = req.query.pageSize;
-        registrationDAO.findAppointments(req.user.hospitalId, {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        var conditions = [];
+        if (req.query.name) conditions.push('(po.name like \'%' + req.query.name + '%\' or p.medicalRecordNo like \'%' + req.query.name + '%\' po.mobile like \'%' + req.query.name + '%\')');
+        if (req.query.department) conditions.push('a.departmentId=' + req.query.department);
+        if (req.query.doctor) conditions.push('a.doctorId=' + req.query.doctor);
+        if (req.query.status) conditions.push('a.status=' + req.query.status);
+        if (req.query.start) conditions.push('o.appointmentDate>=\'' + req.query.start + '\'');
+        if (req.query.end) conditions.push('o.appointmentDate<=\'' + req.query.end + '\'');
+        registrationDAO.findAppointments(req.user.hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (appointments) {
-            res.end({ret: 0, data: appointments})
+            appointments.pageIndex = pageIndex;
+            appointments && appointments.rows.length && appointments.rows.forEach(function (item) {
+                item.status = config.appointmentStatus[+item.status];
+            });
+            res.send({ret: 0, data: appointments})
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
         return next();
     },
-    updateAppointments: function (req, res, next) {
+    addAppointment: function (req, res, next) {
+        var appointment = _.assign(req.body, {
+            hospitalId: req.user.hospitalId,
+            creator: req.user.id,
+            createDate: new Date(),
+            status: 0
+        });
+        registrationDAO.addAppointment(appointment).then(function (result) {
+            appointment.id = result.insertId;
+            res.send({ret: 0, data: appointment, message: '复诊预约成功。'})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    updateAppointment: function (req, res, next) {
+        return next();
+    },
+    getPatientsOfDoctorPeriod: function (req, res, next) {
+        registrationDAO.findPatientsOfDoctorPeriod(req.params.id, req.params.period).then(function (ps) {
+            res.send({ret: 0, data: ps})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
         return next();
     }
 }

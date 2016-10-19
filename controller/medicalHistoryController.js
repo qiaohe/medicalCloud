@@ -1015,7 +1015,7 @@ module.exports = {
         if (req.query.medicalRecordNo) conditions.push('p.medicalRecordNo like \'%' + req.query.medicalRecordNo + '%\'');
         if (req.query.doctorId) conditions.push('o.doctor=' + req.query.doctorId);
         if (req.query.status) conditions.push('o.status=' + req.query.status);
-        medicalDAO.findOutsideProcesses(req.user.hospitalId, conditions,{
+        medicalDAO.findOutsideProcesses(req.user.hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (ps) {

@@ -213,8 +213,14 @@ module.exports = {
                 doctor.images = doctor.images && doctor.images.split(',');
                 doctor.status = config.employeeStatus[doctor.status];
             });
-            doctors.pageIndex = pageIndex;
-            res.send({ret: 0, data: doctors});
+            return Promise.map(doctors.rows, function (doctor) {
+                return employeeDAO.findDepartmentsOfDoctor(doctor.id).then(function (departments) {
+                    doctor.departments = departments;
+                })
+            }).then(function (result) {
+                doctors.pageIndex = pageIndex;
+                res.send({ret: 0, data: doctors});
+            })
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
@@ -245,9 +251,21 @@ module.exports = {
         var doctor = req.body;
         doctor.hospitalId = req.user.hospitalId;
         doctor.updateDate = new Date();
+        var departments = doctor.departments;
         doctor.images = doctor.images && doctor.images.join(',');
+        delete doctor.departments;
         employeeDAO.updateDoctor(doctor).then(function (result) {
-            res.send({ret: 0, message: i18n.get('doctor.update.success')});
+            if (departments && departments.length) {
+                return Promise.map(departments, function (department) {
+                    return employeeDAO.deleteDoctorDepartment(doctor.id).then(function(result){
+                        return employeeDAO.insertDoctorDepartment({doctorId: doctor.id, departmentId: department});
+                    })
+                }).then(function (result) {
+                    res.send({ret: 0, message: i18n.get('doctor.update.success')});
+                })
+            } else {
+                res.send({ret: 0, message: i18n.get('doctor.update.success')});
+            }
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });

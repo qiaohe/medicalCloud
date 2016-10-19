@@ -41,7 +41,18 @@ module.exports = {
     findShareSetting: function (hospitalId) {
         return db.query(sqlMapping.hospital.findShareSetting, hospitalId);
     },
-    findAppointments: function (hospitalId, page) {
-        return db.queryWithCount(sqlMapping.registration.findAppointments, [hospitalId, page.from, page.size]);
+    findAppointments: function (hospitalId, conditions, page) {
+        var sql = sqlMapping.registration.findAppointments;
+        if (conditions.length)
+            sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' order by a.createDate desc limit ?,?';
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
+    },
+    addAppointment: function (appointment) {
+        return db.query(sqlMapping.registration.addAppointment, appointment);
+    },
+    findPatientsOfDoctorPeriod: function(doctorId, period){
+        return db.query(sqlMapping.registration.findPatientsOfDoctorPeriod, [doctorId, period]);
+
     }
 }
