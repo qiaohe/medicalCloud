@@ -1133,5 +1133,31 @@ module.exports = [
         path: "/api/appointments",
         handler: registrationController.updateAppointments,
         secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/OutpatientServiceTypes",
+        handler: dictController.getOutpatientServiceType,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/OutpatientServiceTypes",
+        handler: dictController.updateOutpatientServiceType,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/OutpatientServiceTypes",
+        handler: dictController.addOutpatientServiceType,
+        secured: 'user'
+    },
+    {
+        method: "del",
+        path: "/api/OutpatientServiceTypes/:id",
+        handler: dictController.removeOutpatientServiceType,
+        secured: 'user'
     }
+
+
 ];

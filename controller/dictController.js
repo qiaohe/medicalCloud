@@ -1083,5 +1083,41 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
+    },
+    getOutpatientServiceType: function (req, res, next) {
+        dictionaryDAO.findOutpatientServiceTypes(req.user.hospitalId).then(function (ps) {
+            res.send({ret: 0, data: ps});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    addOutpatientServiceType: function (req, res, next) {
+        req.body.hospitalId = req.user.hospitalId;
+        dictionaryDAO.addOutpatientServiceType(req.body).then(function (p) {
+            req.body.id = p.insertId;
+            res.send({ret: 0, data: req.body, message: '添加成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    updateOutpatientServiceType: function (req, res, next) {
+        dictionaryDAO.updateOutpatientServiceType(req.body).then(function (p) {
+            res.send({ret: 0, message: '修改成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+    removeOutpatientServiceType: function (req, res, next) {
+        dictionaryDAO.deleteOutpatientServiceType(req.params.id).then(function (p) {
+            res.send({ret: 0, message: '删除成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
     }
+
 }

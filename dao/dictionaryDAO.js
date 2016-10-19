@@ -214,5 +214,17 @@ module.exports = {
     },
     findDrugCategoriesById: function (hospitalId, id, type) {
         return db.query(sqlMapping.dict.findDrugCategoriesById, [hospitalId, type, id]);
+    },
+    addOutpatientServiceType: function (type) {
+        return db.query(sqlMapping.dict.addOutpatientServiceType, type);
+    },
+    deleteOutpatientServiceType: function (id) {
+        return db.query(sqlMapping.dict.deleteOutpatientServiceType, id);
+    },
+    updateOutpatientServiceType: function (type) {
+        return db.query(sqlMapping.dict.updateOutpatientServiceType, [type, type.id]);
+    },
+    findOutpatientServiceTypes: function (hospitalId) {
+        return db.query(sqlMapping.dict.findOutpatientServiceTypes, hospitalId);
     }
 }

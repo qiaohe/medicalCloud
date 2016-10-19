@@ -1013,7 +1013,7 @@ module.exports = {
         var conditions = [];
         if (req.query.patientName) conditions.push('po.realName like \'%' + req.query.patientName + '%\'');
         if (req.query.medicalRecordNo) conditions.push('p.medicalRecordNo like \'%' + req.query.medicalRecordNo + '%\'');
-        if (req.query.doctorId) conditions.push('o.doctorId=' + req.query.doctorId);
+        if (req.query.doctorId) conditions.push('o.doctor=' + req.query.doctorId);
         if (req.query.status) conditions.push('o.status=' + req.query.status);
         medicalDAO.findOutsideProcesses(req.user.hospitalId, conditions,{
             from: (pageIndex - 1) * pageSize,

@@ -249,9 +249,10 @@ module.exports = {
         deleteDrugCategory: 'delete from DrugCategory where id = ?',
         findDrugCategories: 'select id, pid, name from DrugCategory where hospitalId = ? and type = ? order by pid',
         findDrugCategoriesById: 'select id, pid, name from DrugCategory where hospitalId = ? and type = ? and id = ? order by pid ',
-        /*
-         select SUM(di.restAmount) as inventory, d.*  FROM Drug d left join DrugInventory di on d.id = di.drugId group BY d.id
-         */
+        addOutpatientServiceType: 'insert OutpatientServiceType set ?',
+        updateOutpatientServiceType: 'update OutpatientServiceType set ? where id = ?',
+        deleteOutpatientServiceType: 'delete from OutpatientServiceType where id = ?',
+        findOutpatientServiceTypes: 'select id, name, fee from OutpatientServiceType'
     },
     medical: {
         insertMedicalHistory: 'insert MedicalHistory set ?',
