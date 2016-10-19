@@ -68,7 +68,10 @@ module.exports = {
     deleteOutsideProcess: function (id) {
         return db.query(sqlMapping.medical.deleteOutsideProcess, id);
     },
-    findOutsideProcesses: function (hospitalId, page) {
-        return db.queryWithCount(sqlMapping.medical.findOutsideProcesses, [hospitalId, page.from, page.size]);
+    findOutsideProcesses: function (hospitalId, conditions, page) {
+        var sql = sqlMapping.medical.findOutsideProcesses;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' order by o.createDate desc limit ?,?'
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     }
 }

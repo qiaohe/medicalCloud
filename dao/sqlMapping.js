@@ -274,7 +274,7 @@ module.exports = {
         addOutsideProcess: 'insert OutsideProcess set ?',
         updateOutsideProcess: 'update OutsideProcess set ? where id = ?',
         deleteOutsideProcess: 'delete from OutsideProcess where id = ?',
-        findOutsideProcesses: 'select SQL_CALC_FOUND_ROWS * from OutsideProcess where hospitalId =? order by createDate desc limit ?,?'
+        findOutsideProcesses: 'select SQL_CALC_FOUND_ROWS o.*, p.medicalRecordNo, po.`name`, po.gender, po.realName from OutsideProcess o left JOIN Patient p on p.id = o.patientId left JOIN PatientBasicInfo po on po.id=p.patientBasicInfoId  where o.hospitalId =? '
     },
     order: {
         insert: 'insert MedicalOrder set ?',

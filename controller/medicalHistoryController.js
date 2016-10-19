@@ -967,11 +967,22 @@ module.exports = {
         return next();
     },
     addOutsideProcess: function (req, res, next) {
-        var p = _.assign(req.body, {createDate: new Date(), creator: req.user.id, hospitalId: req.user.hospitalId});
-        if (!req.body.doctor) p = _.assign(p, {doctor: req.user.id, doctorName: req.user.name});
+        var p = _.assign(_.cloneDeep(req.body), {
+            createDate: new Date(),
+            creator: req.user.id,
+            hospitalId: req.user.hospitalId
+        });
+        if (!req.body.doctor) p = _.assign(p, {
+            doctor: req.user.id,
+            doctorName: req.user.name,
+            tooth1: JSON.stringify(req.body.tooth1),
+            tooth2: JSON.stringify(req.body.tooth2),
+            tooth3: JSON.stringify(req.body.tooth3),
+            tooth4: JSON.stringify(req.body.tooth4)
+        });
         medicalDAO.addOutsideProcess(p).then(function (result) {
-            p.id = result.insertId;
-            res.send({ret: 0, data: p, message: '添加成功。'});
+            req.body.id = result.insertId;
+            res.send({ret: 0, data: req.body, message: '添加成功。'});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
@@ -999,10 +1010,23 @@ module.exports = {
     getOutsideProcesses: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        medicalDAO.findOutsideProcesses(req.user.hospitalId, {
+        var conditions = [];
+        if (req.query.patientName) conditions.push('po.realName like \'%' + req.query.patientName + '%\'');
+        if (req.query.medicalRecordNo) conditions.push('p.medicalRecordNo like \'%' + req.query.medicalRecordNo + '%\'');
+        if (req.query.doctorId) conditions.push('o.doctorId=' + req.query.doctorId);
+        if (req.query.status) conditions.push('o.status=' + req.query.status);
+        medicalDAO.findOutsideProcesses(req.user.hospitalId, conditions,{
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (ps) {
+            ps.pageIndex = pageIndex;
+            ps.rows && ps.rows.length && ps.rows.forEach(function (item) {
+                item.tooth1 = JSON.parse(item.tooth1);
+                item.tooth2 = JSON.parse(item.tooth2);
+                item.tooth3 = JSON.parse(item.tooth3);
+                item.tooth4 = JSON.parse(item.tooth4);
+                item.status = config.outsideProcessStatus[+item.status];
+            });
             res.send({ret: 0, data: ps});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
