@@ -969,16 +969,16 @@ module.exports = {
     addOutsideProcess: function (req, res, next) {
         var p = _.assign(_.cloneDeep(req.body), {
             createDate: new Date(),
+            tooth1: JSON.stringify(req.body.tooth1),
+            tooth2: JSON.stringify(req.body.tooth2),
+            tooth3: JSON.stringify(req.body.tooth3),
+            tooth4: JSON.stringify(req.body.tooth4),
             creator: req.user.id,
             hospitalId: req.user.hospitalId
         });
         if (!req.body.doctor) p = _.assign(p, {
             doctor: req.user.id,
-            doctorName: req.user.name,
-            tooth1: JSON.stringify(req.body.tooth1),
-            tooth2: JSON.stringify(req.body.tooth2),
-            tooth3: JSON.stringify(req.body.tooth3),
-            tooth4: JSON.stringify(req.body.tooth4)
+            doctorName: req.user.name
         });
         medicalDAO.addOutsideProcess(p).then(function (result) {
             req.body.id = result.insertId;
@@ -992,6 +992,12 @@ module.exports = {
         var p = req.body;
         delete p.createDate;
         delete p.creator;
+        p = _.assign(p, {
+            tooth1: JSON.stringify(req.body.tooth1),
+            tooth2: JSON.stringify(req.body.tooth2),
+            tooth3: JSON.stringify(req.body.tooth3),
+            tooth4: JSON.stringify(req.body.tooth4)
+        })
         medicalDAO.updateOutsideProcess(p).then(function (result) {
             res.send({ret: 0, data: p, message: '修改成功。'});
         }).catch(function (err) {

@@ -158,6 +158,7 @@ module.exports = {
         findRegistrationsBy: 'select SQL_CALC_FOUND_ROWS r.id,r.outpatientStatus, r.patientMobile,r.patientName,r.gender, p.balance, p.memberCardNo, r.memberType, r.doctorName, r.`comment`, r.registrationFee, r.registrationType, r.departmentName, concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , s.`name`) as registerDate, r.outPatientType, r.status, r.sequence, e.name as businessPeopleName, r.outpatientStatus from Registration r LEFT JOIN SalesMan e on e.id=r.businessPeopleId left JOIN ShiftPeriod s ON s.id= r.shiftPeriod, Patient p where r.patientId =p.id and r.hospitalId = ? and r.registerDate=? order by r.id desc limit ?, ?',
         findAppointments: 'select  SQL_CALC_FOUND_ROWS a.*, p.medicalRecordNo, p.memberCardNo, p.memberType, p.source, po.`name`, po.realName, po.gender,po.mobile from Appointment a left JOIN Patient p on p.id = a.patientId left join PatientBasicInfo po on po.id = p.patientBasicInfoId where a.hospitalId=? ',
         addAppointment: 'insert Appointment set ?',
+        updateAppointment: 'update Appointment set ? where id =?',
         findPatientsOfDoctorPeriod: 'select distinct patientName from Registration where doctorId=? and shiftPeriod =?'
     },
     patient: {
@@ -257,7 +258,8 @@ module.exports = {
         addOutpatientServiceType: 'insert OutpatientServiceType set ?',
         updateOutpatientServiceType: 'update OutpatientServiceType set ? where id = ?',
         deleteOutpatientServiceType: 'delete from OutpatientServiceType where id = ?',
-        findOutpatientServiceTypes: 'select id, name, fee from OutpatientServiceType'
+        findOutpatientServiceTypes: 'select id, name, fee from OutpatientServiceType',
+        findOutPatientTypeById: 'select id, name,fee from OutpatientServiceType where id =?'
     },
     medical: {
         insertMedicalHistory: 'insert MedicalHistory set ?',

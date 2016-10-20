@@ -2,6 +2,7 @@
 var config = require('../config');
 var i18n = require('../i18n/localeMessage');
 var registrationDAO = require('../dao/registrationDAO');
+var dictionaryDAO = require('../dao/dictionaryDAO');
 var businessPeopleDAO = require('../dao/businessPeopleDAO');
 var hospitalDAO = require('../dao/hospitalDAO');
 var deviceDAO = require('../dao/deviceDAO');
@@ -85,9 +86,8 @@ module.exports = {
         var r = req.body;
         r.createDate = new Date();
         businessPeopleDAO.findShiftPlanByDoctorAndShiftPeriod(r.doctorId, r.registerDate, r.shiftPeriod).then(function (plans) {
-            if (!plans.length || (plans[0].plannedQuantity <= +plans[0].actualQuantity)) {
-                return res.send({ret: 1, message: i18n.get('doctor.shift.plan.invalid')});
-            }
+            if (!plans.length || (plans[0].plannedQuantity <= +plans[0].actualQuantity))
+                throw new Error(i18n.get('doctor.shift.plan.invalid'));
             return businessPeopleDAO.findPatientBasicInfoBy(r.patientMobile).then(function (basicInfos) {
                 return basicInfos.length ? basicInfos[0].id : businessPeopleDAO.insertPatientBasicInfo({
                     name: r.patientName,
@@ -122,16 +122,19 @@ module.exports = {
                 return businessPeopleDAO.findPatientByBasicInfoId(result, req.user.hospitalId).then(function (patients) {
                     if (patients.length) return patients[0].id;
                     return redis.incrAsync('member.no.incr').then(function (memberNo) {
-                        return businessPeopleDAO.insertPatient({
-                            patientBasicInfoId: r.patientBasicInfoId,
-                            hospitalId: req.user.hospitalId,
-                            memberType: (r.memberType ? r.memberType : 0),
-                            balance: 0.00,
-                            memberCardNo: req.user.hospitalId + '-1-' + _.padLeft(memberNo, 7, '0'),
-                            createDate: new Date()
-                        }).then(function (patient) {
-                            return patient.insertId;
-                        });
+                        return redis.incrAsync('d:' + moment().format('YYMMDD') + ':mh').then(function (medicalRecordNo) {
+                            return businessPeopleDAO.insertPatient({
+                                patientBasicInfoId: r.patientBasicInfoId,
+                                hospitalId: req.user.hospitalId,
+                                memberType: (r.memberType ? r.memberType : 0),
+                                balance: 0.00,
+                                memberCardNo: req.user.hospitalId + '-1-' + _.padLeft(memberNo, 7, '0'),
+                                medicalRecordNo: moment().format('YYMMDD') + _.padLeft(medicalRecordNo, 3, '0'),
+                                createDate: new Date()
+                            }).then(function (patient) {
+                                return patient.insertId;
+                            });
+                        })
                     });
                 });
             }).then(function (result) {
@@ -139,34 +142,36 @@ module.exports = {
                 return hospitalDAO.findDoctorById(r.doctorId);
             }).then(function (doctors) {
                 var doctor = doctors[0];
-                r = _.assign(r, {
-                    departmentId: doctor.departmentId,
-                    departmentName: doctor.departmentName,
-                    hospitalId: doctor.hospitalId,
-                    hospitalName: doctor.hospitalName,
-                    registrationFee: doctor.registrationFee,
-                    doctorName: doctor.name,
-                    doctorJobTitle: doctor.jobTitle,
-                    doctorJobTitleId: doctor.jobTitleId,
-                    doctorHeadPic: doctor.headPic,
-                    status: 0, creator: req.user.id
-                });
-                return redis.incrAsync('doctor:' + r.doctorId + ':d:' + r.registerDate + ':period:' + r.shiftPeriod + ':incr').then(function (seq) {
-                    return redis.getAsync('h:' + req.user.hospitalId + ':p:' + r.shiftPeriod).then(function (sp) {
-                        r.sequence = sp + seq;
-                        r.outPatientType = 0;
-                        r.outpatientStatus = 5;
-                        r.registrationType = (r.registrationType ? r.registrationType : 2);
-                        if (!r.businessPeopleId) delete r.businessPeopleId;
-                        delete r.reason;
-                        //delete r.birthday;
-                        return businessPeopleDAO.insertRegistration(r)
+                return dictionaryDAO.findOutPatientTypeById(r.outPatientServiceType).then(function (opst) {
+                    r = _.assign(r, {
+                        departmentId: doctor.departmentId,
+                        departmentName: doctor.departmentName,
+                        hospitalId: doctor.hospitalId,
+                        hospitalName: doctor.hospitalName,
+                        registrationFee: opst[0].fee,
+                        doctorName: doctor.name,
+                        doctorJobTitle: doctor.jobTitle,
+                        doctorJobTitleId: doctor.jobTitleId,
+                        doctorHeadPic: doctor.headPic,
+                        status: 0, creator: req.user.id
                     });
+                    // return redis.incrAsync('doctor:' + r.doctorId + ':d:' + r.registerDate + ':period:' + r.shiftPeriod + ':incr').then(function (seq) {
+                    //     return redis.getAsync('h:' + req.user.hospitalId + ':p:' + r.shiftPeriod).then(function (sp) {
+                    //         r.sequence = sp + seq;
+                    //         r.outPatientType = 0;
+                    r.outpatientStatus = 5;
+                    r.registrationType = (r.registrationType ? r.registrationType : 2);
+                    if (!r.businessPeopleId) delete r.businessPeopleId;
+                    delete r.reason;
+                    //delete r.birthday;
+                    return businessPeopleDAO.insertRegistration(r);
+                    //                   });
+                    //                });
                 });
             }).then(function (result) {
                 r.id = result.insertId;
-                return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod);
-            }).then(function (result) {
+                // return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod);
+            // }).then(function (result) {
                 return redis.incrAsync('h:' + r.hospitalId + ':' + moment().format('YYYYMMDD') + ':0:incr').then(function (reply) {
                     var orderNo = _.padLeft(r.hospitalId, 4, '0') + moment().format('YYYYMMDD') + '0' + _.padLeft(reply, 3, '0');
                     var o = {
@@ -177,7 +182,7 @@ module.exports = {
                         paidAmount: r.registrationFee,
                         paymentAmount: r.registrationFee,
                         paymentDate: new Date(),
-                        status: (r.registrationType != 3 && r.registrationFee > 0.00 ? 0 : 1),
+                        status: (r.registrationFee > 0.00 ? 0 : 1),
                         paymentType: (r.registrationType != 3 ? r.paymentType : 5),
                         createDate: new Date(),
                         type: 0
@@ -205,11 +210,11 @@ module.exports = {
                         });
                     }
                 });
-                process.emit('outPatientChangeEvent', r);
+                // process.emit('outPatientChangeEvent', r);
                 res.send({ret: 0, data: r})
             });
         }).catch(function (error) {
-            res.send(error);
+            res.send({ret: 1, message: error.message});
         });
         return next();
     },
@@ -344,12 +349,12 @@ module.exports = {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var conditions = [];
-        if (req.query.name) conditions.push('(po.name like \'%' + req.query.name + '%\' or p.medicalRecordNo like \'%' + req.query.name + '%\' po.mobile like \'%' + req.query.name + '%\')');
-        if (req.query.department) conditions.push('a.departmentId=' + req.query.department);
-        if (req.query.doctor) conditions.push('a.doctorId=' + req.query.doctor);
+        if (req.query.name) conditions.push('(po.name like \'%' + req.query.name + '%\' or p.medicalRecordNo like \'%' + req.query.name + '%\' or po.mobile like \'%' + req.query.name + '%\')');
+        if (req.query.department) conditions.push('a.doctor=' + req.query.department);
+        if (req.query.doctor) conditions.push('a.doctor=' + req.query.doctor);
         if (req.query.status) conditions.push('a.status=' + req.query.status);
-        if (req.query.start) conditions.push('o.appointmentDate>=\'' + req.query.start + '\'');
-        if (req.query.end) conditions.push('o.appointmentDate<=\'' + req.query.end + '\'');
+        if (req.query.start) conditions.push('a.appointmentDate>=\'' + req.query.start + '\'');
+        if (req.query.end) conditions.push('a.appointmentDate<=\'' + req.query.end + '\'');
         registrationDAO.findAppointments(req.user.hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
@@ -357,6 +362,8 @@ module.exports = {
             appointments.pageIndex = pageIndex;
             appointments && appointments.rows.length && appointments.rows.forEach(function (item) {
                 item.status = config.appointmentStatus[+item.status];
+                item.gender = config.gender[+item.gender];
+                item.memberType = config.memberType[+item.memberType];
             });
             res.send({ret: 0, data: appointments})
         }).catch(function (err) {
@@ -368,6 +375,7 @@ module.exports = {
         var appointment = _.assign(req.body, {
             hospitalId: req.user.hospitalId,
             creator: req.user.id,
+            creatorName: req.user.name,
             createDate: new Date(),
             status: 0
         });
@@ -380,6 +388,12 @@ module.exports = {
         return next();
     },
     updateAppointment: function (req, res, next) {
+        var appointment = req.body;
+        registrationDAO.updateAppointment(appointment).then(function (result) {
+            res.send({ret: 0, message: '更新成功。'})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
         return next();
     },
     getPatientsOfDoctorPeriod: function (req, res, next) {

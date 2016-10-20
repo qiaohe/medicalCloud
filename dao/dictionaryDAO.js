@@ -226,5 +226,8 @@ module.exports = {
     },
     findOutpatientServiceTypes: function (hospitalId) {
         return db.query(sqlMapping.dict.findOutpatientServiceTypes, hospitalId);
+    },
+    findOutPatientTypeById: function (id) {
+        return db.query(sqlMapping.dict.findOutPatientTypeById, [id]);
     }
 }

@@ -51,8 +51,10 @@ module.exports = {
     addAppointment: function (appointment) {
         return db.query(sqlMapping.registration.addAppointment, appointment);
     },
-    findPatientsOfDoctorPeriod: function(doctorId, period){
+    updateAppointment: function (appointment) {
+        return db.query(sqlMapping.registration.updateAppointment, [appointment, appointment.id]);
+    },
+    findPatientsOfDoctorPeriod: function (doctorId, period) {
         return db.query(sqlMapping.registration.findPatientsOfDoctorPeriod, [doctorId, period]);
-
     }
 }
