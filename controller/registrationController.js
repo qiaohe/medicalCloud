@@ -25,12 +25,15 @@ function getConditions(req) {
     if (req.query.createDateStart) conditions.push('r.createDate>=\'' + req.query.createDate + '\'');
     if (req.query.createDateEnd) conditions.push('r.createDate<=\'' + req.query.createDate + '\'');
     if (req.query.employeeId) conditions.push('d.employeeId=' + req.query.employeeId);
+    if (req.query.medicalRecordNo) conditions.push('p.medicalRecordNo like \'%' + req.query.medicalRecordNo + '%\'');
     if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);
     if (req.query.outpatientStatus) conditions.push('r.outpatientStatus=' + req.query.outpatientStatus);
     if (req.query.registrationType) conditions.push('r.registrationType=' + req.query.registrationType);
     if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
     if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
     if (req.query.status) conditions.push('r.status=' + req.query.status);
+    if (req.query.outPatientType) conditions.push('r.outPatientType=' + req.query.outPatientType);
+    if (req.query.outPatientServiceType) conditions.push('r.outPatientServiceType=' + req.query.outPatientServiceType);
     if (req.query.recommender) conditions.push('r.businessPeopleId=' + req.query.recommender);
     return conditions;
 }
@@ -83,12 +86,14 @@ module.exports = {
         return next();
     },
     addRegistration: function (req, res, next) {
-        var r = req.body;
-        r.createDate = new Date();
-        // businessPeopleDAO.findShiftPlanByDoctorAndShiftPeriod(r.doctorId, r.registerDate, r.shiftPeriod).then(function (plans) {
-        //     if (!plans.length || (plans[0].plannedQuantity <= +plans[0].actualQuantity))
-        //         throw new Error(i18n.get('doctor.shift.plan.invalid'));
-        businessPeopleDAO.findPatientBasicInfoBy(r.patientMobile).then(function (basicInfos) {
+        var r = _.assign(req.body, {
+            createDate: new Date(), registerDate: moment().format("YYYY-MM-DD 00:00:00")
+        });
+        var hospitalName;
+        hospitalDAO.findHospitalById(req.user.hospitalId).then(function (hospitals) {
+            hospitalName = hospitals[0].name;
+            return businessPeopleDAO.findPatientBasicInfoBy(r.patientMobile)
+        }).then(function (basicInfos) {
             return basicInfos.length ? basicInfos[0].id : businessPeopleDAO.insertPatientBasicInfo({
                 name: r.patientName,
                 realName: r.patientName,
@@ -104,17 +109,14 @@ module.exports = {
             }).then(function (result) {
                 if (result.insertId) {
                     var content = config.sms.registerTemplate.replace(':code', r.patientMobile.substring(r.patientMobile.length - 4, r.patientMobile.length));
-                    return hospitalDAO.findHospitalById(req.user.hospitalId).then(function (hospitals) {
-                        var hospitalName = hospitals[0].name;
-                        content = content.replace(':hospital', hospitalName);
-                        var option = {mobile: r.patientMobile, text: content, apikey: config.sms.apikey};
-                        return request.postAsync({
-                            url: config.sms.providerUrl,
-                            form: option
-                        }).then(function (response, body) {
-                            return result.insertId;
-                        });
-                    })
+                    content = content.replace(':hospital', hospitalName);
+                    var option = {mobile: r.patientMobile, text: content, apikey: config.sms.apikey};
+                    return request.postAsync({
+                        url: config.sms.providerUrl,
+                        form: option
+                    }).then(function (response, body) {
+                        return result.insertId;
+                    });
                 } else {
                     return result.insertId;
                 }
@@ -130,6 +132,7 @@ module.exports = {
                             hospitalId: req.user.hospitalId,
                             memberType: (r.memberType ? r.memberType : 0),
                             source: r.source,
+                            counselor: r.counselor,
                             balance: 0.00,
                             memberCardNo: req.user.hospitalId + '-1-' + _.padLeft(memberNo, 7, '0'),
                             medicalRecordNo: moment().format('YYMMDD') + _.padLeft(medicalRecordNo, 3, '0'),
@@ -150,7 +153,7 @@ module.exports = {
             return dictionaryDAO.findOutPatientTypeById(r.outPatientServiceType).then(function (opst) {
                 r = _.assign(r, {
                     hospitalId: req.user.hospitalId,
-                    hospitalName: (doctor == null ? null : doctor.hospitalName),
+                    hospitalName: (doctor == null ? hospitalName : doctor.hospitalName),
                     registrationFee: opst[0].fee,
                     doctorName: (doctor == null ? null : doctor.name),
                     doctorJobTitle: (doctor == null ? null : doctor.jobTitle),
@@ -158,28 +161,14 @@ module.exports = {
                     doctorHeadPic: (doctor == null ? null : doctor.headPic),
                     status: 0, creator: req.user.id
                 });
-                // return redis.incrAsync('doctor:' + r.doctorId + ':d:' + r.registerDate + ':period:' + r.shiftPeriod + ':incr').then(function (seq) {
-                //     return redis.getAsync('h:' + req.user.hospitalId + ':p:' + r.shiftPeriod).then(function (sp) {
-                //         r.sequence = sp + seq;
-                //         r.outPatientType = 0;
                 r.outpatientStatus = 5;
                 r.registrationType = (r.registrationType ? r.registrationType : 2);
                 if (!r.businessPeopleId) delete r.businessPeopleId;
-                delete r.reason;
-                delete r.medicalRecordNo;
-                delete r.birthday;
-                delete r.memberCardNo;
-                delete r.source;
-                delete r.address;
-                delete r.idCard;
+                r = _.omit(r, ['reason', 'counselor', 'medicalRecordNo', 'birthday', 'memberCardNo', 'source', 'address', 'idCard']);
                 return businessPeopleDAO.insertRegistration(r);
-                //                   });
-                //                });
             });
         }).then(function (result) {
             r.id = result.insertId;
-            // return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod);
-            // }).then(function (result) {
             return redis.incrAsync('h:' + r.hospitalId + ':' + moment().format('YYYYMMDD') + ':0:incr').then(function (reply) {
                 var orderNo = _.padLeft(r.hospitalId, 4, '0') + moment().format('YYYYMMDD') + '0' + _.padLeft(reply, 3, '0');
                 var o = {
@@ -218,9 +207,7 @@ module.exports = {
                     });
                 }
             });
-            // process.emit('outPatientChangeEvent', r);
             res.send({ret: 0, data: r});
-            // });
         }).catch(function (error) {
             res.send({ret: 1, message: error.message});
         });

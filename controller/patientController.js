@@ -16,6 +16,7 @@ function getConditions(req) {
     if (req.query.recommender) conditions.push('p.recommender=' + req.query.recommender);
     if (req.query.realName) conditions.push('pb.realName like \'%' + req.query.realName + '%\'');
     if (req.query.mobile) conditions.push('pb.mobile like \'%' + req.query.mobile + '%\'');
+    if (req.query.medicalRecordNo) conditions.push('p.medicalRecordNo like \'%' + req.query.medicalRecordNo + '%\'');
     return conditions;
 }
 module.exports = {
