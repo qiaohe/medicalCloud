@@ -119,7 +119,7 @@ module.exports = {
         findDiscountRateOfDoctor: 'select maxDiscountRate, d.clinic from Employee e, Doctor d  where e.id = d.employeeId and e.hospitalId=? and e.id=?',
         findDoctorsByHospital: 'select SQL_CALC_FOUND_ROWS d.*, e.birthday, d.clinic, e.mobile from Doctor d, Employee e where e.id = d.employeeId and d.status <> 2 and d.hospitalId = ? order by d.id desc limit ?, ?',
         findDoctorsGroupByDepartment: 'select id, name, departmentName from Doctor where status <> 2 and hospitalId = ?',
-        findByDepartment: 'select id, name, departmentName, hospitalName, headPic,registrationFee, speciality,jobTitle from Doctor where hospitalId = ?  and departmentId = ?',
+        findByDepartment: 'select doc.id, doc.name, d.`name` as departmentName, doc.hospitalName, doc.headPic,doc.registrationFee, doc.speciality,doc.jobTitle from DoctorDepartment dd left JOIN Department d on dd.departmentId = d.id left JOIN Doctor doc on doc.id=dd.doctorId where d.hospitalId = ?  and dd.departmentId = ?',
         findById: 'select id, name, departmentName,hospitalId, hospitalName, headPic,registrationFee, speciality,jobTitle, departmentId, jobTitleId from Doctor where id =?',
         findShitPlans: 'select p.`name` as period, `day`, actualQuantity, plannedQuantity, p.id as periodId from ShiftPlan sp, ShiftPeriod p where sp.shiftPeriod = p.id and sp.doctorId = ? and sp.day>? and sp.day<=? and sp.actualQuantity < sp.plannedQuantity and sp.plannedQuantity > 0 order by sp.day, sp.shiftPeriod',
         findBy: 'select id, name, departmentName,hospitalId, hospitalName, headPic,registrationFee, speciality,jobTitle from Doctor where departmentId=? and registrationFee=? and id<>?',
