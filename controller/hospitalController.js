@@ -49,10 +49,7 @@ module.exports = {
         return next();
     },
     removeDepartment: function (req, res, next) {
-        hospitalDAO.countOfEmployeesForDepartment(req.params.id).then(function (result) {
-            if (result[0].count > 0) throw new Error('有员工属于该部门，请选删除员工后重试。');
-            return hospitalDAO.removeDepartment(req.params.id)
-        }).then(function (result) {
+       hospitalDAO.removeDepartment(req.params.id).then(function (result) {
             res.send({ret: 0, message: i18n.get('department.remove.success')});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -381,7 +378,6 @@ module.exports = {
         hospitalDAO.findDiscountRateOfDoctor(req.user.hospitalId, doctorId).then(function (rates) {
             result.maxDiscountRate = rates.length ? rates[0].maxDiscountRate : null;
             if (rates && rates.length < 1) throw new Error('当前用户不是医生岗位，无权执行此操作');
-            result.departmentName = rates[0].departmentName;
             result.clinic = rates[0].clinic;
             hospitalDAO.findWaitOutpatients(doctorId, today, {
                 from: (pageIndex - 1) * pageSize,

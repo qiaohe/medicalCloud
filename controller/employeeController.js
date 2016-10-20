@@ -36,7 +36,6 @@ module.exports = {
                             contract: employee.contract,
                             contactTel: employee.contactTel,
                             createDate: employee.createDate,
-                            departmentId: employee.department,
                             employeeId: employee.id,
                             gender: employee.gender,
                             headPic: employee.headPic,
@@ -47,9 +46,6 @@ module.exports = {
                         };
                         hospitalDAO.findHospitalById(employee.hospitalId).then(function (hospitals) {
                             doctor.hospitalName = hospitals[0].name;
-                            return employeeDAO.findDepartmentById(employee.department);
-                        }).then(function (departments) {
-                            doctor.departmentName = departments[0].name;
                             return employeeDAO.findJobTitleById(employee.jobTitle)
                         }).then(function (jobTitles) {
                             doctor.jobTitle = jobTitles[0].name;
@@ -110,7 +106,6 @@ module.exports = {
                         contract: employee.contract,
                         contactTel: employee.contactTel,
                         createDate: employee.createDate,
-                        departmentId: employee.department,
                         employeeId: employee.id,
                         gender: employee.gender,
                         headPic: employee.headPic,
@@ -121,9 +116,6 @@ module.exports = {
                     };
                     hospitalDAO.findHospitalById(employee.hospitalId).then(function (hospitals) {
                         doctor.hospitalName = hospitals[0].name;
-                        return employeeDAO.findDepartmentById(employee.department);
-                    }).then(function (departments) {
-                        doctor.departmentName = departments[0].name;
                         return employeeDAO.findJobTitleById(employee.jobTitle)
                     }).then(function (jobTitles) {
                         doctor.jobTitle = jobTitles[0].name;
@@ -136,7 +128,6 @@ module.exports = {
                         contract: employee.contract,
                         contactTel: employee.contactTel,
                         createDate: employee.createDate,
-                        departmentId: employee.department,
                         employeeId: employee.id,
                         gender: employee.gender,
                         headPic: employee.headPic,
@@ -147,9 +138,6 @@ module.exports = {
                     };
                     hospitalDAO.findHospitalById(employee.hospitalId).then(function (hospitals) {
                         d.hospitalName = hospitals[0].name;
-                        return employeeDAO.findDepartmentById(employee.department);
-                    }).then(function (departments) {
-                        d.departmentName = departments[0].name;
                         return employeeDAO.findJobTitleById(employee.jobTitle)
                     }).then(function (jobTitles) {
                         d.jobTitle = jobTitles[0].name;

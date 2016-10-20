@@ -144,8 +144,6 @@ module.exports = {
                 var doctor = doctors[0];
                 return dictionaryDAO.findOutPatientTypeById(r.outPatientServiceType).then(function (opst) {
                     r = _.assign(r, {
-                        departmentId: doctor.departmentId,
-                        departmentName: doctor.departmentName,
                         hospitalId: doctor.hospitalId,
                         hospitalName: doctor.hospitalName,
                         registrationFee: opst[0].fee,
@@ -350,7 +348,7 @@ module.exports = {
         var pageSize = +req.query.pageSize;
         var conditions = [];
         if (req.query.name) conditions.push('(po.name like \'%' + req.query.name + '%\' or p.medicalRecordNo like \'%' + req.query.name + '%\' or po.mobile like \'%' + req.query.name + '%\')');
-        if (req.query.department) conditions.push('a.doctor=' + req.query.department);
+        if (req.query.department) conditions.push('a.department=' + req.query.department);
         if (req.query.doctor) conditions.push('a.doctor=' + req.query.doctor);
         if (req.query.status) conditions.push('a.status=' + req.query.status);
         if (req.query.start) conditions.push('a.appointmentDate>=\'' + req.query.start + '\'');

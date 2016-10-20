@@ -31,7 +31,7 @@ module.exports = {
     updateRegistrationFee: function (registrationId, order) {
         // var fee = {};
         // fee[order.type == config.orderType[1] ? 'recipeFee' : 'preScriptionFee'] = order.paidAmount;
-        var sql = 'update Registration set totalFee = totalFee + ?,' + (order.type == config.orderType[1] ? 'recipeFee' : 'preScriptionFee') + '=' +
+        var sql = 'update Registration set status = 1, totalFee = totalFee + ?,' + (order.type == config.orderType[1] ? 'recipeFee' : 'preScriptionFee') + '=' +
             (order.type == config.orderType[1] ? 'recipeFee' : 'preScriptionFee') + '+? where id =?';
         return db.query(sql, [order.paidAmount, order.paidAmount, registrationId]);
     },

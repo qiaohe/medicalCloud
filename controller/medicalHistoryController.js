@@ -7,6 +7,7 @@ var medicalDAO = require('../dao/medicalDAO');
 var dictionaryDAO = require('../dao/dictionaryDAO');
 var deviceDAO = require('../dao/deviceDAO');
 var orderDAO = require('../dao/orderDAO');
+var businessPeopleDAO = require('../dao/businessPeopleDAO');
 var Promise = require("bluebird");
 var _ = require('lodash');
 var moment = require('moment');
@@ -622,9 +623,35 @@ module.exports = {
             order.cny = converter.toCNY(order.paymentAmount);
             return registrationDAO.updateRegistrationFee(order.registrationId, order);
         }).then(function (result) {
-            if (order.businessPeopleId && order.businessPeopleId > 0) {
-                registrationDAO.findRegistrationsById(order.registrationId).then(function (registrations) {
-                    var r = registrations[0];
+            return registrationDAO.findRegistrationsById(order.registrationId);
+        }).then(function (registrations) {
+            var r = registrations[0];
+            if (order.type == config.orderType[0]) {
+                return redis.incrAsync('doctor:' + r.doctorId + ':d:' + r.registerDate + ':period:' + r.shiftPeriod + ':incr').then(function (seq) {
+                    return redis.getAsync('h:' + req.user.hospitalId + ':p:' + r.shiftPeriod).then(function (sp) {
+                        r.sequence = sp + seq;
+                        r.outPatientType = 0;
+                        return registrationDAO.updateRegistration(r).then(function (result) {
+                            return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod).thne(function (result) {
+                                if (order.businessPeopleId && order.businessPeopleId > 0) {
+                                    if (r.registrationType == 8) {
+                                        redis.publish('settlement.queue', order.orderNo);
+                                        res.send({ret: 0, data: order});
+                                    } else {
+                                        registrationDAO.updateSalesManPerformanceByMonth(order.businessPeopleId, moment().format('YYYYMM'), order.paidAmount).then(function (result) {
+                                            res.send({ret: 0, data: order});
+                                        });
+                                    }
+
+                                } else {
+                                    res.send({ret: 0, data: order});
+                                }
+                            })
+                        })
+                    })
+                })
+            } else {
+                if (order.businessPeopleId && order.businessPeopleId > 0) {
                     if (r.registrationType == 8) {
                         redis.publish('settlement.queue', order.orderNo);
                         res.send({ret: 0, data: order});
@@ -633,10 +660,12 @@ module.exports = {
                             res.send({ret: 0, data: order});
                         });
                     }
-                });
-            } else {
-                res.send({ret: 0, data: order});
+
+                } else {
+                    res.send({ret: 0, data: order});
+                }
             }
+
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
@@ -1020,6 +1049,7 @@ module.exports = {
         if (req.query.patientName) conditions.push('po.realName like \'%' + req.query.patientName + '%\'');
         if (req.query.medicalRecordNo) conditions.push('p.medicalRecordNo like \'%' + req.query.medicalRecordNo + '%\'');
         if (req.query.doctorId) conditions.push('o.doctor=' + req.query.doctorId);
+        if (req.query.patientId) conditions.push('o.patientId=' + req.query.patientId);
         if (req.query.status) conditions.push('o.status=' + req.query.status);
         medicalDAO.findOutsideProcesses(req.user.hospitalId, conditions, {
             from: (pageIndex - 1) * pageSize,
