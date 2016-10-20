@@ -85,132 +85,142 @@ module.exports = {
     addRegistration: function (req, res, next) {
         var r = req.body;
         r.createDate = new Date();
-        businessPeopleDAO.findShiftPlanByDoctorAndShiftPeriod(r.doctorId, r.registerDate, r.shiftPeriod).then(function (plans) {
-            if (!plans.length || (plans[0].plannedQuantity <= +plans[0].actualQuantity))
-                throw new Error(i18n.get('doctor.shift.plan.invalid'));
-            return businessPeopleDAO.findPatientBasicInfoBy(r.patientMobile).then(function (basicInfos) {
-                return basicInfos.length ? basicInfos[0].id : businessPeopleDAO.insertPatientBasicInfo({
-                    name: r.patientName,
-                    realName: r.patientName,
-                    gender: r.gender,
-                    mobile: r.patientMobile,
-                    createDate: new Date(),
-                    password: md5(r.patientMobile.substring(r.patientMobile.length - 6, r.patientMobile.length)),
-                    creator: req.user.id,
-                    headPic: config.app.defaultHeadPic
-                    //birthday: r.birthday
-                }).then(function (result) {
-                    if (result.insertId) {
-                        var content = config.sms.registerTemplate.replace(':code', r.patientMobile.substring(r.patientMobile.length - 4, r.patientMobile.length));
-                        return hospitalDAO.findHospitalById(req.user.hospitalId).then(function (hospitals) {
-                            var hospitalName = hospitals[0].name;
-                            content = content.replace(':hospital', hospitalName);
-                            var option = {mobile: r.patientMobile, text: content, apikey: config.sms.apikey};
-                            return request.postAsync({
-                                url: config.sms.providerUrl,
-                                form: option
-                            }).then(function (response, body) {
-                                return result.insertId;
-                            });
-                        })
-                    } else {
-                        return result.insertId;
-                    }
-                });
+        // businessPeopleDAO.findShiftPlanByDoctorAndShiftPeriod(r.doctorId, r.registerDate, r.shiftPeriod).then(function (plans) {
+        //     if (!plans.length || (plans[0].plannedQuantity <= +plans[0].actualQuantity))
+        //         throw new Error(i18n.get('doctor.shift.plan.invalid'));
+        businessPeopleDAO.findPatientBasicInfoBy(r.patientMobile).then(function (basicInfos) {
+            return basicInfos.length ? basicInfos[0].id : businessPeopleDAO.insertPatientBasicInfo({
+                name: r.patientName,
+                realName: r.patientName,
+                gender: r.gender,
+                mobile: r.patientMobile,
+                createDate: new Date(),
+                password: md5(r.patientMobile.substring(r.patientMobile.length - 6, r.patientMobile.length)),
+                creator: req.user.id,
+                headPic: config.app.defaultHeadPic,
+                birthday: r.birthday,
+                address: r.address,
+                idCard: r.idCard
             }).then(function (result) {
-                r.patientBasicInfoId = result;
-                return businessPeopleDAO.findPatientByBasicInfoId(result, req.user.hospitalId).then(function (patients) {
-                    if (patients.length) return patients[0].id;
-                    return redis.incrAsync('member.no.incr').then(function (memberNo) {
-                        return redis.incrAsync('d:' + moment().format('YYMMDD') + ':mh').then(function (medicalRecordNo) {
-                            return businessPeopleDAO.insertPatient({
-                                patientBasicInfoId: r.patientBasicInfoId,
-                                hospitalId: req.user.hospitalId,
-                                memberType: (r.memberType ? r.memberType : 0),
-                                balance: 0.00,
-                                memberCardNo: req.user.hospitalId + '-1-' + _.padLeft(memberNo, 7, '0'),
-                                medicalRecordNo: moment().format('YYMMDD') + _.padLeft(medicalRecordNo, 3, '0'),
-                                createDate: new Date()
-                            }).then(function (patient) {
-                                return patient.insertId;
-                            });
-                        })
-                    });
-                });
-            }).then(function (result) {
-                r.patientId = result;
-                return hospitalDAO.findDoctorById(r.doctorId);
-            }).then(function (doctors) {
-                var doctor = doctors[0];
-                return dictionaryDAO.findOutPatientTypeById(r.outPatientServiceType).then(function (opst) {
-                    r = _.assign(r, {
-                        hospitalId: doctor.hospitalId,
-                        hospitalName: doctor.hospitalName,
-                        registrationFee: opst[0].fee,
-                        doctorName: doctor.name,
-                        doctorJobTitle: doctor.jobTitle,
-                        doctorJobTitleId: doctor.jobTitleId,
-                        doctorHeadPic: doctor.headPic,
-                        status: 0, creator: req.user.id
-                    });
-                    // return redis.incrAsync('doctor:' + r.doctorId + ':d:' + r.registerDate + ':period:' + r.shiftPeriod + ':incr').then(function (seq) {
-                    //     return redis.getAsync('h:' + req.user.hospitalId + ':p:' + r.shiftPeriod).then(function (sp) {
-                    //         r.sequence = sp + seq;
-                    //         r.outPatientType = 0;
-                    r.outpatientStatus = 5;
-                    r.registrationType = (r.registrationType ? r.registrationType : 2);
-                    if (!r.businessPeopleId) delete r.businessPeopleId;
-                    delete r.reason;
-                    //delete r.birthday;
-                    return businessPeopleDAO.insertRegistration(r);
-                    //                   });
-                    //                });
-                });
-            }).then(function (result) {
-                r.id = result.insertId;
-                // return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod);
-            // }).then(function (result) {
-                return redis.incrAsync('h:' + r.hospitalId + ':' + moment().format('YYYYMMDD') + ':0:incr').then(function (reply) {
-                    var orderNo = _.padLeft(r.hospitalId, 4, '0') + moment().format('YYYYMMDD') + '0' + _.padLeft(reply, 3, '0');
-                    var o = {
-                        orderNo: orderNo,
-                        registrationId: r.id,
-                        hospitalId: r.hospitalId,
-                        amount: r.registrationFee,
-                        paidAmount: r.registrationFee,
-                        paymentAmount: r.registrationFee,
-                        paymentDate: new Date(),
-                        status: (r.registrationFee > 0.00 ? 0 : 1),
-                        paymentType: (r.registrationType != 3 ? r.paymentType : 5),
-                        createDate: new Date(),
-                        type: 0
-                    };
-                    return orderDAO.insert(o);
-                });
-            }).then(function (result) {
-                deviceDAO.findTokenByUid(r.patientBasicInfoId).then(function (tokens) {
-                    if (r.registrationType == 3 && tokens.length && tokens[0]) {
-                        businessPeopleDAO.findShiftPeriodById(r.hospitalId, r.shiftPeriod).then(function (result) {
-                            var notificationBody = util.format(config.returnRegistrationTemplate, r.patientName + (r.gender == 0 ? '先生' : '女士'),
-                                r.hospitalName + r.departmentName + r.doctorName, r.registerDate + ' ' + result[0].name);
-                            pusher.push({
-                                body: notificationBody,
-                                title: '复诊预约提醒',
-                                audience: {registration_id: [tokens[0].token]},
-                                patientName: r.patientName,
-                                patientMobile: r.patientMobile,
-                                uid: r.patientBasicInfoId,
-                                type: 1,
-                                hospitalId: req.user.hospitalId
-                            }, function (err, result) {
-                                if (err) throw err;
-                            });
+                if (result.insertId) {
+                    var content = config.sms.registerTemplate.replace(':code', r.patientMobile.substring(r.patientMobile.length - 4, r.patientMobile.length));
+                    return hospitalDAO.findHospitalById(req.user.hospitalId).then(function (hospitals) {
+                        var hospitalName = hospitals[0].name;
+                        content = content.replace(':hospital', hospitalName);
+                        var option = {mobile: r.patientMobile, text: content, apikey: config.sms.apikey};
+                        return request.postAsync({
+                            url: config.sms.providerUrl,
+                            form: option
+                        }).then(function (response, body) {
+                            return result.insertId;
                         });
-                    }
-                });
-                // process.emit('outPatientChangeEvent', r);
-                res.send({ret: 0, data: r})
+                    })
+                } else {
+                    return result.insertId;
+                }
             });
+        }).then(function (result) {
+            r.patientBasicInfoId = result;
+            return businessPeopleDAO.findPatientByBasicInfoId(result, req.user.hospitalId).then(function (patients) {
+                if (patients.length) return patients[0].id;
+                return redis.incrAsync('member.no.incr').then(function (memberNo) {
+                    return redis.incrAsync('d:' + moment().format('YYMMDD') + ':mh').then(function (medicalRecordNo) {
+                        return businessPeopleDAO.insertPatient({
+                            patientBasicInfoId: r.patientBasicInfoId,
+                            hospitalId: req.user.hospitalId,
+                            memberType: (r.memberType ? r.memberType : 0),
+                            source: r.source,
+                            balance: 0.00,
+                            memberCardNo: req.user.hospitalId + '-1-' + _.padLeft(memberNo, 7, '0'),
+                            medicalRecordNo: moment().format('YYMMDD') + _.padLeft(medicalRecordNo, 3, '0'),
+                            createDate: new Date()
+                        }).then(function (patient) {
+                            return patient.insertId;
+                        });
+                    })
+                });
+            });
+        }).then(function (result) {
+            r.patientId = result;
+            if (r.doctorId)
+                return hospitalDAO.findDoctorById(r.doctorId);
+            else return null;
+        }).then(function (doctors) {
+            var doctor = (doctors == null ? null : doctors[0]);
+            return dictionaryDAO.findOutPatientTypeById(r.outPatientServiceType).then(function (opst) {
+                r = _.assign(r, {
+                    hospitalId: req.user.hospitalId,
+                    hospitalName: (doctor == null ? null : doctor.hospitalName),
+                    registrationFee: opst[0].fee,
+                    doctorName: (doctor == null ? null : doctor.name),
+                    doctorJobTitle: (doctor == null ? null : doctor.jobTitle),
+                    doctorJobTitleId: (doctor == null ? null : doctor.jobTitleId),
+                    doctorHeadPic: (doctor == null ? null : doctor.headPic),
+                    status: 0, creator: req.user.id
+                });
+                // return redis.incrAsync('doctor:' + r.doctorId + ':d:' + r.registerDate + ':period:' + r.shiftPeriod + ':incr').then(function (seq) {
+                //     return redis.getAsync('h:' + req.user.hospitalId + ':p:' + r.shiftPeriod).then(function (sp) {
+                //         r.sequence = sp + seq;
+                //         r.outPatientType = 0;
+                r.outpatientStatus = 5;
+                r.registrationType = (r.registrationType ? r.registrationType : 2);
+                if (!r.businessPeopleId) delete r.businessPeopleId;
+                delete r.reason;
+                delete r.medicalRecordNo;
+                delete r.birthday;
+                delete r.memberCardNo;
+                delete r.source;
+                delete r.address;
+                delete r.idCard;
+                return businessPeopleDAO.insertRegistration(r);
+                //                   });
+                //                });
+            });
+        }).then(function (result) {
+            r.id = result.insertId;
+            // return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod);
+            // }).then(function (result) {
+            return redis.incrAsync('h:' + r.hospitalId + ':' + moment().format('YYYYMMDD') + ':0:incr').then(function (reply) {
+                var orderNo = _.padLeft(r.hospitalId, 4, '0') + moment().format('YYYYMMDD') + '0' + _.padLeft(reply, 3, '0');
+                var o = {
+                    orderNo: orderNo,
+                    registrationId: r.id,
+                    hospitalId: r.hospitalId,
+                    amount: r.registrationFee,
+                    paidAmount: r.registrationFee,
+                    paymentAmount: r.registrationFee,
+                    paymentDate: new Date(),
+                    status: (r.registrationFee > 0.00 ? 0 : 1),
+                    paymentType: (r.registrationType != 3 ? r.paymentType : 5),
+                    createDate: new Date(),
+                    type: 0
+                };
+                return orderDAO.insert(o);
+            });
+        }).then(function (result) {
+            deviceDAO.findTokenByUid(r.patientBasicInfoId).then(function (tokens) {
+                if (r.registrationType == 3 && tokens.length && tokens[0]) {
+                    businessPeopleDAO.findShiftPeriodById(r.hospitalId, r.shiftPeriod).then(function (result) {
+                        var notificationBody = util.format(config.returnRegistrationTemplate, r.patientName + (r.gender == 0 ? '先生' : '女士'),
+                            r.hospitalName + r.departmentName + r.doctorName, r.registerDate + ' ' + result[0].name);
+                        pusher.push({
+                            body: notificationBody,
+                            title: '复诊预约提醒',
+                            audience: {registration_id: [tokens[0].token]},
+                            patientName: r.patientName,
+                            patientMobile: r.patientMobile,
+                            uid: r.patientBasicInfoId,
+                            type: 1,
+                            hospitalId: req.user.hospitalId
+                        }, function (err, result) {
+                            if (err) throw err;
+                        });
+                    });
+                }
+            });
+            // process.emit('outPatientChangeEvent', r);
+            res.send({ret: 0, data: r});
+            // });
         }).catch(function (error) {
             res.send({ret: 1, message: error.message});
         });
