@@ -77,13 +77,13 @@ module.exports = {
 
     deleteEmployee: function (req, res, next) {
         employeeDAO.deleteEmployee(req.params.id).then(function () {
-            return employeeDAO.deleteDoctorBy(req.params.id);
+            return employeeDAO.deleteDoctorDepartmentBy(req.params.id);
         }).then(function (result) {
             return redis.getAsync('uid:' + req.params.id + ':token');
         }).then(function (token) {
             return redis.delAsync(token);
         }).then(function () {
-            return employeeDAO.deleteDoctorDepartmentBy(req.params.id);
+            return employeeDAO.deleteDoctorBy(req.params.id);
         }).then(function (result) {
             res.send({ret: 0, message: i18n.get('employee.remove.success')});
         }).catch(function (err) {

@@ -150,21 +150,25 @@ module.exports = {
             }
             return businessPeopleDAO.findPatientByBasicInfoId(patient.patientBasicInfoId, req.user.hospitalId).then(function (patients) {
                 if (patients.length) {
-                    patientDAO.updatePatient({
-                        id: patients[0].id,
-                        memberType: patient.memberType ? patient.memberType : patients[0].memberType,
-                        groupId: patient.groupId ? patient.groupId : patients[0].groupId,
-                        recommender: patient.recommender ? patient.recommender : patients[0].recommender,
-                        consumptionLevel: patient.consumptionLevel ? patient.consumptionLevel : patients[0].consumptionLevel,
-                        cashbackType: patient.cashbackType ? patient.cashbackType : patients[0].cashbackType,
-                        maxDiscountRate: patient.maxDiscountRate ? patient.maxDiscountRate : patients[0].maxDiscountRate,
-                        source: patient.source ? patient.source : patients[0].source,
-                        comment: patient.comment ? patient.comment : patients[0].comment
-                    }).then(function () {
-                        businessPeopleDAO.findPatientByBasicInfoId(patient.patientBasicInfoId, req.user.hospitalId).then(function (ps) {
-                            res.send({ret: 0, data: ps[0]});
+                    redis.incrAsync('d:' + moment().format('YYMMDD') + ':mh').then(function (medicalRecordNo) {
+                        patientDAO.updatePatient({
+                            id: patients[0].id,
+                            memberType: patient.memberType ? patient.memberType : patients[0].memberType,
+                            groupId: patient.groupId ? patient.groupId : patients[0].groupId,
+                            recommender: patient.recommender ? patient.recommender : patients[0].recommender,
+                            consumptionLevel: patient.consumptionLevel ? patient.consumptionLevel : patients[0].consumptionLevel,
+                            cashbackType: patient.cashbackType ? patient.cashbackType : patients[0].cashbackType,
+                            maxDiscountRate: patient.maxDiscountRate ? patient.maxDiscountRate : patients[0].maxDiscountRate,
+                            source: patient.source ? patient.source : patients[0].source,
+                            comment: patient.comment ? patient.comment : patients[0].comment,
+                            medicalRecordNo: (patients[0].medicalRecordNo ? patients[0].medicalRecordNo : moment().format('YYMMDD') + _.padLeft(medicalRecordNo, 3, '0'))
+                        }).then(function () {
+                            businessPeopleDAO.findPatientByBasicInfoId(patient.patientBasicInfoId, req.user.hospitalId).then(function (ps) {
+                                res.send({ret: 0, data: ps[0]});
+                            })
                         })
                     })
+
                 } else {
                     return redis.incrAsync('member.no.incr').then(function (memberNo) {
                         return redis.incrAsync('d:' + moment().format('YYMMDD') + ':mh').then(function (medicalRecordNo) {
@@ -172,7 +176,7 @@ module.exports = {
                                 patientBasicInfoId: patient.patientBasicInfoId,
                                 hospitalId: req.user.hospitalId,
                                 memberType: patient.memberType,
-                                medicalRecordNo: (patient.medicalRecordNo ? patient.medicalRecordNo : moment().format('YYMMDD') + _.padLeft(medicalRecordNo, 3, '0')),
+                                medicalRecordNo: moment().format('YYMMDD') + _.padLeft(medicalRecordNo, 3, '0'),
                                 memberCardNo: req.user.hospitalId + '-1-' + _.padLeft(memberNo, 7, '0'),
                                 createDate: new Date(),
                                 groupId: patient.groupId ? patient.groupId : null,
@@ -218,17 +222,19 @@ module.exports = {
             return patientDAO.findPatientByMemberCard(patient.memberCardNo);
         }).then(function (patients) {
             if (patients.length && patients[0].id != patient.id) throw new Error('会员卡号已经存在，请重新输入。');
-            return patientDAO.updatePatient({
-                id: patient.id,
-                memberType: patient.memberType,
-                groupId: patient.groupId,
-                recommender: patient.recommenderId,
-                consumptionLevel: patient.consumptionLevel,
-                cashbackType: patient.cashbackType,
-                maxDiscountRate: patient.maxDiscountRate,
-                source: patient.source,
-                memberCardNo: patient.memberCardNo,
-                comment: patient.comment
+            return redis.incrAsync('d:' + moment().format('YYMMDD') + ':mh').then(function (medicalRecordNo) {
+                return patientDAO.updatePatient({
+                    id: patient.id,
+                    memberType: patient.memberType,
+                    groupId: patient.groupId,
+                    recommender: patient.recommenderId,
+                    consumptionLevel: patient.consumptionLevel,
+                    cashbackType: patient.cashbackType,
+                    maxDiscountRate: patient.maxDiscountRate,
+                    source: patient.source,
+                    medicalRecordNo: (patient.medicalRecordNo ? patient.medicalRecordNo : moment().format('YYMMDD') + _.padLeft(medicalRecordNo, 3, '0')),
+                    comment: patient.comment
+                });
             });
         }).then(function () {
             res.send({ret: 0, message: i18n.get('patient.update.success')});
