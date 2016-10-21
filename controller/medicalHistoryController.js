@@ -587,6 +587,7 @@ module.exports = {
                 chargedByName: req.user.name,
                 chargeDate: new Date(),
                 comment: o.comment,
+                cardCharge: (req.body.cardCharge ? 1.00 : null),
                 paymentDate: new Date(),
                 invoiceSequenceNo: _.padLeft(seq, 8, '0'),
                 paymentType1: o.payments[0] ? o.payments[0].paymentType : null,
@@ -595,7 +596,7 @@ module.exports = {
                 paidAmount1: o.payments[0] ? o.payments[0].amount : null,
                 paidAmount2: o.payments[1] ? o.payments[1].amount : null,
                 paidAmount3: o.payments[2] ? o.payments[2].amount : null,
-                paidAmount: (o.payments[0] ? o.payments[0].amount : 0) + (o.payments[1] ? o.payments[1].amount : 0) + (o.payments[2] ? o.payments[2].amount : 0)
+                paidAmount: (o.payments[0] ? o.payments[0].amount : 0) + (o.payments[1] ? o.payments[1].amount : 0) + (o.payments[2] ? o.payments[2].amount : 0) + (req.body.cardCharge ? 1.00 : null)
             });
         }).then(function () {
             return orderDAO.findByOrderNo(req.user.hospitalId, o.orderNo);

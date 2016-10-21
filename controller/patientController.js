@@ -137,6 +137,7 @@ module.exports = {
                     password: md5(patient.mobile.substring(patient.mobile.length - 6, patient.mobile.length)),
                     creator: req.user.id,
                     gender: patient.gender,
+
                     idCard: patient.idCard,
                     headPic: (patient.headPic ? patient.headPic : config.app.defaultHeadPic),
                     address: patient.address,
@@ -166,21 +167,25 @@ module.exports = {
                     })
                 } else {
                     return redis.incrAsync('member.no.incr').then(function (memberNo) {
-                        return businessPeopleDAO.insertPatient({
-                            patientBasicInfoId: patient.patientBasicInfoId,
-                            hospitalId: req.user.hospitalId,
-                            memberType: patient.memberType,
-                            memberCardNo: req.user.hospitalId + '-1-' + _.padLeft(memberNo, 7, '0'),
-                            createDate: new Date(),
-                            groupId: patient.groupId ? patient.groupId : null,
-                            groupName: patient.groupName ? patient.groupName : null,
-                            recommender: patient.recommender ? patient.recommender : null,
-                            consumptionLevel: patient.consumptionLevel ? patient.consumptionLevel : null,
-                            cashbackType: patient.cashbackType ? patient.cashbackType : null,
-                            maxDiscountRate: patient.maxDiscountRate ? patient.maxDiscountRate : null,
-                            source: patient.source ? patient.source : null,
-                            balance: 0.00,
-                            comment: patient.comment ? patient.comment : null
+                        return redis.incrAsync('d:' + moment().format('YYMMDD') + ':mh').then(function (medicalRecordNo) {
+                            return businessPeopleDAO.insertPatient({
+                                patientBasicInfoId: patient.patientBasicInfoId,
+                                hospitalId: req.user.hospitalId,
+                                memberType: patient.memberType,
+                                medicalRecordNo: (patient.medicalRecordNo ? patient.medicalRecordNo : moment().format('YYMMDD') + _.padLeft(medicalRecordNo, 3, '0')),
+                                memberCardNo: req.user.hospitalId + '-1-' + _.padLeft(memberNo, 7, '0'),
+                                createDate: new Date(),
+                                groupId: patient.groupId ? patient.groupId : null,
+                                groupName: patient.groupName ? patient.groupName : null,
+                                recommender: patient.recommender ? patient.recommender : null,
+                                consumptionLevel: patient.consumptionLevel ? patient.consumptionLevel : null,
+                                cashbackType: patient.cashbackType ? patient.cashbackType : null,
+                                maxDiscountRate: patient.maxDiscountRate ? patient.maxDiscountRate : null,
+                                source: patient.source ? patient.source : null,
+                                balance: 0.00,
+                                comment: patient.comment ? patient.comment : null
+                            });
+
                         }).then(function (result) {
                             patient.id = result.insertId;
                             res.send({ret: 0, data: patient});

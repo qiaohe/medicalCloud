@@ -5,6 +5,7 @@ var registrationDAO = require('../dao/registrationDAO');
 var dictionaryDAO = require('../dao/dictionaryDAO');
 var businessPeopleDAO = require('../dao/businessPeopleDAO');
 var hospitalDAO = require('../dao/hospitalDAO');
+var patientDAO = require('../dao/patientDAO');
 var deviceDAO = require('../dao/deviceDAO');
 var pusher = require('../domain/NotificationPusher');
 var orderDAO = require('../dao/orderDAO');
@@ -85,6 +86,7 @@ module.exports = {
         });
         return next();
     },
+
     addRegistration: function (req, res, next) {
         var r = _.assign(req.body, {
             createDate: new Date(), registerDate: moment().format("YYYY-MM-DD 00:00:00")
@@ -187,25 +189,31 @@ module.exports = {
                 return orderDAO.insert(o);
             });
         }).then(function (result) {
-            deviceDAO.findTokenByUid(r.patientBasicInfoId).then(function (tokens) {
-                if (r.registrationType == 3 && tokens.length && tokens[0]) {
-                    businessPeopleDAO.findShiftPeriodById(r.hospitalId, r.shiftPeriod).then(function (result) {
-                        var notificationBody = util.format(config.returnRegistrationTemplate, r.patientName + (r.gender == 0 ? '先生' : '女士'),
-                            r.hospitalName + r.departmentName + r.doctorName, r.registerDate + ' ' + result[0].name);
-                        pusher.push({
-                            body: notificationBody,
-                            title: '复诊预约提醒',
-                            audience: {registration_id: [tokens[0].token]},
-                            patientName: r.patientName,
-                            patientMobile: r.patientMobile,
-                            uid: r.patientBasicInfoId,
-                            type: 1,
-                            hospitalId: req.user.hospitalId
-                        }, function (err, result) {
-                            if (err) throw err;
+            registrationDAO.updateAppointment({
+                id: r.appointmentId,
+                status: 1,
+                registrationId: r.id
+            }).then(function (result) {
+                deviceDAO.findTokenByUid(r.patientBasicInfoId).then(function (tokens) {
+                    if (r.registrationType == 3 && tokens.length && tokens[0]) {
+                        businessPeopleDAO.findShiftPeriodById(r.hospitalId, r.shiftPeriod).then(function (result) {
+                            var notificationBody = util.format(config.returnRegistrationTemplate, r.patientName + (r.gender == 0 ? '先生' : '女士'),
+                                r.hospitalName + r.departmentName + r.doctorName, r.registerDate + ' ' + result[0].name);
+                            pusher.push({
+                                body: notificationBody,
+                                title: '复诊预约提醒',
+                                audience: {registration_id: [tokens[0].token]},
+                                patientName: r.patientName,
+                                patientMobile: r.patientMobile,
+                                uid: r.patientBasicInfoId,
+                                type: 1,
+                                hospitalId: req.user.hospitalId
+                            }, function (err, result) {
+                                if (err) throw err;
+                            });
                         });
-                    });
-                }
+                    }
+                });
             });
             res.send({ret: 0, data: r});
         }).catch(function (error) {
@@ -218,7 +226,36 @@ module.exports = {
         req.body.id = +req.params.rid;
         req.body.status = 3;
         var oldRegistration = {};
-        businessPeopleDAO.findRegistrationById(req.body.id).then(function (rs) {
+        businessPeopleDAO.updatePatientBasicInfo({
+            id: req.body.patientBasicInfoId,
+            address: req.body.address,
+            idCard: req.body.idCard,
+            birthday: req.body.birthday,
+            gender: req.body.gender,
+            name: req.body.name,
+            realName: req.body.realName
+        }).then(function (result) {
+            return patientDAO.updatePatient({
+                id: req.body.patientId, memberType: req.body.memberType,
+                source: req.body.source,
+                counselor: req.body.counselor,
+                memberCardNo: req.body.memberCardNo,
+                medicalRecordNo: req.body.medicalRecordNo
+            });
+        }).then(function (result) {
+            return registrationDAO.updateRegistration({
+                id: req.body.id,
+                departmentId: req.body.departmentId,
+                departmentName: req.body.departmentName,
+                doctorId: req.body.doctorId,
+                doctorName: req.body.doctorName,
+                outPatientServiceType: req.body.outPatientServiceType,
+                businessPeopleName: req.body.businessPeopleName,
+                content: req.body.content
+            })
+        }).then(function (result) {
+            return businessPeopleDAO.findRegistrationById(req.body.id)
+        }).then(function (rs) {
             oldRegistration = rs[0];
             if (oldRegistration.doctorId != req.body.doctorId || oldRegistration.registerDate != req.body.registerDate || oldRegistration.shiftPeriod != req.body.shiftPeriod) {
                 return businessPeopleDAO.updateShiftPlanDec(oldRegistration.doctorId, moment(oldRegistration.registerDate).format('YYYY-MM-DD'), oldRegistration.shiftPeriod).then(function () {
@@ -236,16 +273,14 @@ module.exports = {
                 return hospitalDAO.findDoctorById(req.body.doctorId).then(function (docotors) {
                     var doctor = docotors[0];
                     req.body.doctorName = doctor.name;
-                    req.body.departmentId = doctor.departmentId;
-                    req.body.departmentName = doctor.departmentName;
                     req.body.registrationFee = doctor.registrationFee;
                     req.body.doctorJobTitle = doctor.jobTitle;
                     req.body.doctorJobTitleId = doctor.jobTitleId;
                     req.body.doctorHeadPic = doctor.headPic;
-                    return registrationDAO.updateRegistration(req.body);
+                    // return registrationDAO.updateRegistration(req.body);
                 })
             } else {
-                return registrationDAO.updateRegistration(req.body);
+                // return registrationDAO.updateRegistration(req.body);
             }
         }).then(function () {
             return res.send({ret: 0, message: i18n.get('registration.update.success')});
@@ -392,7 +427,7 @@ module.exports = {
         return next();
     },
     getPatientsOfDoctorPeriod: function (req, res, next) {
-        registrationDAO.findPatientsOfDoctorPeriod(req.params.id, req.params.period).then(function (ps) {
+        registrationDAO.findPatientsOfDoctorPeriod(req.params.id, req.params.period, req.query.appointmentDate).then(function (ps) {
             res.send({ret: 0, data: ps})
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});

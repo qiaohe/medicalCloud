@@ -83,6 +83,8 @@ module.exports = {
         }).then(function (token) {
             return redis.delAsync(token);
         }).then(function () {
+            return employeeDAO.deleteDoctorDepartmentBy(req.params.id);
+        }).then(function (result) {
             res.send({ret: 0, message: i18n.get('employee.remove.success')});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -228,6 +230,8 @@ module.exports = {
 
     deleteDoctor: function (req, res, next) {
         employeeDAO.deleteDoctor(req.params.id).then(function (result) {
+            return employeeDAO.deleteDoctorDepartment(req.params.id);
+        }).then(function (result) {
             res.send({ret: 0, message: i18n.get('doctor.delete.success')});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -245,7 +249,7 @@ module.exports = {
         employeeDAO.updateDoctor(doctor).then(function (result) {
             if (departments && departments.length) {
                 return Promise.map(departments, function (department) {
-                    return employeeDAO.deleteDoctorDepartment(doctor.id).then(function(result){
+                    return employeeDAO.deleteDoctorDepartment(doctor.id).then(function (result) {
                         return employeeDAO.insertDoctorDepartment({doctorId: doctor.id, departmentId: department});
                     })
                 }).then(function (result) {

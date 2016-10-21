@@ -103,5 +103,8 @@ module.exports = {
     },
     deleteDoctorDepartment: function (doctorId) {
         return db.query(sqlMapping.doctor.deleteDoctorDepartment, doctorId);
+    },
+    deleteDoctorDepartmentBy: function(employeeId){
+        return db.query(sqlMapping.doctor.deleteDoctorDepartmentBy, employeeId);
     }
 }
