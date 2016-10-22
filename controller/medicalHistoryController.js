@@ -519,15 +519,15 @@ module.exports = {
                 order.paymentType = ps.join(',');
                 order.payments = [];
                 if (order.paymentType1 != null) order.payments.push({
-                    paymentType: config.paymentType[order.paymentType1],
+                    paymentType: order.paymentType1,
                     amount: order.paidAmount1
                 });
                 if (order.paymentType2 != null) order.payments.push({
-                    paymentType: config.paymentType[order.paymentType2],
+                    paymentType: order.paymentType2,
                     amount: order.paidAmount2
                 });
                 if (order.paymentType3 != null) order.payments.push({
-                    paymentType: config.paymentType[order.paymentType3],
+                    paymentType: order.paymentType3,
                     amount: order.paidAmount3
                 });
                 if (order.type == '药费') return medicalDAO.findRecipesByOrderNo(order.orderNo).then(function (items) {
@@ -536,6 +536,12 @@ module.exports = {
                 if (order.type == '诊疗费') return medicalDAO.findPrescriptionsByOrderNo(order.orderNo).then(function (items) {
                     order.items = items;
                 });
+                if (order.type == '挂号费') {
+                    order.items = [];
+                    order.items.push({name: '挂号费', amount: order.amount});
+                    if (order.cardCharge && +order.cardCharge > 0)
+                        order.items.push({name: '工本费', amount: +order.cardCharge});
+                }
             }).then(function (result) {
                 orders.pageIndex = pageIndex;
                 res.send({ret: 0, data: orders});
@@ -596,7 +602,7 @@ module.exports = {
                 paidAmount1: o.payments[0] ? o.payments[0].amount : null,
                 paidAmount2: o.payments[1] ? o.payments[1].amount : null,
                 paidAmount3: o.payments[2] ? o.payments[2].amount : null,
-                paidAmount: (o.payments[0] ? o.payments[0].amount : 0) + (o.payments[1] ? o.payments[1].amount : 0) + (o.payments[2] ? o.payments[2].amount : 0) + (req.body.cardCharge ? 1.00 : null)
+                paidAmount: (o.payments[0] ? o.payments[0].amount : 0) + (o.payments[1] ? o.payments[1].amount : 0) + (o.payments[2] ? o.payments[2].amount : 0)
             });
         }).then(function () {
             return orderDAO.findByOrderNo(req.user.hospitalId, o.orderNo);
