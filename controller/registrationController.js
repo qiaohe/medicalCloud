@@ -381,7 +381,8 @@ module.exports = {
         var conditions = [];
         if (req.query.name) conditions.push('(po.name like \'%' + req.query.name + '%\' or p.medicalRecordNo like \'%' + req.query.name + '%\' or po.mobile like \'%' + req.query.name + '%\')');
         if (req.query.department) conditions.push('a.department=' + req.query.department);
-        if (req.query.doctor) conditions.push('d.employeeId=' + req.query.doctor);
+        if (req.query.doctor) conditions.push('a.doctor=' + req.query.doctor);
+        if (req.query.employeeId) conditions.push('d.employeeId=' + req.query.employeeId);
         if (req.query.status) conditions.push('a.status=' + req.query.status);
         if (req.query.start) conditions.push('a.appointmentDate>=\'' + req.query.start + '\'');
         if (req.query.end) conditions.push('a.appointmentDate<=\'' + req.query.end + '\'');
