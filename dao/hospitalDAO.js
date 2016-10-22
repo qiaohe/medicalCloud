@@ -115,7 +115,7 @@ module.exports = {
 
     findHistoryOutpatients: function (doctorId, page, conditions) {
         var sql = sqlMapping.doctor.findHistoryOutpatients;
-        sql = !conditions.length ? (sql + ' limit ?, ?') : 'select SQL_CALC_FOUND_ROWS concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , sp.`name`) as registerDate, r.id, r.patientName, r.patientMobile, r.gender, r.age, r.sequence, r.registrationType, r.`comment`, r.outPatientType, r.createDate, r.businessPeopleName as recommender, r.outpatientStatus from Registration r LEFT JOIN  PatientBasicInfo p on p.id = r.patientBasicInfoId left JOIN ShiftPeriod sp on sp.id = r.shiftPeriod LEFT JOIN Doctor d ON d.id = r.doctorId where d.employeeId = ? and ' + conditions.join(' and ') + ' order by r.registerDate desc, r.sequence limit ?, ?';
+        sql = !conditions.length ? (sql + ' limit ?, ?') : 'select SQL_CALC_FOUND_ROWS ot.name outPatientServiceTypeName, r.outPatientServiceType, concat(DATE_FORMAT(r.registerDate, \'%Y-%m-%d \') , sp.`name`) as registerDate, r.id, r.patientName, r.patientMobile, r.gender, r.age, r.sequence, r.registrationType, r.`comment`, r.outPatientType, r.createDate, r.businessPeopleName as recommender, r.outpatientStatus from Registration r LEFT JOIN  PatientBasicInfo p on p.id = r.patientBasicInfoId left JOIN ShiftPeriod sp on sp.id = r.shiftPeriod LEFT JOIN Doctor d ON d.id = r.doctorId left join OutpatientServiceType ot on ot.id=r.outPatientServiceType where d.employeeId = ? and ' + conditions.join(' and ') + ' order by r.registerDate desc, r.sequence limit ?, ?';
         return db.queryWithCount(sql, [doctorId, page.from, page.size]);
     },
     insertRole: function (role) {

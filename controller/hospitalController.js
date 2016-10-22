@@ -15,6 +15,8 @@ var Promise = require("bluebird");
 function getConditions(req) {
     var conditions = [];
     if (req.query.registrationType) conditions.push('r.registrationType=' + req.query.registrationType);
+    if (req.query.outPatientServiceType) conditions.push('r.outPatientServiceType=' + req.query.outPatientServiceType);
+    if (req.query.outPatientType) conditions.push('r.outPatientType=' + req.query.outPatientType);
     if (req.query.outpatientStatus) conditions.push('r.outPatientStatus=' + req.query.outpatientStatus);
     if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
     if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
