@@ -631,7 +631,6 @@ module.exports = {
                 return redis.incrAsync('doctor:' + r.doctorId + ':d:' + r.registerDate + ':period:' + r.shiftPeriod + ':incr').then(function (seq) {
                     return redis.getAsync('h:' + req.user.hospitalId + ':p:' + r.shiftPeriod).then(function (sp) {
                         r.sequence = sp + seq;
-                        r.outPatientType = 0;
                         return registrationDAO.updateRegistration(r).then(function (result) {
                             return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod).thne(function (result) {
                                 if (order.businessPeopleId && order.businessPeopleId > 0) {
