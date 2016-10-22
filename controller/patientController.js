@@ -209,7 +209,7 @@ module.exports = {
             var basicInfoId = basicInfos[0].id;
             return businessPeopleDAO.updatePatientBasicInfo({
                 id: basicInfoId,
-                name: patient.name,
+                name: patient.realName,
                 realName: patient.realName,
                 mobile: patient.mobile,
                 //birthday: patient.birthday,
@@ -219,7 +219,7 @@ module.exports = {
                 address: patient.address
             });
         }).then(function () {
-            return patientDAO.findPatientByMemberCard(patient.memberCardNo);
+            return patientDAO.findPatientByMemberCard(patient.memberCardNo ? patient.memberCardNo : '  ' );
         }).then(function (patients) {
             if (patients.length && patients[0].id != patient.id) throw new Error('会员卡号已经存在，请重新输入。');
             return redis.incrAsync('d:' + moment().format('YYMMDD') + ':mh').then(function (medicalRecordNo) {
@@ -232,6 +232,7 @@ module.exports = {
                     cashbackType: patient.cashbackType,
                     maxDiscountRate: patient.maxDiscountRate,
                     source: patient.source,
+                    memberCardNo:patient.memberCardNo,
                     medicalRecordNo: (patient.medicalRecordNo ? patient.medicalRecordNo : moment().format('YYMMDD') + _.padLeft(medicalRecordNo, 3, '0')),
                     comment: patient.comment
                 });

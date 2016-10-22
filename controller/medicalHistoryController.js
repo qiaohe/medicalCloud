@@ -1019,15 +1019,13 @@ module.exports = {
         return next();
     },
     updateOutsideProcess: function (req, res, next) {
-        var p = req.body;
-        delete p.createDate;
-        delete p.creator;
+        var p = _.omit(req.body, ['createDate', 'creator']);
         p = _.assign(p, {
             tooth1: JSON.stringify(req.body.tooth1),
             tooth2: JSON.stringify(req.body.tooth2),
             tooth3: JSON.stringify(req.body.tooth3),
             tooth4: JSON.stringify(req.body.tooth4)
-        })
+        });
         medicalDAO.updateOutsideProcess(p).then(function (result) {
             res.send({ret: 0, data: p, message: '修改成功。'});
         }).catch(function (err) {
