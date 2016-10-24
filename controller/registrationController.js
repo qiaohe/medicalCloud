@@ -233,8 +233,8 @@ module.exports = {
             idCard: req.body.idCard,
             birthday: req.body.birthday,
             gender: req.body.gender,
-            name: req.body.name,
-            realName: req.body.realName
+            name: req.body.patientName,
+            realName: req.body.patientName
         }).then(function (result) {
             return patientDAO.updatePatient({
                 id: req.body.patientId, memberType: req.body.memberType,
