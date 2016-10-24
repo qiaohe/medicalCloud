@@ -99,7 +99,7 @@ module.exports = {
             if (!patients.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             patients.rows.forEach(function (p) {
                 p.memberType = config.memberType[p.memberType];
-                p.source = config.sourceType[p.source];
+                // p.source = config.sourceType[p.source];
                 p.gender = config.gender[p.gender];
                 p.consumptionLevel = config.consumptionLevel[p.consumptionLevel];
             });
@@ -123,6 +123,7 @@ module.exports = {
                     realName: patient.realName ? patient.realName : basicInfos[0].realName,
                     mobile: patient.mobile,
                     gender: patient.gender,
+                    age: patient.age ? patient.age : basicInfos[0].age,
                     idCard: patient.idCard ? patient.idCard : basicInfos[0].idCard,
                     headPic: patient.headPic ? patient.headPic : basicInfos[0].headPic,
                     address: patient.address ? patient.address : basicInfos[0].address
@@ -137,7 +138,7 @@ module.exports = {
                     password: md5(patient.mobile.substring(patient.mobile.length - 6, patient.mobile.length)),
                     creator: req.user.id,
                     gender: patient.gender,
-
+                    age: patient.age,
                     idCard: patient.idCard,
                     headPic: (patient.headPic ? patient.headPic : config.app.defaultHeadPic),
                     address: patient.address,
@@ -214,12 +215,13 @@ module.exports = {
                 mobile: patient.mobile,
                 //birthday: patient.birthday,
                 gender: patient.gender,
+                age: patient.age,
                 idCard: patient.idCard,
                 headPic: patient.headPic,
                 address: patient.address
             });
         }).then(function () {
-            return patientDAO.findPatientByMemberCard(patient.memberCardNo ? patient.memberCardNo : '  ' );
+            return patientDAO.findPatientByMemberCard(patient.memberCardNo ? patient.memberCardNo : '  ');
         }).then(function (patients) {
             if (patients.length && patients[0].id != patient.id) throw new Error('会员卡号已经存在，请重新输入。');
             return redis.incrAsync('d:' + moment().format('YYMMDD') + ':mh').then(function (medicalRecordNo) {
@@ -232,7 +234,7 @@ module.exports = {
                     cashbackType: patient.cashbackType,
                     maxDiscountRate: patient.maxDiscountRate,
                     source: patient.source,
-                    memberCardNo:patient.memberCardNo,
+                    memberCardNo: patient.memberCardNo,
                     medicalRecordNo: (patient.medicalRecordNo ? patient.medicalRecordNo : moment().format('YYMMDD') + _.padLeft(medicalRecordNo, 3, '0')),
                     comment: patient.comment
                 });

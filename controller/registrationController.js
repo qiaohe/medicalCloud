@@ -26,7 +26,10 @@ function getConditions(req) {
     if (req.query.registerDateEnd) conditions.push('r.registerDate<=\'' + req.query.registerDateEnd + '\'');
     if (req.query.createDateStart) conditions.push('r.createDate>=\'' + req.query.createDate + '\'');
     if (req.query.createDateEnd) conditions.push('r.createDate<=\'' + req.query.createDate + '\'');
-    if (req.query.employeeId) conditions.push('dd.employeeId=' + req.query.employeeId);
+    if (req.query.employeeId) {
+        conditions.push('dd.employeeId=' + req.query.employeeId);
+        conditions.push('r.sequence is not null');
+    }
     if (req.query.medicalRecordNo) conditions.push('p.medicalRecordNo like \'%' + req.query.medicalRecordNo + '%\'');
     if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);
     if (req.query.outpatientStatus) conditions.push('r.outpatientStatus=' + req.query.outpatientStatus);
@@ -234,7 +237,8 @@ module.exports = {
             birthday: req.body.birthday,
             gender: req.body.gender,
             name: req.body.patientName,
-            realName: req.body.patientName
+            realName: req.body.patientName,
+            age:req.body.age
         }).then(function (result) {
             return patientDAO.updatePatient({
                 id: req.body.patientId, memberType: req.body.memberType,
@@ -252,7 +256,9 @@ module.exports = {
                 doctorName: req.body.doctorName,
                 outPatientServiceType: req.body.outPatientServiceType,
                 businessPeopleName: req.body.businessPeopleName,
-                content: req.body.content
+                content: req.body.content,
+                patientName:req.body.patientName,
+                age:req.body.age
             })
         }).then(function (result) {
             return businessPeopleDAO.findRegistrationById(req.body.id)

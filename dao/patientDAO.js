@@ -18,7 +18,7 @@ module.exports = {
     },
     findPatients: function (hospitalId, page, conditions) {
         var sql = sqlMapping.patient.findPatients;
-        sql = !conditions.length ? sql : 'select SQL_CALC_FOUND_ROWS p.medicalRecordNo, pb.address,pb.idCard, p.counselor,pb.birthday,p.id, pb.createDate, pb.`realName`, pb.gender, pb.headPic,pb.birthday, pb.mobile, p.memberCardNo,p.memberType,p.source,e.`name` as recommenderName,p.consumptionLevel, gc.`name` as groupName, p.groupId from Patient p left JOIN SalesMan e on e.id = p.recommender left JOIN GroupCompany gc on gc.id = p.groupId, PatientBasicInfo pb where p.patientBasicInfoId = pb.id and p.hospitalId =? and ' + conditions.join(' and ') + ' order BY p.createDate desc limit ?, ?';
+        sql = !conditions.length ? sql : 'select SQL_CALC_FOUND_ROWS p.medicalRecordNo, pb.age, pb.idCard,pb.address,pb.idCard, p.counselor,pb.birthday,p.id, pb.createDate, pb.`realName`, pb.gender, pb.headPic,pb.birthday, pb.mobile, p.memberCardNo,p.memberType,dic.value as source,e.`name` as recommenderName,p.consumptionLevel, gc.`name` as groupName, p.groupId from Patient p left JOIN SalesMan e on e.id = p.recommender left JOIN GroupCompany gc on gc.id = p.groupId left join Dictionary dic on dic.id = p.source and dic.type=9 left join PatientBasicInfo pb on p.patientBasicInfoId = pb.id where p.hospitalId =? and ' + conditions.join(' and ') + ' order BY p.createDate desc limit ?, ?';
         return db.queryWithCount(sql, [+hospitalId, +page.from, +page.size]);
     },
     insertPrePaidHistory: function (history) {
