@@ -638,7 +638,7 @@ module.exports = {
                     return redis.getAsync('h:' + req.user.hospitalId + ':p:' + r.shiftPeriod).then(function (sp) {
                         r.sequence = sp + seq;
                         return registrationDAO.updateRegistration(r).then(function (result) {
-                            return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod).thne(function (result) {
+                            return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod).then(function (result) {
                                 if (order.businessPeopleId && order.businessPeopleId > 0) {
                                     if (r.registrationType == 8) {
                                         redis.publish('settlement.queue', order.orderNo);
