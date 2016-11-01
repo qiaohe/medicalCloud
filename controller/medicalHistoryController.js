@@ -208,6 +208,7 @@ module.exports = {
                     if (!err) console.log(job.id);
                 });
                 var amount = _.sum(newItems, 'totalPrice');
+                var paymentAmount = _.sum(newItems, 'receivable');
                 var o = {
                     orderNo: orderNo,
                     discountRate: +req.body.discountRate,
@@ -215,7 +216,7 @@ module.exports = {
                     hospitalId: hospitalId,
                     amount: amount,
                     paidAmount: 0.00,
-                    paymentAmount: amount,
+                    paymentAmount: paymentAmount,
                     status: amount > 0 ? 0 : 1,
                     //paymentType: 1,
                     createDate: new Date(),
