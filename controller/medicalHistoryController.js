@@ -1112,7 +1112,7 @@ module.exports = {
     getUnPaidOrders: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        orderDAO.findOrdersByStatus(req.user.hospitalId, 4, ['m.patientId=' + req.params.id], {
+        orderDAO.findOrdersByStatus(req.user.hospitalId, 4, ['r.patientId=' + req.params.id], {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (orders) {
