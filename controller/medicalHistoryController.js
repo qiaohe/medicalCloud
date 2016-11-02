@@ -1117,7 +1117,7 @@ module.exports = {
             size: pageSize
         }).then(function (orders) {
             if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
-            Promise.map(orders, function (order) {
+            Promise.map(orders.rows, function (order) {
                 order.memberType = config.memberType[+order.memberType];
                 var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
                 if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
@@ -1139,5 +1139,6 @@ module.exports = {
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
+        return next();
     }
 }
