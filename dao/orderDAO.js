@@ -78,6 +78,12 @@ module.exports = {
         var sql = sqlMapping.order.findAccountInfo;
         if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
         return db.query(sql, hospitalId);
+    },
+    updatePaidAmount: function (orderNo, amount) {
+        return db.query(sqlMapping.order.updatePaidAmount, [amount, amount, orderNo]);
+    },
+    findSubOrders: function (referenceOrderNo) {
+        return db.query(sqlMapping.order.findSubOrders, referenceOrderNo);
     }
 
 }

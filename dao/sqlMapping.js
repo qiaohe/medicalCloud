@@ -288,6 +288,8 @@ module.exports = {
     },
     order: {
         insert: 'insert MedicalOrder set ?',
+        findSubOrders:'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.referenceOrderNo =?',
+        updatePaidAmount:'update MedicalOrder set paidAmount = paidAmount + ?, unPaidAmount = unPaidAmount - ? where orderNo = ?',
         removeOrder: 'delete from MedicalOrder where orderNo = ?',
         update: 'update MedicalOrder set ? where orderNo =?',
         updateTotalPrice: 'update MedicalOrder set amount = amount + ?, paymentAmount=amount where orderNo = ?',

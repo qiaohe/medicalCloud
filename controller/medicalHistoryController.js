@@ -120,7 +120,6 @@ module.exports = {
                 }).delay(config.app.orderDelayMinutes * 60 * 1000).save(function (err) {
                     if (!err) console.log(job.id);
                 });
-
                 var amount = _.sum(items, function (item) {
                     return item.totalPrice;
                 });
@@ -131,12 +130,13 @@ module.exports = {
                     amount: amount,
                     paidAmount: 0.00,
                     paymentAmount: amount,
+                    payableAmount: amount,
                     status: amount > 0 ? 0 : 1,
-                    //paymentType: 1,
                     createDate: new Date(),
                     type: 1
                 });
             }).then(function (result) {
+
                 return registrationDAO.findRegistrationsById(registrationId);
             }).then(function (registrations) {
                 var registration = registrations[0];
@@ -181,6 +181,9 @@ module.exports = {
         var chargeItems = req.body.chargeItems;
         var newItems = [];
         var orderNo = {};
+        var amount = {};
+        var payableAmount = {};
+        var payAll = true;
         redis.incrAsync('h:' + hospitalId + ':' + moment().format('YYYYMMDD') + ':2:incr').then(function (reply) {
             orderNo = _.padLeft(hospitalId, 4, '0') + moment().format('YYYYMMDD') + '2' + _.padLeft(reply, 3, '0');
             Promise.map(chargeItems, function (item, index) {
@@ -207,10 +210,10 @@ module.exports = {
                 }).delay(config.app.orderDelayMinutes * 60 * 1000).save(function (err) {
                     if (!err) console.log(job.id);
                 });
-                var amount = _.sum(newItems, 'totalPrice');
-                var payableAmount = _.sum(newItems, 'receivable');
-                var status = amount > 0 ? 0 : 1;
-                if (Math.abs(payableAmount - req.body.paymentAmount) < 0.001) status = 4;
+                amount = _.sum(newItems, 'totalPrice');
+                payableAmount = _.sum(newItems, 'receivable');
+                payAll = (Math.abs(payableAmount - req.body.paymentAmount) < 0.001);
+                var status = (amount > 0 ? (payAll ? 0 : 4) : 1);
                 var o = {
                     orderNo: orderNo,
                     discountRate: +req.body.discountRate,
@@ -220,7 +223,7 @@ module.exports = {
                     paidAmount: 0.00,
                     paymentAmount: +req.body.paymentAmount,
                     payableAmount: payableAmount,
-                    unPaidAmount: payableAmount - req.body.paymentAmount,
+                    unPaidAmount: payableAmount,
                     status: status,
                     //paymentType: 1,
                     createDate: new Date(),
@@ -228,7 +231,27 @@ module.exports = {
                 };
                 return orderDAO.insert(o);
             }).then(function (result) {
-                return registrationDAO.findRegistrationsById(registrationId);
+                if (!payAll) {
+                    return orderDAO.insert({
+                        orderNo: orderNo,
+                        discountRate: +req.body.discountRate,
+                        registrationId: registrationId,
+                        hospitalId: hospitalId,
+                        amount: amount,
+                        paidAmount: 0.00,
+                        paymentAmount: +req.body.paymentAmount,
+                        payableAmount: +req.body.paymentAmount,
+                        unPaidAmount: +req.body.paymentAmount,
+                        status: amount > 0 ? 0 : 1,
+                        createDate: new Date(),
+                        type: 2,
+                        referenceOrderNo: orderNo
+                    }).then(function (result) {
+                        return registrationDAO.findRegistrationsById(registrationId);
+                    })
+                } else {
+                    return registrationDAO.findRegistrationsById(registrationId);
+                }
             }).then(function (registrations) {
                 var registration = registrations[0];
                 redis.publish('settlement.queue', registration.id);
@@ -590,7 +613,9 @@ module.exports = {
     chargeOrders: function (req, res, next) {
         var order = {};
         var o = req.body;
+        var paidAmount = {};
         redis.incrAsync('h:' + req.user.hospitalId + ':invoice:' + ':incr').then(function (seq) {
+            paidAmount = (o.payments[0] ? o.payments[0].amount : 0) + (o.payments[1] ? o.payments[1].amount : 0) + (o.payments[2] ? o.payments[2].amount : 0);
             return orderDAO.update({
                 orderNo: o.orderNo,
                 status: 1,
@@ -607,10 +632,16 @@ module.exports = {
                 paidAmount1: o.payments[0] ? o.payments[0].amount : null,
                 paidAmount2: o.payments[1] ? o.payments[1].amount : null,
                 paidAmount3: o.payments[2] ? o.payments[2].amount : null,
-                paidAmount: (o.payments[0] ? o.payments[0].amount : 0) + (o.payments[1] ? o.payments[1].amount : 0) + (o.payments[2] ? o.payments[2].amount : 0)
-            });
+                paidAmount: paidAmount
+            })
         }).then(function () {
-            return orderDAO.findByOrderNo(req.user.hospitalId, o.orderNo);
+            if (req.body.referenceOrderNo) {
+                return orderDAO.updatePaidAmount(o.orderNo, paidAmount).then(function (result) {
+                    return orderDAO.findByOrderNo(req.user.hospitalId, o.orderNo);
+                })
+            } else {
+                return orderDAO.findByOrderNo(req.user.hospitalId, o.orderNo);
+            }
         }).then(function (orders) {
             order = orders[0];
             order.type = config.orderType[+order.type];
@@ -1086,7 +1117,7 @@ module.exports = {
             size: pageSize
         }).then(function (orders) {
             if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
-            orders.rows.forEach(function (order) {
+            Promise.map(orders, function (order) {
                 order.memberType = config.memberType[+order.memberType];
                 var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
                 if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
@@ -1097,9 +1128,13 @@ module.exports = {
                 order.paymentType = ps.join(',');
                 order.status = config.orderStatus[+order.status];
                 order.type = config.orderType[+order.type];
+                return orderDAO.findSubOrders(order.orderNo).then(function (items) {
+                    order.paymentHistories = items;
+                })
+            }).then(function (result) {
+                orders.pageIndex = pageIndex;
+                res.send({ret: 0, data: orders});
             });
-            orders.pageIndex = pageIndex;
-            res.send({ret: 0, data: orders});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
