@@ -375,7 +375,12 @@ module.exports = [
         handler: patientController.getTransactionFlowOfPatient,
         secured: 'user'
     },
-
+    {
+        method: "get",
+        path: "/api/patients/:patientId/prePaidHistories",
+        handler: patientController.getPrePaidHistories,
+        secured: 'user'
+    },
     {
         method: "get",
         path: "/api/patients/:patientId/registrations",
@@ -1170,5 +1175,10 @@ module.exports = [
         handler: registrationController.getPatientsOfDoctorPeriod,
         secured: 'user'
     },
-    
+    {
+        method: "get",
+        path: "/api/patients/:id/unPaidOrders",
+        handler: medicalHistoryController.getUnPaidOrders,
+        secured: 'user'
+    }
 ];

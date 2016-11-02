@@ -4,7 +4,7 @@ module.exports = {
     server: {
         name: 'medical cloud platform',
         version: '0.0.1',
-        host: 'localhost',
+        host: '121.42.171.213',
         port: 8083
     },
     db: {
@@ -86,7 +86,7 @@ module.exports = {
     medicalHistoryTemplate: '【%s】您在%s医生门诊病历已生成，您可以点击病历在线查看。',
     sendDrugTemplate: '【%s】您已领取【%s】医生在门诊号%S中开具的药品；请谨遵医嘱，祝您早日康复！',
     prescriptionOrderTemplate: '【%s】您在%s的诊疗费订单已生成，为了顺利完成诊疗，请通过收银窗口支付，或在一小时内完成网上支付。',
-    orderStatus: ['未支付', '已支付', '已取消', '完成'],
+    orderStatus: ['未支付', '已支付', '已取消', '完成', '欠费'],
     orderType: ["挂号费", "药费", "诊疗费"],
     inventoryType: ['入库', '出库'],
     salesManStatus: ['在职', '离职'],
@@ -96,5 +96,6 @@ module.exports = {
         {'治疗方案': ['背牙', '充填', '药物', '其他']},
         {'医嘱': ['性质', '注意', '程度', '其他']}],
     outsideProcessStatus: ['未完工', '已取件', '已完工', '试戴', '已戴走', '返工', '结算'],
-    appointmentStatus: ['已预约', '已到达', '未到', '结诊']
+    appointmentStatus: ['已预约', '已到达', '未到', '结诊'],
+    memberCardTransactionType: ['充值', '退款', '转入', '转出', '修改']
 };

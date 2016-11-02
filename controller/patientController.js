@@ -246,11 +246,17 @@ module.exports = {
         });
     },
     addPrePaidHistory: function (req, res, next) {
-        var prePaid = req.body;
-        prePaid.createDate = new Date();
-        prePaid.creator = req.user.id;
-        prePaid.hospitalId = req.user.hospitalId;
-        patientDAO.insertPrePaidHistory(prePaid).then(function (result) {
+        var patient = {};
+        var prePaid = _.assign(req.body, {
+            createDate: new Date(),
+            creator: req.user.id,
+            hospitalId: req.user.hospitalId
+        });
+        patientDAO.findByPatientId(prePaid.patientId).then(function (patients) {
+            patient = patients[0];
+            prePaid.currentBalance = patient.balance + prePaid.amount;
+            return patientDAO.insertPrePaidHistory(prePaid);
+        }).then(function (result) {
             prePaid.id = result.insertId;
             return patientDAO.updatePatientBalance(prePaid.patientId, prePaid.amount);
         }).then(function (result) {
@@ -260,17 +266,54 @@ module.exports = {
                     createDate: new Date(),
                     hospitalId: prePaid.hospitalId,
                     patientId: prePaid.patientId,
-                    patientBasicInfoId: patients[0].patientBasicInfoId,
+                    patientBasicInfoId: patient.patientBasicInfoId,
                     paymentType: prePaid.paymentType,
-                    type: 1,
+                    type: +req.body.type,
                     invoice: prePaid.invoice,
                     comment: prePaid.comment,
-                    name: '充值交易',
+                    name: '会员卡' + config.memberCardTransactionType[+req.body.type],
                     transactionNo: moment().format('YYYYMMDDhhmmss') + '-' + prePaid.hospitalId + '-' + prePaid.patientId
                 })
             })
         }).then(function (result) {
-            res.send({ret: 0, data: i18n.get('prePaid.add.success')});
+            if (req.body.type == 2 || req.body.type == 3) {
+                prePaid = _.assign(prePaid, {
+                    patientId: prePaid.transferredPatientId,
+                    transferredPatientId: patient.id,
+                    transferredPatientName: patient.name,
+                    type: prePaid.type == 3 ? 2 : 3,
+                    amount: prePaid.amount * (-1)
+                });
+                patientDAO.findByPatientId(prePaid.patientId).then(function (patients) {
+                    patient = patients[0];
+                    prePaid.currentBalance = patient.balance + prePaid.amount;
+                    delete prePaid.id;
+                    return patientDAO.insertPrePaidHistory(prePaid);
+                }).then(function (result) {
+                    prePaid.id = result.insertId;
+                    return patientDAO.updatePatientBalance(prePaid.patientId, prePaid.amount);
+                }).then(function (result) {
+                    return patientDAO.findByPatientId(prePaid.patientId).then(function (patients) {
+                        return patientDAO.insertTransactionFlow({
+                            amount: prePaid.amount,
+                            createDate: new Date(),
+                            hospitalId: prePaid.hospitalId,
+                            patientId: prePaid.patientId,
+                            patientBasicInfoId: patient.patientBasicInfoId,
+                            paymentType: prePaid.paymentType,
+                            type: +req.body.type,
+                            invoice: prePaid.invoice,
+                            comment: prePaid.comment,
+                            name: '会员卡' + config.memberCardTransactionType[+req.body.type],
+                            transactionNo: moment().format('YYYYMMDDhhmmss') + '-' + prePaid.hospitalId + '-' + prePaid.patientId
+                        }).then(function (result) {
+                            res.send({ret: 0, data: i18n.get('prePaid.add.success')});
+                        })
+                    })
+                });
+            } else {
+                res.send({ret: 0, data: i18n.get('prePaid.add.success')});
+            }
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
@@ -310,6 +353,27 @@ module.exports = {
             });
             flows.pageIndex = pageIndex;
             res.send({ret: 0, data: flows});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    
+    getPrePaidHistories: function (req, res, next) {
+        var patientId = req.params.patientId;
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        patientDAO.findPrePaidHistories(+patientId, +req.user.hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (histories) {
+            if (!histories.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
+            histories.rows && histories.rows.forEach(function (history) {
+                history.paymentType = config.paymentType[history.paymentType];
+                history.type = config.memberCardTransactionType[history.type];
+            });
+            histories.pageIndex = pageIndex;
+            res.send({ret: 0, data: histories});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });

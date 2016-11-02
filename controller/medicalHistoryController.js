@@ -208,7 +208,9 @@ module.exports = {
                     if (!err) console.log(job.id);
                 });
                 var amount = _.sum(newItems, 'totalPrice');
-                var paymentAmount = _.sum(newItems, 'receivable');
+                var payableAmount = _.sum(newItems, 'receivable');
+                var status = amount > 0 ? 0 : 1;
+                if (Math.abs(payableAmount - req.body.paymentAmount) < 0.001) status = 4;
                 var o = {
                     orderNo: orderNo,
                     discountRate: +req.body.discountRate,
@@ -216,8 +218,10 @@ module.exports = {
                     hospitalId: hospitalId,
                     amount: amount,
                     paidAmount: 0.00,
-                    paymentAmount: paymentAmount,
-                    status: amount > 0 ? 0 : 1,
+                    paymentAmount: +req.body.paymentAmount,
+                    payableAmount: payableAmount,
+                    unPaidAmount: payableAmount - req.body.paymentAmount,
+                    status: status,
                     //paymentType: 1,
                     createDate: new Date(),
                     type: 2
@@ -1074,4 +1078,30 @@ module.exports = {
         });
         return next();
     },
+    getUnPaidOrders: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        orderDAO.findOrdersByStatus(req.user.hospitalId, 4, ['m.patientId=' + req.params.id], {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (orders) {
+            if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
+            orders.rows.forEach(function (order) {
+                order.memberType = config.memberType[+order.memberType];
+                var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
+                if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
+                var ps = [];
+                paymentTypes && paymentTypes.forEach(function (item) {
+                    ps.push(config.paymentType[+item]);
+                });
+                order.paymentType = ps.join(',');
+                order.status = config.orderStatus[+order.status];
+                order.type = config.orderType[+order.type];
+            });
+            orders.pageIndex = pageIndex;
+            res.send({ret: 0, data: orders});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+    }
 }

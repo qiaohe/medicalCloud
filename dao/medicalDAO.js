@@ -38,7 +38,7 @@ module.exports = {
     },
 
     removePrescription: function (rid, prescriptionId) {
-        return db.query(sqlMapping.medical.removePrescription, [rid, prescriptionId]);
+        return db.query(sqlMapping.medical.removePrescription, [prescriptionId, rid]);
     },
 
     findPrescriptionsByOrderNo: function (orderNo) {

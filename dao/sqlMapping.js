@@ -178,6 +178,7 @@ module.exports = {
         findPatientBasicInfoById: 'select * from PatientBasicInfo where id=?',
         findByPatientBasicInfo: 'select e.id as recommenderId, pb.age, pb.address, pb.idCard, p.balance, p.cashbackType, p.`comment`, p.maxDiscountRate, p.source, p.id, pb.`realName`, pb.gender, pb.headPic,pb.birthday, pb.mobile, p.memberCardNo,p.memberType,p.source,e.`name` as recommenderName,p.medicalRecordNo,p.consumptionLevel, gc.`name` as groupName, p.groupId  from Patient p left JOIN SalesMan e on e.id = p.recommender LEFT JOIN GroupCompany gc on gc.id =p.groupId , PatientBasicInfo pb where p.patientBasicInfoId = pb.id and p.id = ? and p.hospitalId =?',
         findTransactionFlows: 'select SQL_CALC_FOUND_ROWS tf.*, m.paymentType1,m.paymentType2, m.paymentType3 from TransactionFlow tf left join MedicalOrder m on m.orderNo = tf.orderNo where tf.patientId=? and tf.hospitalId = ? order by tf.createDate desc limit ?, ?',
+        findPrePaidHistories: 'select SQL_CALC_FOUND_ROWS * from PrepaidHistory where patientId=? and hospitalId = ? order by createDate desc limit ?, ?',
         findRegistrations: 'select SQL_CALC_FOUND_ROWS * from Registration where patientId = ? and hospitalId = ? order by createDate desc limit ?,?',
         findGroupCompanyById: 'select gc.*, e.`name` as recommenderName from GroupCompany gc left JOIN Employee e on e.id = gc.recommender where gc.id=?'
     },

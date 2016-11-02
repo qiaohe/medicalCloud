@@ -41,8 +41,12 @@ module.exports = {
     findByPatientBasicInfo: function (patientId, hospitalId) {
         return db.query(sqlMapping.patient.findByPatientBasicInfo, [patientId, hospitalId]);
     },
+
     findTransactionFlows: function (patientId, hospitalId, page) {
         return db.queryWithCount(sqlMapping.patient.findTransactionFlows, [patientId, hospitalId, page.from, page.size]);
+    },
+    findPrePaidHistories: function (patientId, hospitalId, page) {
+        return db.queryWithCount(sqlMapping.patient.findPrePaidHistories, [patientId, hospitalId, page.from, page.size]);
     },
 
     findRegistrations: function (patientId, hospitalId, page) {
