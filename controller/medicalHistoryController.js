@@ -1130,6 +1130,7 @@ module.exports = {
                 order.type = config.orderType[+order.type];
                 return orderDAO.findSubOrders(order.orderNo).then(function (items) {
                     order.paymentHistories = items;
+                    return order;
                 })
             }).then(function (result) {
                 orders.pageIndex = pageIndex;
