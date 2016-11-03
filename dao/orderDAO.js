@@ -7,6 +7,10 @@ module.exports = {
     },
     removeOrder: function (orderNo) {
         return db.query(sqlMapping.order.removeOrder, orderNo);
+    }, 
+    
+    removeOrderAll: function (orderNo) {
+        return db.query(sqlMapping.order.removeOrderAll, [orderNo, orderNo]);
     },
 
     findOrdersByType: function (hospitalId, type, conditions, page) {

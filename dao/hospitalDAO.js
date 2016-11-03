@@ -196,5 +196,9 @@ module.exports = {
     },
     findAccountInfo: function (hospitalId) {
         return db.query(sqlMapping.angelGuiderTransactionFlow.findAccount, hospitalId);
+    },
+    sumUnPaidAmount: function(patientId){
+        return db.query(sqlMapping.patient.sumUnPaidAmount, patientId);
+
     }
 }

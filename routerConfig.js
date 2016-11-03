@@ -926,6 +926,12 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "del",
+        path: "/api/orders/:orderNo",
+        handler: medicalHistoryController.removeOrder,
+        secured: 'user'
+    },
+    {
         method: "get",
         path: "/api/orders/usageRecords",
         handler: medicalHistoryController.getDrugUsageRecords,

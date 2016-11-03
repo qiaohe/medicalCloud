@@ -51,7 +51,7 @@ module.exports = {
         return next();
     },
     removeDepartment: function (req, res, next) {
-       hospitalDAO.removeDepartment(req.params.id).then(function (result) {
+        hospitalDAO.removeDepartment(req.params.id).then(function (result) {
             res.send({ret: 0, message: i18n.get('department.remove.success')});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -385,13 +385,6 @@ module.exports = {
                 from: (pageIndex - 1) * pageSize,
                 size: pageSize
             }, getConditions(req)).then(function (items) {
-                items.rows.length && items.rows.forEach(function (item) {
-                    item.gender = config.gender[item.gender];
-                    item.registrationType = config.registrationType[item.registrationType];
-                    item.outPatientType = config.outPatientType[item.outPatientType];
-                    item.outpatientStatus = config.outpatientStatus[item.outpatientStatus];
-                    item.memberType = config.memberType[item.memberType];
-                });
                 result.doctorId = (items && items.rows.length > 0 ? items.rows[0].doctorId : null);
                 result.waitQueue = items;
                 result.waitQueue.pageIndex = pageIndex;
@@ -401,18 +394,29 @@ module.exports = {
                 result.finishedCount = _.filter(items.rows, function (item) {
                     return item.outpatientStatus == '结束';
                 }).length;
-                if (items.rows.length) {
-                    return registrationDAO.findCurrentQueueByRegId(items.rows[0].id).then(function (rs) {
-                        rs[0].registrationType = config.registrationType[rs[0].registrationType];
-                        rs[0].outPatientType = config.outPatientType[rs[0].outPatientType];
-                        rs[0].outpatientStatus = config.outpatientStatus[rs[0].outpatientStatus];
-                        rs[0].memberType = config.memberType[rs[0].memberType];
-                        result.currentQueue = rs[0];
-                        return hospitalDAO.findFinishedCountByDate(doctorId, today)
+                Promise.map(items.rows, function (item) {
+                    item.gender = config.gender[item.gender];
+                    item.registrationType = config.registrationType[item.registrationType];
+                    item.outPatientType = config.outPatientType[item.outPatientType];
+                    item.outpatientStatus = config.outpatientStatus[item.outpatientStatus];
+                    item.memberType = config.memberType[item.memberType];
+                    return hospitalDAO.sumUnPaidAmount(item.patientId).then(function (amounts) {
+                        item.totalUnPaidAmount = (amounts && amounts.length > 0 ? amounts[0].amount : 0.00);
                     })
-                } else {
-                    return hospitalDAO.findFinishedCountByDate(doctorId, today)
-                }
+                }).then(function () {
+                    if (items.rows.length) {
+                        return registrationDAO.findCurrentQueueByRegId(items.rows[0].id).then(function (rs) {
+                            rs[0].registrationType = config.registrationType[rs[0].registrationType];
+                            rs[0].outPatientType = config.outPatientType[rs[0].outPatientType];
+                            rs[0].outpatientStatus = config.outpatientStatus[rs[0].outpatientStatus];
+                            rs[0].memberType = config.memberType[rs[0].memberType];
+                            result.currentQueue = rs[0];
+                            return hospitalDAO.findFinishedCountByDate(doctorId, today)
+                        })
+                    } else {
+                        return hospitalDAO.findFinishedCountByDate(doctorId, today)
+                    }
+                })
             }).then(function (finishCount) {
                 //result.finishedCount = finishCount[0].count;
                 return hospitalDAO.findShiftPlansByDayWithName(req.user.hospitalId, doctorId, today);

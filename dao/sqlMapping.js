@@ -163,6 +163,7 @@ module.exports = {
         findPatientsOfDoctorPeriod: 'select distinct patientName from Registration where doctorId=? and shiftPeriod =? and registerDate=?'
     },
     patient: {
+        sumUnPaidAmount: 'select sum(unPaidAmount) as amount from MedicalOrder m left join Registration r on r.id = m.registrationId and m.status=4 where r.patientId = ?',
         findPatientByMemberCard: 'select id from Patient where memberCardNo = ?',
         updatePatient: 'update Patient set ? where id = ?',
         findByPatientByMobile: 'SELECT p.memberType, pc.gender, pc.birthday, pc.mobile, pc.realName from Patient p LEFT JOIN PatientBasicInfo pc on pc.id = p.patientBasicInfoId where hospitalId = ? and pc.mobile = ?',
@@ -278,6 +279,7 @@ module.exports = {
         findPrescriptionsBy: 'select r.*, m.`status` from Prescription r left JOIN MedicalOrder m on m.orderNo = r.orderNo where r.registrationId = ?',
         findPrescription: 'select * from Prescription where id = ?',
         removePrescription: 'delete from Prescription where id =? and registrationId = ?',
+        removePrescriptionByOrderNo: 'delete from Prescription where orderNo=?',
         findPrescriptionsByOrderNo: 'select p.*, m.status from Prescription p left JOIN MedicalOrder m on m.orderNo = p.orderNo where p.orderNo = ?',
         findRecipesBy: 'select r.*, m.`status` from Recipe r left JOIN MedicalOrder m on m.orderNo = r.orderNo where r.registrationId = ?',
         findDrugInventoryByDrugId: 'select id, drugId, restAmount, batchNo, expireDate, code from  DrugInventory where drugId=? and expireDate>=? and restAmount>=? order by expireDate ',
@@ -291,6 +293,7 @@ module.exports = {
         findSubOrders:'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.referenceOrderNo =?',
         updatePaidAmount:'update MedicalOrder set paidAmount = paidAmount + ?, unPaidAmount = unPaidAmount - ?, `status` =if(unPaidAmount < 0.001,1,4) where orderNo = ?',
         removeOrder: 'delete from MedicalOrder where orderNo = ?',
+        removeOrderAll: 'delete from MedicalOrder where orderNo = ? or referenceOrderNo=?',
         update: 'update MedicalOrder set ? where orderNo =?',
         updateTotalPrice: 'update MedicalOrder set amount = amount + ?, paymentAmount=amount where orderNo = ?',
         updateBy: 'update MedicalOrder set ?, paidAmount=paymentAmount where orderNo =?',
@@ -301,7 +304,7 @@ module.exports = {
         findDrugUsageRecords: 'SELECT SQL_CALC_FOUND_ROWS rp.*, rg.patientName, rg.doctorName, rg.departmentName, rg.patientMobile, m.drugSenderName, m.sendDrugDate from Recipe rp left join Registration rg on rp.registrationId = rg.id left join MedicalOrder m on m.orderNo = rp.orderNo where rp.hospitalId=? ',
         findOrdersByType: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId=? and m.type=? ',
         findOrdersByTypeAndStatus: 'select SQL_CALC_FOUND_ROWS m.*, r.patientName,r.patientMobile,r.memberType, r.patientId, r.departmentId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId=? and m.type=? and m.status=? limit ?,?',
-        findByOrderNos: 'select m.discountRate,m.referenceOrderNo,m.unPaidAmount, m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.status in (0, 4) and m.orderNo in ',
+        findByOrderNos: 'select m.discountRate,m.referenceOrderNo,m.unPaidAmount, m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile, p.balance, r.departmentName, r.doctorName,r.patientId from MedicalOrder m left join Registration r on m.registrationId = r.id left JOIN Patient p ON p.id = r.patientId where m.hospitalId= ? and m.status in (0, 4) and m.orderNo in ',
         findByOrderNo: 'select m.discountRate, m.cardCharge, m.registrationId, m.type,m.orderNo,m.createDate, m.amount, m.paymentAmount, r.patientName,r.patientMobile,  r.departmentName, r.doctorName,r.patientId,m.invoiceSequenceNo, r.hospitalName, m.paidAmount1, m.paidAmount2, m.paidAmount3, m.paymentType1,m.paymentType2, m.paymentType3, m.paidAmount, m.chargedByName, m.chargeDate, m.invoiceSequenceNo, r.businessPeopleId from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId= ? and m.orderNo=?',
         findOrderByOrderNo: 'select r.patientBasicInfoId, r.patientMobile, h.patientName, r.hospitalName, r.departmentName, r.doctorName,r.sequence from MedicalOrder m left join Registration r on m.registrationId = r.id left JOIN MedicalHistory h on h.registrationId = m.registrationId where m.orderNo=?',
         findAccountInfo: 'select m.paymentDate, m.paymentType, m.paidAmount, m.paymentType1, m.paidAmount1, m.paymentType2, m.paidAmount2, m.paymentType3, m.paidAmount3, r.memberType, r.createDate, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id where m.hospitalId=?'

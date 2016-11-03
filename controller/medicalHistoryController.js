@@ -1193,5 +1193,24 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
+    },
+    removeOrder: function (req, res, next) {
+        var orderNo = req.params.orderNo;
+        if (req.query.all) {
+            orderDAO.removeOrderAll(orderNo).then(function (result) {
+                return medicalDAO.removePrescriptionByOrderNo(orderNo)
+            }).then(function (result) {
+                res.send({ret: 0, message: '删除订单成功。'})
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
+            });
+        } else {
+            orderDAO.removeOrder(orderNo).then(function (result) {
+                res.send({ret: 0, message: '删除订单成功。'})
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
+            });
+        }
+        return next();
     }
 }
