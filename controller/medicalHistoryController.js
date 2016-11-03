@@ -232,22 +232,25 @@ module.exports = {
                 return orderDAO.insert(o);
             }).then(function (result) {
                 if (!payAll) {
-                    return orderDAO.insert({
-                        orderNo: orderNo,
-                        discountRate: +req.body.discountRate,
-                        registrationId: registrationId,
-                        hospitalId: hospitalId,
-                        amount: amount,
-                        paidAmount: 0.00,
-                        paymentAmount: +req.body.paymentAmount,
-                        payableAmount: +req.body.paymentAmount,
-                        unPaidAmount: +req.body.paymentAmount,
-                        status: amount > 0 ? 0 : 1,
-                        createDate: new Date(),
-                        type: 2,
-                        referenceOrderNo: orderNo
-                    }).then(function (result) {
-                        return registrationDAO.findRegistrationsById(registrationId);
+                    return redis.incrAsync('h:' + hospitalId + ':' + moment().format('YYYYMMDD') + ':2:incr').then(function (reply) {
+                        var referenceOrderNo = _.padLeft(hospitalId, 4, '0') + moment().format('YYYYMMDD') + '2' + _.padLeft(reply, 3, '0');
+                        return orderDAO.insert({
+                            orderNo: referenceOrderNo,
+                            discountRate: +req.body.discountRate,
+                            registrationId: registrationId,
+                            hospitalId: hospitalId,
+                            amount: amount,
+                            paidAmount: 0.00,
+                            paymentAmount: +req.body.paymentAmount,
+                            payableAmount: +req.body.paymentAmount,
+                            unPaidAmount: +req.body.paymentAmount,
+                            status: amount > 0 ? 0 : 1,
+                            createDate: new Date(),
+                            type: 2,
+                            referenceOrderNo: orderNo
+                        }).then(function (result) {
+                            return registrationDAO.findRegistrationsById(registrationId);
+                        })
                     })
                 } else {
                     return registrationDAO.findRegistrationsById(registrationId);
@@ -480,11 +483,12 @@ module.exports = {
             if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             orders.rows.forEach(function (order) {
                 order.memberType = config.memberType[+order.memberType];
-                var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
+                var paymentTypes = _.uniq([order.paymentType1, order.paymentType2, order.paymentType3]);
                 if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
                 var ps = [];
                 paymentTypes && paymentTypes.forEach(function (item) {
-                    ps.push(config.paymentType[+item]);
+                    if (item != null)
+                        ps.push(config.paymentType[+item]);
                 });
                 order.paymentType = ps.join(',');
                 order.status = config.orderStatus[+order.status];
@@ -538,11 +542,12 @@ module.exports = {
                 order.memberType = config.memberType[+order.memberType];
                 order.status = config.orderStatus[+order.status];
                 order.type = config.orderType[+order.type];
-                var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
+                var paymentTypes = _.uniq([order.paymentType1, order.paymentType2, order.paymentType3]);
                 if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
                 var ps = [];
                 paymentTypes && paymentTypes.forEach(function (item) {
-                    ps.push(config.paymentType[+item]);
+                    if (item != null)
+                        ps.push(config.paymentType[+item]);
                 });
                 order.paymentType = ps.join(',');
                 order.payments = [];
@@ -596,7 +601,7 @@ module.exports = {
                     order.items = items;
                     order.type = config.orderType[+order.type];
                 });
-                if (order.type == 2) return medicalDAO.findPrescriptionsByOrderNo(order.orderNo).then(function (items) {
+                if (order.type == 2) return medicalDAO.findPrescriptionsByOrderNo(order.referenceOrderNo ? order.referenceOrderNo : order.orderNo).then(function (items) {
                     order.items = items;
                     order.type = config.orderType[+order.type];
                 });
@@ -636,7 +641,7 @@ module.exports = {
             })
         }).then(function () {
             if (req.body.referenceOrderNo) {
-                return orderDAO.updatePaidAmount(o.orderNo, paidAmount).then(function (result) {
+                return orderDAO.updatePaidAmount(req.body.referenceOrderNo, paidAmount).then(function (result) {
                     return orderDAO.findByOrderNo(req.user.hospitalId, o.orderNo);
                 })
             } else {
@@ -925,11 +930,12 @@ module.exports = {
                 });
                 orders.rows.length && orders.rows.forEach(function (order) {
                     order.memberType = config.memberType[+order.memberType];
-                    var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
+                    var paymentTypes = _.uniq([order.paymentType1, order.paymentType2, order.paymentType3]);
                     if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
                     var ps = [];
                     paymentTypes && paymentTypes.forEach(function (item) {
-                        ps.push(config.paymentType[+item]);
+                        if (item != null)
+                            ps.push(config.paymentType[+item]);
                     });
                     order.paymentType = ps.join(',');
                     order.status = config.orderStatus[+order.status];
@@ -985,11 +991,12 @@ module.exports = {
             }).then(function () {
                 orders.rows.length && orders.rows.forEach(function (order) {
                     order.memberType = config.memberType[+order.memberType];
-                    var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
+                    var paymentTypes = _.uniq([order.paymentType1, order.paymentType2, order.paymentType3]);
                     if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
                     var ps = [];
                     paymentTypes && paymentTypes.forEach(function (item) {
-                        ps.push(config.paymentType[+item]);
+                        if (item != null)
+                            ps.push(config.paymentType[+item]);
                     });
                     order.paymentType = ps.join(',');
                     order.status = config.orderStatus[+order.status];
@@ -1119,23 +1126,69 @@ module.exports = {
             if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             Promise.map(orders.rows, function (order) {
                 order.memberType = config.memberType[+order.memberType];
-                var paymentTypes = _.compact([order.paymentType1, order.paymentType2, order.paymentType3]);
+                var paymentTypes = _.uniq([order.paymentType1, order.paymentType2, order.paymentType3]);
                 if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
                 var ps = [];
                 paymentTypes && paymentTypes.forEach(function (item) {
-                    ps.push(config.paymentType[+item]);
+                    if (item != null)
+                        ps.push(config.paymentType[+item]);
                 });
                 order.paymentType = ps.join(',');
                 order.status = config.orderStatus[+order.status];
                 order.type = config.orderType[+order.type];
                 return orderDAO.findSubOrders(order.orderNo).then(function (items) {
                     order.paymentHistories = items;
+                    var arr = _.filter(items, {'status': 0});
+                    order.existsUnPaidOrder = (arr && arr.length > 0);
+                    order.paymentHistories && order.paymentHistories.length && order.paymentHistories.forEach(function (h) {
+                        var paymentTypes1 = _.uniq([h.paymentType1, h.paymentType2, h.paymentType3]);
+                        if (paymentTypes1.length < 1) paymentTypes1.push(h.paymentType);
+                        var ps1 = [];
+                        paymentTypes1 && paymentTypes1.forEach(function (item) {
+                            if (item != null)
+                                ps1.push(config.paymentType[+item]);
+                        });
+                        h.paymentType = ps1.join(',');
+                        h.status = config.orderStatus[+h.status];
+                        h.type = config.orderType[+h.type];
+                    });
                     return order;
                 })
             }).then(function (result) {
                 orders.pageIndex = pageIndex;
                 res.send({ret: 0, data: orders});
             });
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    chargeUnPaidOrder: function (req, res, next) {
+        var referenceOrderNo = req.params.orderNo;
+        var referenceOrder = {};
+        orderDAO.findByOrderNo(req.user.hospitalId, referenceOrderNo).then(function (result) {
+            referenceOrder = result[0];
+            return redis.incrAsync('h:' + req.user.hospitalId + ':' + moment().format('YYYYMMDD') + ':2:incr');
+        }).then(function (reply) {
+            var orderNo = _.padLeft(req.user.hospitalId, 4, '0') + moment().format('YYYYMMDD') + '2' + _.padLeft(reply, 3, '0');
+            var o = {
+                orderNo: orderNo,
+                discountRate: referenceOrder.discountRate,
+                registrationId: referenceOrder.registrationId,
+                hospitalId: req.user.hospitalId,
+                amount: referenceOrder.amount,
+                paidAmount: 0.00,
+                paymentAmount: +req.body.amount,
+                payableAmount: +req.body.amount,
+                unPaidAmount: +req.body.amount,
+                status: 0,
+                createDate: new Date(),
+                type: 2,
+                referenceOrderNo: referenceOrderNo
+            };
+            return orderDAO.insert(o);
+        }).then(function (result) {
+            res.send({ret: 0, message: '收取欠费成功。'})
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });

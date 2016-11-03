@@ -369,7 +369,7 @@ module.exports = {
         }).then(function (histories) {
             if (!histories.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
             histories.rows && histories.rows.forEach(function (history) {
-                history.paymentType = config.paymentType[history.paymentType];
+                // history.paymentType = config.paymentType[history.paymentType];
                 history.type = config.memberCardTransactionType[history.type];
             });
             histories.pageIndex = pageIndex;

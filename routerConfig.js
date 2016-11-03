@@ -939,6 +939,13 @@ module.exports = [
     },
     {
         method: "post",
+        path: "/api/orders/:orderNo/charging",
+        handler: medicalHistoryController.chargeUnPaidOrder,
+        secured: 'user'
+    },
+    
+    {
+        method: "post",
         path: "/api/orders/charging",
         handler: medicalHistoryController.chargeOrders,
         secured: 'user'
