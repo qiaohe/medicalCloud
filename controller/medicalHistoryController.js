@@ -773,6 +773,8 @@ module.exports = {
                     }).then(function (result) {
                         return res.send({ret: 0, data: order});
                     })
+                } else {
+                    return res.send({ret: 0, data: order});
                 }
             }
         }).catch(function (err) {
