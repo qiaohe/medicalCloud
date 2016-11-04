@@ -5,6 +5,7 @@ var i18n = require('../i18n/localeMessage');
 var registrationDAO = require('../dao/registrationDAO');
 var medicalDAO = require('../dao/medicalDAO');
 var dictionaryDAO = require('../dao/dictionaryDAO');
+var patientDAO = require('../dao/patientDAO');
 var deviceDAO = require('../dao/deviceDAO');
 var orderDAO = require('../dao/orderDAO');
 var businessPeopleDAO = require('../dao/businessPeopleDAO');
@@ -247,6 +248,7 @@ module.exports = {
                             status: amount > 0 ? 0 : 1,
                             createDate: new Date(),
                             type: 2,
+                            comment: req.body.comment,
                             referenceOrderNo: orderNo
                         }).then(function (result) {
                             return registrationDAO.findRegistrationsById(registrationId);
@@ -409,21 +411,52 @@ module.exports = {
     },
 
     updatePrescriptions: function (req, res, next) {
-        var prescriptions = req.body.data;
+        var prescriptions = req.body.data.prescriptions;
+        var paymentAmount = req.body.data.paymentAmount;
+        var orderNo = {};
         Promise.map(prescriptions, function (prescription) {
             var oldPrescription = {};
             return medicalDAO.findPrescription(prescription.id).then(function (prescriptions) {
                 oldPrescription = prescriptions[0];
-                return orderDAO.findByOrderNo(req.user.hospitalId, oldPrescription.orderNo);
+                orderNo = oldPrescription.orderNo;
+                return orderDAO.findByOrderNo(req.user.hospitalId, orderNo);
             }).then(function (orders) {
                 var order = orders[0];
                 return orderDAO.updateTotalPrice(order.orderNo, prescription.totalPrice - oldPrescription.totalPrice)
             }).then(function (result) {
                 return medicalDAO.updatePrescription(prescription);
             });
-
         }).then(function (result) {
-            res.send({ret: 0, message: '更新成功。'})
+            return orderDAO.findByOrderNo(req.user.hospitalId, orderNo).then(function (orders) {
+                if (Math.abs(orders[0].payableAmount - paymentAmount) < 0.001) {
+                    res.send({ret: 0, message: '更新成功。'})
+                } else {
+                    return redis.incrAsync('h:' + req.user.hospitalId + ':' + moment().format('YYYYMMDD') + ':2:incr').then(function (reply) {
+                        var newOrderNo = _.padLeft(req.user.hospitalId, 4, '0') + moment().format('YYYYMMDD') + '2' + _.padLeft(reply, 3, '0');
+                        return orderDAO.insert({
+                            orderNo: newOrderNo,
+                            discountRate: orders[0].discountRate,
+                            registrationId: orders[0].registrationId,
+                            hospitalId: req.user.hospitalId,
+                            amount: orders[0].amount,
+                            paidAmount: 0.00,
+                            paymentAmount: paymentAmount,
+                            payableAmount: paymentAmount,
+                            unPaidAmount: paymentAmount,
+                            status: orders[0].amount > 0 ? 0 : 1,
+                            comment: req.body.data.comment,
+                            createDate: new Date(),
+                            type: 2,
+                            referenceOrderNo: orderNo
+                        }).then(function (result) {
+                            return orderDAO.update({orderNo: orderNo, paymentAmount: paymentAmount, status: 4});
+                        }).then(function (result) {
+                            res.send({ret: 0, message: '更新成功。'});
+                        })
+                    })
+                }
+            })
+
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
@@ -454,10 +487,21 @@ module.exports = {
     getPrescriptions: function (req, res, next) {
         var rid = req.params.id;
         medicalDAO.findPrescriptionsBy(rid).then(function (result) {
-            var data = _.groupBy(result, 'orderNo');
+            var data = _.groupBy(result, function (item) {
+                return JSON.stringify({
+                    orderNo: item.orderNo,
+                    status: item.status,
+                    paidAmount: item.paidAmount,
+                    unPaidAmount: item.unPaidAmount
+                });
+            });
             var result = [];
             for (var p in data) {
-                result.push({orerNo: p, item: data[p]});
+                var o = JSON.parse(p);
+                o.items = _.map(data[p], function (item) {
+                    return _.omit(item, ['orderNo', 'status', 'paidAmount', 'unPaidAmount']);
+                });
+                result.push(o);
             }
             res.send({ret: 0, data: result});
         }).catch(function (err) {
@@ -619,6 +663,9 @@ module.exports = {
         var order = {};
         var o = req.body;
         var paidAmount = {};
+        var memberCardPaymentAmount;
+        var patient = {};
+        var r = {};
         redis.incrAsync('h:' + req.user.hospitalId + ':invoice:' + ':incr').then(function (seq) {
             paidAmount = (o.payments[0] ? o.payments[0].amount : 0) + (o.payments[1] ? o.payments[1].amount : 0) + (o.payments[2] ? o.payments[2].amount : 0);
             return orderDAO.update({
@@ -651,21 +698,30 @@ module.exports = {
             order = orders[0];
             order.type = config.orderType[+order.type];
             order.payments = [];
-            if (order.paymentType1 != null) order.payments.push({
-                paymentType: order.paymentType1,
-                amount: order.paidAmount1
-            });
-            if (order.paymentType2 != null) order.payments.push({
-                paymentType: order.paymentType2,
-                amount: order.paidAmount2
-            });
-            if (order.paymentType3 != null) order.payments.push({
-                paymentType: order.paymentType3,
-                amount: order.paidAmount3
-            });
+            if (order.paymentType1 != null) {
+                order.payments.push({
+                    paymentType: order.paymentType1,
+                    amount: order.paidAmount1
+                });
+                if (order.paymentType1 == 2) memberCardPaymentAmount = order.paidAmount1;
+            }
+            if (order.paymentType2 != null) {
+                order.payments.push({
+                    paymentType: order.paymentType2,
+                    amount: order.paidAmount2
+                });
+                if (order.paymentType2 == 2) memberCardPaymentAmount = order.paidAmount2;
+
+            }
+            if (order.paymentType3 != null) {
+                order.payments.push({
+                    paymentType: order.paymentType3,
+                    amount: order.paidAmount3
+                });
+                if (order.paymentType3 == 2) memberCardPaymentAmount = order.paidAmount3;
+            }
             if (order.type == config.orderType[1]) return medicalDAO.findRecipesByOrderNo(order.orderNo);
             if (order.type == config.orderType[2]) return medicalDAO.findPrescriptionsByOrderNo(order.orderNo);
-            res.send({ret: 0, data: order});
         }).then(function (items) {
             order.items = items;
             order.cny = converter.toCNY(order.paymentAmount);
@@ -673,46 +729,52 @@ module.exports = {
         }).then(function (result) {
             return registrationDAO.findRegistrationsById(order.registrationId);
         }).then(function (registrations) {
-            var r = registrations[0];
-            if (order.type == config.orderType[0]) {
-                return redis.incrAsync('doctor:' + r.doctorId + ':d:' + r.registerDate + ':period:' + r.shiftPeriod + ':incr').then(function (seq) {
-                    return redis.getAsync('h:' + req.user.hospitalId + ':p:' + r.shiftPeriod).then(function (sp) {
-                        r.sequence = sp + seq;
-                        return registrationDAO.updateRegistration(r).then(function (result) {
-                            return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod).then(function (result) {
-                                if (order.businessPeopleId && order.businessPeopleId > 0) {
-                                    if (r.registrationType == 8) {
-                                        redis.publish('settlement.queue', order.orderNo);
-                                        res.send({ret: 0, data: order});
-                                    } else {
-                                        registrationDAO.updateSalesManPerformanceByMonth(order.businessPeopleId, moment().format('YYYYMM'), order.paidAmount).then(function (result) {
-                                            res.send({ret: 0, data: order});
-                                        });
-                                    }
-
-                                } else {
-                                    res.send({ret: 0, data: order});
-                                }
-                            })
+            r = registrations[0];
+            if (memberCardPaymentAmount > 0.001) {
+                var prePaid = {
+                    createDate: new Date(),
+                    creator: req.user.id,
+                    hospitalId: req.user.hospitalId,
+                    invoice: 0,
+                    paidAmount: memberCardPaymentAmount,
+                    amount: memberCardPaymentAmount * -1,
+                    patientId: r.patientId,
+                    paymentType: 2,
+                    type: 5
+                };
+                return patientDAO.findByPatientId(prePaid.patientId).then(function (patients) {
+                    patient = patients[0];
+                    prePaid.currentBalance = patient.balance + prePaid.amount;
+                    return patientDAO.insertPrePaidHistory(prePaid);
+                }).then(function (result) {
+                    prePaid.id = result.insertId;
+                    return patientDAO.updatePatientBalance(prePaid.patientId, prePaid.amount);
+                }).then(function (result) {
+                    if (order.type == config.orderType[0]) {
+                        return redis.incrAsync('doctor:' + r.doctorId + ':d:' + moment(r.registerDate).format('YYYYMMDD') + ':incr').then(function (seq) {
+                            r.sequence = seq;
+                            return registrationDAO.updateRegistration(r);
+                        }).then(function (result) {
+                            return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod ? r.shiftPeriod : 0);
+                        }).then(function (result) {
+                            return res.send({ret: 0, data: order});
                         })
-                    })
+                    } else {
+                       return res.send({ret: 0, data: order});
+                    }
                 })
             } else {
-                if (order.businessPeopleId && order.businessPeopleId > 0) {
-                    if (r.registrationType == 8) {
-                        redis.publish('settlement.queue', order.orderNo);
-                        res.send({ret: 0, data: order});
-                    } else {
-                        registrationDAO.updateSalesManPerformanceByMonth(order.businessPeopleId, moment().format('YYYYMM'), order.paidAmount).then(function (result) {
-                            res.send({ret: 0, data: order});
-                        });
-                    }
-
-                } else {
-                    res.send({ret: 0, data: order});
+                if (order.type == config.orderType[0]) {
+                    return redis.incrAsync('doctor:' + r.doctorId + ':d:' + moment(r.registerDate).format('YYYYMMDD') + ':incr').then(function (seq) {
+                        r.sequence = seq;
+                        return registrationDAO.updateRegistration(r);
+                    }).then(function (result) {
+                        return businessPeopleDAO.updateShiftPlan(r.doctorId, r.registerDate, r.shiftPeriod ? r.shiftPeriod : 0);
+                    }).then(function (result) {
+                        return res.send({ret: 0, data: order});
+                    })
                 }
             }
-
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
@@ -1181,6 +1243,7 @@ module.exports = {
                 paymentAmount: +req.body.amount,
                 payableAmount: +req.body.amount,
                 unPaidAmount: +req.body.amount,
+                comment: req.body.comment,
                 status: 0,
                 createDate: new Date(),
                 type: 2,
@@ -1196,7 +1259,7 @@ module.exports = {
     },
     removeOrder: function (req, res, next) {
         var orderNo = req.params.orderNo;
-        if (req.query.all) {
+        if (req.body.all) {
             orderDAO.removeOrderAll(orderNo).then(function (result) {
                 return medicalDAO.removePrescriptionByOrderNo(orderNo)
             }).then(function (result) {

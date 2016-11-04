@@ -97,5 +97,5 @@ module.exports = {
         {'医嘱': ['性质', '注意', '程度', '其他']}],
     outsideProcessStatus: ['未完工', '已取件', '已完工', '试戴', '已戴走', '返工', '结算'],
     appointmentStatus: ['已预约', '已到达', '未到', '结诊'],
-    memberCardTransactionType: ['充值', '退款', '转入', '转出', '修改']
+    memberCardTransactionType: ['充值', '退款', '转入', '转出', '修改', '消费']
 };
