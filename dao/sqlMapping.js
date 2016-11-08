@@ -2,7 +2,7 @@ module.exports = {
     employee: {
         findByUserName: 'select e.*, h.`name` as hospitalName, h.icon from Employee e left join Hospital h on e.hospitalId=h.id where e.hospitalId=? and e.mobile=?',
         findByUsernameWithHospital: 'select e.* from Employee e where hospitalId=? and mobile=?',
-        findByUsernameAndDomain: 'select e.*, h.`name` as hospitalName, h.icon from Employee e left join Hospital h on e.hospitalId=h.id where e.mobile=? and h.domainName=? ',
+        findByUsernameAndDomain: 'select e.*, h.`name` as hospitalName,d.id as doctorId, h.icon from Employee e left join Hospital h on e.hospitalId=h.id left JOIN Doctor d on d.employeeId = e.id where e.mobile=? and h.domainName=? ',
         findByName: 'select * from Employee where hospitalId=? and name=?',
         insert: 'insert Employee set ?',
         insertRole: 'insert Role set ?',
@@ -103,7 +103,7 @@ module.exports = {
         findMenusByJobTitle: 'select m.`name`, m.id from JobTitleMenuItem i left JOIN Menu m on m.id = i.menuItem where i.jobTitleId=?',
         findMenus: 'select id, name, pid, sortIndex from Menu',
         findShareSetting: 'select recommendationFee from Hospital where id = ?',
-        findMyMenus: 'select u.name, u.id, u.pid, u.routeUri, u.icon from Employee e left JOIN JobTitleMenuItem m on m.jobTitleId = e.jobTitle left join Menu u on u.id = m.menuItem  where e.id = ? order by u.pid, u.sortIndex'
+        findMyMenus: 'select u.name,  m.id as menuItemId, u.id, u.pid, u.routeUri, u.icon from Employee e left JOIN JobTitleMenuItem m on m.jobTitleId = e.jobTitle left join Menu u on u.id = m.menuItem  where e.id = ? order by u.pid, u.sortIndex'
     },
 
     department: {
@@ -262,7 +262,12 @@ module.exports = {
         updateOutpatientServiceType: 'update OutpatientServiceType set ? where id = ?',
         deleteOutpatientServiceType: 'delete from OutpatientServiceType where id = ?',
         findOutpatientServiceTypes: 'select id, name, fee from OutpatientServiceType',
-        findOutPatientTypeById: 'select id, name,fee from OutpatientServiceType where id =?'
+        findOutPatientTypeById: 'select id, name,fee from OutpatientServiceType where id =?',
+        findAuthorities: 'select * from JobTitleMenuItemAuthority where jobTitleMenuItemId=?',
+        findAllAuthorities: 'select jm.*, m.`name` from JobTitleMenuItemAuthority jm LEFT JOIN JobTitleMenuItem ji on ji.id = jm.jobTitleMenuItemId left join Menu m on m.id = ji.menuItem',
+        addAuthority: 'insert JobTitleMenuItemAuthority set ?',
+        deleteAuthority: 'delete from JobTitleMenuItemAuthority where id=?',
+        updateAuthority: 'update JobTitleMenuItemAuthority set ? where id=?'
     },
     medical: {
         insertMedicalHistory: 'insert MedicalHistory set ?',

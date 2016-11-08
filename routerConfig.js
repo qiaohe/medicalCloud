@@ -244,6 +244,12 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "get",
+        path: "/api/dict/roleAndJobTitles",
+        handler: dictController.getRoleAndJobTiles,
+        secured: 'user'
+    },
+    {
         method: "post",
         path: "/api/employees/changePassword",
         handler: employeeController.changePassword,
@@ -949,7 +955,7 @@ module.exports = [
         handler: medicalHistoryController.chargeUnPaidOrder,
         secured: 'user'
     },
-    
+
     {
         method: "post",
         path: "/api/orders/charging",
@@ -1192,6 +1198,30 @@ module.exports = [
         method: "get",
         path: "/api/patients/:id/unPaidOrders",
         handler: medicalHistoryController.getUnPaidOrders,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/dict/jobTitleMenuItemAuthorities",
+        handler: dictController.addAuthority,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/dict/jobTitleMenuItemAuthorities",
+        handler: dictController.updateAuthority,
+        secured: 'user'
+    },
+    {
+        method: "del",
+        path: "/api/dict/jobTitleMenuItemAuthorities/:id",
+        handler: dictController.deleteAuthority,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/dict/authorities",
+        handler: dictController.getAuthorities,
         secured: 'user'
     }
 ];

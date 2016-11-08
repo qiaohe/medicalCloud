@@ -229,5 +229,21 @@ module.exports = {
     },
     findOutPatientTypeById: function (id) {
         return db.query(sqlMapping.dict.findOutPatientTypeById, [id]);
+    },
+    findAuthorities: function (id) {
+        return db.query(sqlMapping.dict.findAuthorities, id);
+    },
+
+    findAllAuthorities: function () {
+        return db.query(sqlMapping.dict.findAllAuthorities);
+    },
+    addAuthority: function (authority) {
+        return db.query(sqlMapping.dict.addAuthority, authority);
+    },
+    updateAuthority: function (authority) {
+        return db.query(sqlMapping.dict.updateAuthority, [authority, authority.id]);
+    },
+    deleteAuthority: function (id) {
+        return db.query(sqlMapping.dict.deleteAuthority, id);
     }
 }

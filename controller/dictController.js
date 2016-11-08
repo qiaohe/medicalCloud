@@ -160,6 +160,23 @@ module.exports = {
         });
         return next();
     },
+
+    getRoleAndJobTiles: function (req, res, next) {
+        var hospitalId = req.user.hospitalId;
+        hospitalDAO.findRoles(hospitalId).then(function (roles) {
+            Promise.map(roles, function (role) {
+                return hospitalDAO.findJobTitleByRole(hospitalId, role.id).then(function (jobTitles) {
+                    role.jobTitles = jobTitles;
+                })
+            }).then(function (result) {
+                res.send({ret: 0, data: roles});
+            })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
     getProvinces: function (req, res, next) {
         hospitalDAO.findProvinces().then(function (provinces) {
             res.send({ret: 0, data: provinces});
@@ -266,10 +283,18 @@ module.exports = {
                         name: menu.name,
                         routeUri: menu.routeUri,
                         icon: menu.icon,
+                        menuItemId: menu.menuItemId,
                         subItems: []
                     });
                 } else {
-                    result.push({id: menu.id, name: menu.name, routeUri: menu.routeUri, icon: menu.icon, subItems: []});
+                    result.push({
+                        id: menu.id,
+                        name: menu.name,
+                        routeUri: menu.routeUri,
+                        icon: menu.icon,
+                        menuItemId: menu.menuItemId,
+                        subItems: []
+                    });
                 }
             });
             employeeDAO.findByName(req.user.hospitalId, req.user.name).then(function (users) {
@@ -292,8 +317,13 @@ module.exports = {
     },
     getMenusOfJobTitle: function (req, res, next) {
         var jobTitleId = req.params.id;
-        hospitalDAO.findMenusByJobTitle(jobTitleId).then(function (result) {
-            res.send({ret: 0, data: result});
+        var data = {};
+        hospitalDAO.findMenusByJobTitle(jobTitleId).then(function (menus) {
+            data.menus = menus;
+            return dictionaryDAO.findAllAuthorities();
+        }).then(function (authorities) {
+            data.authorities = authorities;
+            res.send({ret: 0, data: data});
         });
         return next();
     },
@@ -1118,6 +1148,44 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    }
+    },
+    getAuthorities: function (req, res, next) {
+        dictionaryDAO.findAllAuthorities().then(function (authorities) {
+            var data = _.groupBy(authorities, 'name');
+            var result = [];
+            for (var p in data) {
+                result.push({name: p, authorities: data[p]});
+            }
+            res.send({ret: 0, data: result});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    deleteAuthority: function (req, res, next) {
+        dictionaryDAO.deleteAuthority(req.params.id).then(function (p) {
+            res.send({ret: 0, message: '删除成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    updateAuthority: function (req, res, next) {
+        dictionaryDAO.updateAuthority(req.body).then(function (p) {
+            res.send({ret: 0, message: '更新成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
 
+    addAuthority: function (req, res, next) {
+        dictionaryDAO.addAuthority(req.body).then(function (p) {
+            req.body.id = p.insertId;
+            res.send({ret: 0, data: req.body, message: '添加成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    }
 }
