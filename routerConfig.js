@@ -1202,19 +1202,19 @@ module.exports = [
     },
     {
         method: "post",
-        path: "/api/dict/jobTitleMenuItemAuthorities",
+        path: "/api/dict/authorities",
         handler: dictController.addAuthority,
         secured: 'user'
     },
     {
         method: "put",
-        path: "/api/dict/jobTitleMenuItemAuthorities",
+        path: "/api/dict/authorities",
         handler: dictController.updateAuthority,
         secured: 'user'
     },
     {
         method: "del",
-        path: "/api/dict/jobTitleMenuItemAuthorities/:id",
+        path: "/api/dict/authorities/:id",
         handler: dictController.deleteAuthority,
         secured: 'user'
     },

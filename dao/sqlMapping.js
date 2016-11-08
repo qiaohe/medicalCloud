@@ -264,10 +264,10 @@ module.exports = {
         findOutpatientServiceTypes: 'select id, name, fee from OutpatientServiceType',
         findOutPatientTypeById: 'select id, name,fee from OutpatientServiceType where id =?',
         findAuthorities: 'select * from JobTitleMenuItemAuthority where jobTitleMenuItemId=?',
-        findAllAuthorities: 'select jm.*, m.`name` from JobTitleMenuItemAuthority jm LEFT JOIN JobTitleMenuItem ji on ji.id = jm.jobTitleMenuItemId left join Menu m on m.id = ji.menuItem',
-        addAuthority: 'insert JobTitleMenuItemAuthority set ?',
-        deleteAuthority: 'delete from JobTitleMenuItemAuthority where id=?',
-        updateAuthority: 'update JobTitleMenuItemAuthority set ? where id=?'
+        findAllAuthorities: 'select jm.*, m.`name` from Authority jm LEFT JOIN JobTitleMenuItem ji on ji.id = jm.jobTitleMenuItemId left join Menu m on m.id = ji.menuItem',
+        addAuthority: 'insert Authority set ?',
+        deleteAuthority: 'delete from Authority where id=?',
+        updateAuthority: 'update Authority set ? where id=?'
     },
     medical: {
         insertMedicalHistory: 'insert MedicalHistory set ?',

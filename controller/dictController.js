@@ -1171,7 +1171,9 @@ module.exports = {
         return next();
     },
     updateAuthority: function (req, res, next) {
-        dictionaryDAO.updateAuthority(req.body).then(function (p) {
+        var authority = req.body;
+        authority.hospitalId = req.user.hospitalId;
+        dictionaryDAO.updateAuthority(authority).then(function (p) {
             res.send({ret: 0, message: '更新成功。'});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -1180,9 +1182,11 @@ module.exports = {
     },
 
     addAuthority: function (req, res, next) {
-        dictionaryDAO.addAuthority(req.body).then(function (p) {
-            req.body.id = p.insertId;
-            res.send({ret: 0, data: req.body, message: '添加成功。'});
+        var authority = req.body;
+        authority.hospitalId = req.user.hospitalId;
+        dictionaryDAO.addAuthority(authority).then(function (p) {
+            authority.id = p.insertId;
+            res.send({ret: 0, data: authority, message: '添加成功。'});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
