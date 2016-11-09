@@ -157,12 +157,25 @@ module.exports = {
     deleteMenuByJobTitle: function (jobTitleId, menuItemId) {
         return db.query(sqlMapping.hospital.deleteMenuByJobTitle, [jobTitleId, menuItemId]);
     },
+
+    deleteAuthorityByJobTitle: function (jobTitleId, authorityId) {
+        return db.query(sqlMapping.hospital.deleteAuthorityByJobTitle, [jobTitleId, authorityId]);
+    },
+
     insertMenuItem: function (item) {
         return db.query(sqlMapping.hospital.insertMenuItem, item);
     },
+    insertJobTitleAuthority: function (authority) {
+        return db.query(sqlMapping.hospital.insertJobTitleAuthority, authority);
+    },
+    
     findJobTitleMenuItem: function (jobTitleId, menuItemId) {
         return db.query(sqlMapping.hospital.findJobTitleMenuItem, [jobTitleId, menuItemId]);
     },
+    findJobTitleAuthority: function (jobTitleId, authorityId) {
+        return db.query(sqlMapping.hospital.findJobTitleAuthority, [jobTitleId, authorityId]);
+    },
+
     findDiscountRateOfDoctor: function (hospitalId, doctorId) {
         return db.query(sqlMapping.doctor.findDiscountRateOfDoctor, [hospitalId, doctorId]);
     },
@@ -197,7 +210,7 @@ module.exports = {
     findAccountInfo: function (hospitalId) {
         return db.query(sqlMapping.angelGuiderTransactionFlow.findAccount, hospitalId);
     },
-    sumUnPaidAmount: function(patientId){
+    sumUnPaidAmount: function (patientId) {
         return db.query(sqlMapping.patient.sumUnPaidAmount, patientId);
 
     }

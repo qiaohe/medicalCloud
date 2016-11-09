@@ -245,5 +245,16 @@ module.exports = {
     },
     deleteAuthority: function (id) {
         return db.query(sqlMapping.dict.deleteAuthority, id);
+    },
+    findAuthoritiesOfJobTitle: function(jobTitleId, authorityValue){
+        var sql =sqlMapping.dict.findAuthoritiesOfJobTitle;
+        if (authorityValue) {
+            sql = sql  + ' and authorityValue = ' + authorityValue;
+        }
+        return db.query(sql, [jobTitleId]);
+    },
+    findMyJobTitleAuthorities: function(employeeId) {
+        return db.query(sqlMapping.dict.findMyJobTitleAuthorities, employeeId);
+
     }
 }

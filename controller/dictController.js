@@ -273,18 +273,25 @@ module.exports = {
         return next();
     },
     getMyMenus: function (req, res, next) {
-        hospitalDAO.findMyMenus(req.user.id).then(function (menus) {
+        var authorityArr = [];
+        dictionaryDAO.findMyJobTitleAuthorities(req.user.id).then(function (authorities) {
+            authorityArr = authorities;
+            return hospitalDAO.findMyMenus(req.user.id)
+        }).then(function (menus) {
             var result = [];
             menus.length && menus.forEach(function (menu) {
                 var item = _.findWhere(result, {id: menu.pid});
+                var authority = _.filter(authorityArr, function (authorityItem) {
+                    return authorityItem.menuId == menu.id;
+                });
                 if (item) {
                     item.subItems.push({
                         id: menu.id,
                         name: menu.name,
                         routeUri: menu.routeUri,
                         icon: menu.icon,
-                        menuItemId: menu.menuItemId,
-                        subItems: []
+                        subItems: [],
+                        authorities: authority
                     });
                 } else {
                     result.push({
@@ -292,8 +299,8 @@ module.exports = {
                         name: menu.name,
                         routeUri: menu.routeUri,
                         icon: menu.icon,
-                        menuItemId: menu.menuItemId,
-                        subItems: []
+                        subItems: [],
+                        authorities: authority
                     });
                 }
             });
@@ -320,10 +327,12 @@ module.exports = {
         var data = {};
         hospitalDAO.findMenusByJobTitle(jobTitleId).then(function (menus) {
             data.menus = menus;
-            return dictionaryDAO.findAllAuthorities();
+            return dictionaryDAO.findAuthoritiesOfJobTitle(jobTitleId, '1');
         }).then(function (authorities) {
             data.authorities = authorities;
             res.send({ret: 0, data: data});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
         });
         return next();
     },
@@ -341,6 +350,25 @@ module.exports = {
         });
         return next();
     },
+
+    postAuthorityOfJobTitle: function (req, res, next) {
+        var jobTitleId = req.params.id;
+        var authorityId = req.params.authorityId;
+        hospitalDAO.findJobTitleAuthority(jobTitleId, authorityId).then(function (items) {
+            return items.length ? hospitalDAO.deleteAuthorityByJobTitle(jobTitleId, authorityId) : hospitalDAO.insertJobTitleAuthority({
+                jobTitleId: jobTitleId,
+                authorityId: authorityId,
+                authorityValue: req.body.authorityValue
+            });
+        }).then(function (result) {
+            res.send({ret: 0, message: '设置权限成功'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+
     getDiseaseDic: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
@@ -1151,10 +1179,10 @@ module.exports = {
     },
     getAuthorities: function (req, res, next) {
         dictionaryDAO.findAllAuthorities().then(function (authorities) {
-            var data = _.groupBy(authorities, 'name');
+            var data = _.groupBy(authorities, 'menuName');
             var result = [];
             for (var p in data) {
-                result.push({name: p, authorities: data[p]});
+                result.push({menuName: p, authorities: data[p]});
             }
             res.send({ret: 0, data: result});
         }).catch(function (err) {
@@ -1171,7 +1199,9 @@ module.exports = {
         return next();
     },
     updateAuthority: function (req, res, next) {
-        dictionaryDAO.updateAuthority(req.body).then(function (p) {
+        var authority = req.body;
+        authority.hospitalId = req.user.hospitalId;
+        dictionaryDAO.updateAuthority(authority).then(function (p) {
             res.send({ret: 0, message: '更新成功。'});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -1180,9 +1210,19 @@ module.exports = {
     },
 
     addAuthority: function (req, res, next) {
-        dictionaryDAO.addAuthority(req.body).then(function (p) {
-            req.body.id = p.insertId;
-            res.send({ret: 0, data: req.body, message: '添加成功。'});
+        var authority = req.body;
+        authority.hospitalId = req.user.hospitalId;
+        dictionaryDAO.addAuthority(authority).then(function (p) {
+            authority.id = p.insertId;
+            res.send({ret: 0, data: authority, message: '添加成功。'});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    getAuthoritiesOfJobTitle: function (req, res, next) {
+        dictionaryDAO.findAuthoritiesOfJobTitle(req.params.id).then(function (authorities) {
+            res.send({ret: 0, data: authorities});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });

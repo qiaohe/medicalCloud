@@ -544,6 +544,18 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "post",
+        path: "/api/jobTitles/:id/authorities/:authorityId",
+        handler: dictController.postAuthorityOfJobTitle,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/jobTitles/:id/authorities",
+        handler: dictController.getAuthoritiesOfJobTitle,
+        secured: 'user'
+    },
+    {
         method: "get",
         path: "/api/dict/diseases",
         handler: dictController.getDiseaseDic,
@@ -1202,19 +1214,19 @@ module.exports = [
     },
     {
         method: "post",
-        path: "/api/dict/jobTitleMenuItemAuthorities",
+        path: "/api/dict/authorities",
         handler: dictController.addAuthority,
         secured: 'user'
     },
     {
         method: "put",
-        path: "/api/dict/jobTitleMenuItemAuthorities",
+        path: "/api/dict/authorities",
         handler: dictController.updateAuthority,
         secured: 'user'
     },
     {
         method: "del",
-        path: "/api/dict/jobTitleMenuItemAuthorities/:id",
+        path: "/api/dict/authorities/:id",
         handler: dictController.deleteAuthority,
         secured: 'user'
     },

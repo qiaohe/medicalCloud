@@ -98,12 +98,15 @@ module.exports = {
         update: 'update Hospital set ? where id = ?',
         findCustomerServiceId: 'select customerServiceUid from Hospital where id =? ',
         deleteMenuByJobTitle: 'delete from JobTitleMenuItem where jobTitleId=? and menuItem=?',
+        deleteAuthorityByJobTitle: 'delete from JobTitleAuthority where jobTitleId=? and authorityId=?',
         insertMenuItem: 'insert JobTitleMenuItem set ?',
         findJobTitleMenuItem: 'select * from JobTitleMenuItem where jobTitleId=? and menuItem=?',
+        findJobTitleAuthority: 'select * from JobTitleAuthority where jobTitleId=? and authorityId=?',
         findMenusByJobTitle: 'select m.`name`, m.id from JobTitleMenuItem i left JOIN Menu m on m.id = i.menuItem where i.jobTitleId=?',
         findMenus: 'select id, name, pid, sortIndex from Menu',
         findShareSetting: 'select recommendationFee from Hospital where id = ?',
-        findMyMenus: 'select u.name,  m.id as menuItemId, u.id, u.pid, u.routeUri, u.icon from Employee e left JOIN JobTitleMenuItem m on m.jobTitleId = e.jobTitle left join Menu u on u.id = m.menuItem  where e.id = ? order by u.pid, u.sortIndex'
+        insertJobTitleAuthority: 'insert JobTitleAuthority set ?',
+        findMyMenus: 'select u.name, m.id as menuItemId, u.id, u.pid, u.routeUri, u.icon from Employee e left JOIN JobTitleMenuItem m on m.jobTitleId = e.jobTitle left join Menu u on u.id = m.menuItem  where e.id = ? order by u.pid, u.sortIndex'
     },
 
     department: {
@@ -156,7 +159,7 @@ module.exports = {
         findRegistrationsById: 'select * from Registration where id=?',
         findRegistrationsByIdWithDetail: 'select r.*, po.address,po.idCard, p.source, p.medicalRecordNo, d.floor, doc.clinic from Registration r left JOIN Department d on d.id = r.departmentId left JOIN Doctor doc on doc.id = r.doctorId LEFT JOIN Patient p on p.id = r.patientId LEFT JOIN PatientBasicInfo po on po.id = p.patientBasicInfoId where r.id=?',
         findCurrentQueueByRegId: 'select r.id,doctorName, departmentName, patientName, registrationType, outPatientType, outpatientStatus, p.balance, p.memberType from Registration r LEFT JOIN Patient p on p.id =r.patientId where r.id =?',
-        findRegistrationsBy: 'select SQL_CALC_FOUND_ROWS ot.name as outPatientServiceTypeName, r.patientId, r.content, r.transferDoctor,r.transferDoctorName, p.medicalRecordNo, r.outPatientType, r.id,r.outpatientStatus, r.patientMobile,r.patientName,r.gender, p.balance, p.memberCardNo, r.memberType, r.doctorName, r.`comment`, r.registrationFee, r.registrationType, r.departmentName, r.registerDate , s.`name` as shiftPeriod, r.outPatientType, r.status, r.sequence, e.name as businessPeopleName, r.outpatientStatus from Registration r LEFT JOIN SalesMan e on e.id=r.businessPeopleId left JOIN ShiftPeriod s ON s.id= r.shiftPeriod left join Patient p on r.patientId =p.id left join OutpatientServiceType ot on ot.id=r.outPatientServiceType LEFT JOIN Doctor dd on dd.id = r.doctorId where r.hospitalId = ? and r.registerDate=? order by r.id desc limit ?, ?',
+        findRegistrationsBy: 'select SQL_CALC_FOUND_ROWS ot.name as outPatientServiceTypeName, r.patientId, r.content, r.transferDoctor,r.transferDoctorName,r.createDate, p.medicalRecordNo, r.outPatientType, r.id,r.outpatientStatus, r.patientMobile,r.patientName,r.gender, p.balance, p.memberCardNo, r.memberType, r.doctorName, r.`comment`, r.registrationFee, r.registrationType, r.departmentName, r.registerDate , s.`name` as shiftPeriod, r.outPatientType, r.status, r.sequence, e.name as businessPeopleName, r.outpatientStatus from Registration r LEFT JOIN SalesMan e on e.id=r.businessPeopleId left JOIN ShiftPeriod s ON s.id= r.shiftPeriod left join Patient p on r.patientId =p.id left join OutpatientServiceType ot on ot.id=r.outPatientServiceType LEFT JOIN Doctor dd on dd.id = r.doctorId where r.hospitalId = ? and r.registerDate=? order by r.id desc limit ?, ?',
         findAppointments: 'select  SQL_CALC_FOUND_ROWS a.*,sp.`name` as periodName, p.medicalRecordNo, p.memberCardNo, p.memberType, p.source, po.`name`, po.realName, po.gender,po.mobile from Appointment a left JOIN Patient p on p.id = a.patientId left join PatientBasicInfo po on po.id = p.patientBasicInfoId left join ShiftPeriod sp on sp.id = a.period left JOIN Doctor d on d.id = a.doctor where a.hospitalId=? ',
         addAppointment: 'insert Appointment set ?',
         updateAppointment: 'update Appointment set ? where id =?',
@@ -264,10 +267,12 @@ module.exports = {
         findOutpatientServiceTypes: 'select id, name, fee from OutpatientServiceType',
         findOutPatientTypeById: 'select id, name,fee from OutpatientServiceType where id =?',
         findAuthorities: 'select * from JobTitleMenuItemAuthority where jobTitleMenuItemId=?',
-        findAllAuthorities: 'select jm.*, m.`name` from JobTitleMenuItemAuthority jm LEFT JOIN JobTitleMenuItem ji on ji.id = jm.jobTitleMenuItemId left join Menu m on m.id = ji.menuItem',
-        addAuthority: 'insert JobTitleMenuItemAuthority set ?',
-        deleteAuthority: 'delete from JobTitleMenuItemAuthority where id=?',
-        updateAuthority: 'update JobTitleMenuItemAuthority set ? where id=?'
+        findAllAuthorities: 'select a.name,a.key,a.id,m.name as menuName, m.id as menuId from Authority a left join Menu m on m.id = a.menuId',
+        addAuthority: 'insert Authority set ?',
+        deleteAuthority: 'delete from Authority where id=?',
+        updateAuthority: 'update Authority set ? where id=?',
+        findAuthoritiesOfJobTitle: 'select * from JobTitleAuthority where jobTitleId=? ',
+        findMyJobTitleAuthorities: 'select  a.name, a.key, a.menuId from JobTitleAuthority ja left JOIN Authority a on a.id = ja.authorityId left join Employee e on e.jobTitle = ja.jobTitleId where e.id =? and ja.authorityValue= \'1\''
     },
     medical: {
         insertMedicalHistory: 'insert MedicalHistory set ?',
@@ -295,8 +300,8 @@ module.exports = {
     },
     order: {
         insert: 'insert MedicalOrder set ?',
-        findSubOrders:'select SQL_CALC_FOUND_ROWS m.*, mo.paidAmount as totalPaidAmount, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id left join MedicalOrder mo on mo.orderNo=m.referenceOrderNo where m.referenceOrderNo =?',
-        updatePaidAmount:'update MedicalOrder set paidAmount = paidAmount + ?, unPaidAmount = unPaidAmount - ?, `status` =if(unPaidAmount < 0.001,1,4) where orderNo = ?',
+        findSubOrders: 'select SQL_CALC_FOUND_ROWS m.*, mo.paidAmount as totalPaidAmount, r.patientName,r.patientMobile,r.memberType,r.departmentId,r.patientId, r.departmentName, r.hospitalId, r.hospitalName, r.doctorId, r.doctorName from MedicalOrder m left join Registration r on m.registrationId = r.id left join MedicalOrder mo on mo.orderNo=m.referenceOrderNo where m.referenceOrderNo =?',
+        updatePaidAmount: 'update MedicalOrder set paidAmount = paidAmount + ?, unPaidAmount = unPaidAmount - ?, `status` =if(unPaidAmount < 0.001,1,4) where orderNo = ?',
         removeOrder: 'delete from MedicalOrder where orderNo = ?',
         removeOrderAll: 'delete from MedicalOrder where orderNo = ? or referenceOrderNo=?',
         update: 'update MedicalOrder set ? where orderNo =?',
