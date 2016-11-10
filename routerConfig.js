@@ -1223,5 +1223,29 @@ module.exports = [
         path: "/api/dict/authorities",
         handler: dictController.getAuthorities,
         secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/revisits",
+        handler: registrationController.getRevisits,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/revisits",
+        handler: registrationController.addRevisit,
+        secured: 'user'
+    },
+    {
+        method: "del",
+        path: "/api/revisits/:id",
+        handler: registrationController.delRevisit,
+        secured: 'user'
+    },
+    {
+        method: "put",
+        path: "/api/revisits",
+        handler: registrationController.updateRevisit,
+        secured: 'user'
     }
 ];
