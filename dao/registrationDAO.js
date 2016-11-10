@@ -56,5 +56,23 @@ module.exports = {
     },
     findPatientsOfDoctorPeriod: function (doctorId, period, appointmentDate) {
         return db.query(sqlMapping.registration.findPatientsOfDoctorPeriod, [doctorId, period, appointmentDate]);
+    },
+    insertRevisit: function (v) {
+        return db.query(sqlMapping.revisit.insert, v);
+    },
+    deleteRevisit: function (id) {
+        return db.query(sqlMapping.revisit.delete, id);
+    },
+    updateRevisit: function (v) {
+        return db.query(sqlMapping.revisit.update, [v, v.id]);
+    },
+    findRevisits: function (hospitalId, conditions, page) {
+        var sql = sqlMapping.revisit.findAll;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' order by r.createDate desc limit ?,?';
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
+    },
+    findLatestDoctor: function (patientId) {
+        return db.query(sqlMapping.registration.findLatestDoctor, [patientId])
     }
 }

@@ -1259,5 +1259,11 @@ module.exports = [
         path: "/api/revisits",
         handler: registrationController.updateRevisit,
         secured: 'user'
-    }
+    },
+    {
+        method: "get",
+        path: "/api/patients/:id/latestDoctor",
+        handler: registrationController.getLatestDoctor,
+        secured: 'user'
+    },
 ];

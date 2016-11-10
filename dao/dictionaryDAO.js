@@ -253,8 +253,8 @@ module.exports = {
         }
         return db.query(sql, [jobTitleId]);
     },
-    findMyJobTitleAuthorities: function(employeeId) {
-        return db.query(sqlMapping.dict.findMyJobTitleAuthorities, employeeId);
+    findMyJobTitleAuthorities: function(jobTitleId) {
+        return db.query(sqlMapping.dict.findMyJobTitleAuthorities, jobTitleId);
 
     }
 }

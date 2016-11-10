@@ -274,7 +274,7 @@ module.exports = {
     },
     getMyMenus: function (req, res, next) {
         var authorityArr = [];
-        dictionaryDAO.findMyJobTitleAuthorities(req.user.id).then(function (authorities) {
+        dictionaryDAO.findMyJobTitleAuthorities(req.user.jobTitle).then(function (authorities) {
             authorityArr = authorities;
             return hospitalDAO.findMyMenus(req.user.id)
         }).then(function (menus) {

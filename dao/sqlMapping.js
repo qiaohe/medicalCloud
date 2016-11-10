@@ -140,6 +140,7 @@ module.exports = {
     },
 
     registration: {
+        findLatestDoctor: 'select doctorId, doctorName from Registration where patientId=? order by registerDate desc limit 0 , 1',
         updateRegistrationFee: 'update Registration set totalFee = totalFee + ?, ? where id =?',
         updateSalesManPerformanceByMonth: 'update Performance set actual = actual + ? where salesMan=? and yearMonth=?',
         insertRegistrationCancelHistory: 'insert RegistrationCancelHistory set ?',
@@ -272,7 +273,7 @@ module.exports = {
         deleteAuthority: 'delete from Authority where id=?',
         updateAuthority: 'update Authority set ? where id=?',
         findAuthoritiesOfJobTitle: 'select * from JobTitleAuthority where jobTitleId=? ',
-        findMyJobTitleAuthorities: 'select  a.name, a.key, a.menuId from JobTitleAuthority ja left JOIN Authority a on a.id = ja.authorityId left join Employee e on e.jobTitle = ja.jobTitleId where e.id =? and ja.authorityValue= \'1\''
+        findMyJobTitleAuthorities: 'select a.id, a.name, a.key, ja.authorityValue, a.menuId from Authority a left  JOIN JobTitleAuthority ja on ja.authorityId = a.id and ja.jobTitleId=?'
     },
     medical: {
         insertMedicalHistory: 'insert MedicalHistory set ?',
@@ -322,5 +323,11 @@ module.exports = {
     angelGuiderTransactionFlow: {
         findAll: 'select SQL_CALC_FOUND_ROWS af.id, af.createDate,af.amount, se.amount as originAmount, af.flowNo, af.`status`, af.transactionCode, af.comment, af.`status`, ac.accountName, se.patientName, se.type, se.angelGuiderName, se.agentShare, se.angelGuiderShare, se.platformShare, se.prescriptionShare,se.recipeShare,se.hospitalName, se.hospitalPayableAmount, af.currentBalance  from AngelGuiderTransactionFlow af left join AngelGuiderShare sh on sh.id = af.shareId left join Account ac on ac.id = af.accountId and ac.type = 1 left JOIN AngelGuiderShare se on se.id = af.shareId where ac.uid=? ',
         findAccount: 'select balance, availableBalance from Account where type = 1 and uid =?'
+    },
+    revisit: {
+        insert: 'insert ReVisit set ?',
+        delete: 'delete from ReVisit where id = ?',
+        update:'update ReVisit set ? where id = ?',
+        findAll: 'select SQL_CALC_FOUND_ROWS r.*, p.medicalRecordNo, pi.realName as patientName, pi.mobile from ReVisit r LEFT JOIN Patient p on r.patientId = p.id left JOIN PatientBasicInfo pi on pi.id = p.patientBasicInfoId where r.hospitalId = ?'
     }
 };

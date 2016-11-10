@@ -238,7 +238,7 @@ module.exports = {
             gender: req.body.gender,
             name: req.body.patientName,
             realName: req.body.patientName,
-            age:req.body.age
+            age: req.body.age
         }).then(function (result) {
             return patientDAO.updatePatient({
                 id: req.body.patientId, memberType: req.body.memberType,
@@ -257,8 +257,8 @@ module.exports = {
                 outPatientServiceType: req.body.outPatientServiceType,
                 businessPeopleName: req.body.businessPeopleName,
                 content: req.body.content,
-                patientName:req.body.patientName,
-                age:req.body.age
+                patientName: req.body.patientName,
+                age: req.body.age
             })
         }).then(function (result) {
             return businessPeopleDAO.findRegistrationById(req.body.id)
@@ -437,6 +437,73 @@ module.exports = {
     getPatientsOfDoctorPeriod: function (req, res, next) {
         registrationDAO.findPatientsOfDoctorPeriod(req.params.id, req.params.period, req.query.appointmentDate).then(function (ps) {
             res.send({ret: 0, data: ps})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    addRevisit: function (req, res, next) {
+        var v = _.assign(req.body, {
+            createDate: new Date(),
+            operator: req.user.id,
+            operatorName: req.user.name,
+            planVisitDate: req.body.planVisitDate ? req.body.planVisitDate : new Date(),
+            hospitalId: req.user.hospitalId
+        });
+        redis.incrAsync('h:' + req.user.hospitalId + ':incr').then(function (serialNo) {
+            v.serialNo = _.padLeft(serialNo, 10, '0');
+            return registrationDAO.insertRevisit(v)
+        }).then(function (result) {
+            res.send({ret: 0, data: v, message: '添加成功。'})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+    getRevisits: function (req, res, next) {
+        var hospitalId = req.user.hospitalId;
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        var conditions = [];
+        if (req.query.patientName) conditions.push('pi.realName like \'%' + req.query.patientName + '%\'');
+        if (req.query.medicalRecordNo) conditions.push('p.medicalRecordNo like \'%' + req.query.medicalRecordNo + '%\'');
+        if (req.query.patientId) conditions.push('r.patientId=' + req.query.patientId);
+        if (req.query.doctor) conditions.push('r.doctorId=' + req.query.doctor);
+        if (req.query.status) conditions.push('r.status=' + req.query.status);
+        if (req.query.start) conditions.push('r.planVisitDate>=\'' + req.query.start + '\'');
+        if (req.query.end) conditions.push('r.planVisitDate<=\'' + req.query.end + '\'');
+        registrationDAO.findRevisits(hospitalId, conditions, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (revisits) {
+            revisits.pageIndex = pageIndex;
+            res.send({ret: 0, data: revisits});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    delRevisit: function (req, res, next) {
+        registrationDAO.deleteRevisit(+req.params.id).then(function (result) {
+            res.send({ret: 0, message: 'delete success.'})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    updateRevisit: function (req, res, next) {
+        registrationDAO.updateRevisit(req.body).then(function (result) {
+            res.send({ret: 0, message: 'update success.'})
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    getLatestDoctor: function (req, res, next) {
+        registrationDAO.findLatestDoctor(req.params.id).then(function (result) {
+            if (result.length < 1) return res.send({ret: 0, data: {}});
+            res.send({ret: 0, data: result[0]});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
