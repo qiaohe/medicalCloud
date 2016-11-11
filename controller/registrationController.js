@@ -165,13 +165,20 @@ module.exports = {
                     doctorJobTitle: (doctor == null ? null : doctor.jobTitle),
                     doctorJobTitleId: (doctor == null ? null : doctor.jobTitleId),
                     doctorHeadPic: (doctor == null ? null : doctor.headPic),
-                    status: 0, creator: req.user.id
+                    status: (opst[0].fee > 0 ? 0 : 1), creator: req.user.id
                 });
                 r.outpatientStatus = 5;
                 r.registrationType = (r.registrationType ? r.registrationType : 2);
                 if (!r.businessPeopleId) delete r.businessPeopleId;
                 r = _.omit(r, ['reason', 'counselor', 'medicalRecordNo', 'birthday', 'memberCardNo', 'source', 'address', 'idCard']);
-                return businessPeopleDAO.insertRegistration(r);
+                if (r.status != 0) {
+                    return redis.incrAsync('doctor:' + r.doctorId + ':d:' + moment(r.registerDate).format('YYYYMMDD') + ':incr').then(function (seq) {
+                        r.sequence = seq;
+                        return businessPeopleDAO.insertRegistration(r);
+                    });
+                } else {
+                    return businessPeopleDAO.insertRegistration(r);
+                }
             });
         }).then(function (result) {
             r.id = result.insertId;
