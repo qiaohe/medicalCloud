@@ -62,13 +62,7 @@ module.exports = {
         var department = req.body;
         department.hospitalId = req.user.hospitalId;
         hospitalDAO.updateDepartment(department).then(function (result) {
-            if (department.name) {
-                employeeDAO.updateDoctorByDepartment(department.id, department.name).then(function (result) {
-                    res.send({ret: 0, message: i18n.get('department.update.success')});
-                })
-            } else {
-                res.send({ret: 0, message: i18n.get('department.update.success')});
-            }
+            res.send({ret: 0, message: i18n.get('department.update.success')});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
@@ -440,8 +434,8 @@ module.exports = {
                 data = result[0];
                 data.clinic = config.clinicConfig[data.clinic ? data.clinic : '1'];
                 notificationDAO.findSequencesBy(data.doctorId, data.sequence, moment().format('YYYY-MM-DD')).then(function (sequences) {
+                    data.sequences = [data.sequence];
                     delete data.sequence;
-                    data.sequences = [];
                     sequences.length && sequences.forEach(function (seq) {
                         data.sequences.push(seq.sequence);
                     });

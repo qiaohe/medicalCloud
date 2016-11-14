@@ -196,11 +196,11 @@ module.exports = {
         insertGroupMessage: 'insert GroupMessage set ?',
         findGroupMessages: 'select SQL_CALC_FOUND_ROWS * from GroupMessage where hospitalId = ? order by createDate desc limit ?, ?',
         findAll: 'select SQL_CALC_FOUND_ROWS * from Notification where hospitalId=? ',
-        findPatientQueue: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = r.departmentId left JOIN Hospital h ON h.id = r.hospitalId where r.registerDate = ? and dep.floor = ? and h.domainName= ? and r.sequence is not null and (r.outpatientStatus =0 or r.outpatientStatus = 5) and r.status <>4 order by doctorId, sequence',
+        findPatientQueue: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = r.departmentId left JOIN Hospital h ON h.id = r.hospitalId where r.registerDate = ? and dep.floor = ? and h.domainName= ? and r.sequence is not null and (r.outpatientStatus =0 or r.outpatientStatus = 5) and r.status <>4 and r.doctorId is not null order by doctorId, sequence',
         findPatientQueueByDepartmentId: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence, dep.floor from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = r.departmentId where r.registerDate = ? and dep.id = ? and r.sequence is not null and (r.outpatientStatus =0 or r.outpatientStatus = 5) and r.status <>4 order by doctorId, sequence',
-        findPatientQueueBy: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence, dep.floor from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = d.departmentId where r.id=?',
+        findPatientQueueBy: 'select doctorId, doctorName, r.departmentName, d.clinic, patientName, sequence, dep.floor from Registration r LEFT JOIN Doctor d on d.id = r.doctorId left JOIN Department dep on dep.id = r.departmentId where r.id=?',
         findPatients: 'select pi.realName as patientName, pi.`name` as nickName,pi.gender, pi.mobile as patientMobile,d.uid, d.token from Device d LEFT JOIN PatientBasicInfo pi on pi.id= d.uid where (pi.id in(select patientBasicInfoId from Patient where hospitalId=?)',
-        findSequencesBy: 'select r.sequence from Registration r where r.doctorId =? and sequence>=? and (r.outpatientStatus =0 or r.outpatientStatus = 5) and r.registerDate= ? order by sequence limit 3'
+        findSequencesBy: 'select r.sequence from Registration r where r.doctorId =? and sequence>? and (r.outpatientStatus =0 or r.outpatientStatus = 5) and r.registerDate= ? order by sequence limit 3'
     },
     device: {
         insert: 'insert Device set ?',
