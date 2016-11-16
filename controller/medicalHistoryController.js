@@ -570,10 +570,12 @@ module.exports = {
         var pageSize = +req.query.pageSize;
         var conditions = [];
         if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.medicalRecordNo) conditions.push('p.medicalRecordNo like \'%' + req.query.medicalRecordNo + '%\'');
         if (req.query.memberType) conditions.push('r.memberType=' + req.query.memberType);
         if (req.query.paymentDate) conditions.push('m.paymentDate like \'%' + req.query.paymentDate + '%\'');
         if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
         if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
+        if (req.query.doctorName) conditions.push('r.doctorName like \'%' + req.query.doctorName + '%\'');
         if (req.query.patientId) conditions.push('r.patientId=' + req.query.patientId);
         if (req.query.orderType) conditions.push('m.type=' + req.query.orderType);
         if (req.query.chargedBy) conditions.push('m.chargedBy=' + req.query.chargedBy);
