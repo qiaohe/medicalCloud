@@ -295,6 +295,50 @@ module.exports = {
         });
         return next();
     },
+    addPrescriptionsForOrder: function (req, res, next) {
+        var orderNo = req.params.orderNo;
+        var chargeItems = req.body.chargeItems;
+        var newItems = [];
+        var amount = {};
+        var payableAmount = {};
+        var order = {};
+        orderDAO.findByOrderNo(req.user.hospitalId, orderNo).then(function (orders) {
+            var order = orders[0];
+            Promise.map(chargeItems, function (item, index) {
+                item.isAppend = true;
+                return dictionaryDAO.findChargeItemById(+item.chargeItemId).then(function (items) {
+                    item = _.assign(item, {
+                        name: items[0].name,
+                        code: items[0].code,
+                        price: items[0].price,
+                        receivable: +items[0].price * +item.quantity * (item.discount ? +req.body.discountRate : 1.0),
+                        totalPrice: +items[0].price * +item.quantity,
+                        createDate: new Date(),
+                        registrationId: order.registrationId,
+                        unit: items[0].unit,
+                        hospitalId: hospitalId,
+                        orderNo: orderNo
+                    });
+                    newItems.push(item);
+                    return medicalDAO.insertPrescription(item);
+                });
+
+            }).then(function (result) {
+                amount = _.sum(newItems, 'totalPrice');
+                payableAmount = _.sum(newItems, 'receivable');
+                order.paymentAmount = order.paymentAmount + payableAmount;
+                order.amount = order.amount + amount;
+                order.unPaidAmount = order.unPaidAmount + order.payableAmount;
+                return orderDAO.update(order);
+            }).then(function (result) {
+                res.send({ret: 0, message: '追加订单成功。'})
+            })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+            return next();
+        });
+    },
+
     getMedicalHistories: function (req, res, next) {
         var rid = req.params.id;
         medicalDAO.findMedicalHistoryBy(rid).then(function (result) {
@@ -303,7 +347,9 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+
+    ,
     getMedicalHistoriesByPatientId: function (req, res, next) {
         var patientId = req.params.id;
         var pageIndex = +req.query.pageIndex;
@@ -318,7 +364,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
 
     getRecipes: function (req, res, next) {
         var rid = req.params.id;
@@ -333,7 +380,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
     updateRecipe: function (req, res, next) {
         var recipe = req.body;
         var oldRecipe = {};
@@ -348,7 +396,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
 
     updateRecipes: function (req, res, next) {
         var recipes = req.body.data;
@@ -366,7 +415,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
 
     removeRecipe: function (req, res, next) {
         var rid = req.params.id;
@@ -389,7 +439,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
 
     updatePrescription: function (req, res, next) {
         var prescription = req.body;
@@ -408,7 +459,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
 
     updatePrescriptions: function (req, res, next) {
         var prescriptions = req.body.data.prescriptions;
@@ -460,7 +512,8 @@ module.exports = {
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
-    },
+    }
+    ,
 
     removePrescription: function (req, res, next) {
         var rid = req.params.id;
@@ -483,7 +536,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
     getPrescriptions: function (req, res, next) {
         var rid = req.params.id;
         medicalDAO.findPrescriptionsBy(rid).then(function (result) {
@@ -508,7 +562,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
     getOrdersBy: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
@@ -543,7 +598,8 @@ module.exports = {
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
-    },
+    }
+    ,
 
     getOrdersByAndStatus: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
@@ -564,7 +620,8 @@ module.exports = {
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
-    },
+    }
+    ,
     getOrdersByStatus: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
@@ -629,7 +686,8 @@ module.exports = {
             });
         });
         return next();
-    },
+    }
+    ,
 
     getOrderByOrderNos: function (req, res, next) {
         var orderNoArray = [];
@@ -659,7 +717,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
 
     chargeOrders: function (req, res, next) {
         var order = {};
@@ -762,7 +821,7 @@ module.exports = {
                             return res.send({ret: 0, data: order});
                         })
                     } else {
-                       return res.send({ret: 0, data: order});
+                        return res.send({ret: 0, data: order});
                     }
                 })
             } else {
@@ -783,7 +842,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
 
     getRecipesByOrderNo: function (req, res, next) {
         medicalDAO.findRecipesByOrderNo(req.params.id).then(function (result) {
@@ -792,7 +852,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
     changeOrderStatus: function (req, res, next) {
         var orderNo = req.params.id;
         var status = req.params.status;
@@ -865,7 +926,8 @@ module.exports = {
             });
         }
         return next();
-    },
+    }
+    ,
     getDrugUsageRecords: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
@@ -891,7 +953,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
     getAccountingInfo: function (req, res, next) {
         var hospitalId = req.user.hospitalId;
         var pageIndex = +req.query.pageIndex;
@@ -1015,7 +1078,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
 
     getDoctorPerformances: function (req, res, next) {
         var hospitalId = req.user.hospitalId;
@@ -1109,7 +1173,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
     addOutsideProcess: function (req, res, next) {
         var p = _.assign(_.cloneDeep(req.body), {
             createDate: new Date(),
@@ -1131,7 +1196,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
     updateOutsideProcess: function (req, res, next) {
         var p = _.omit(req.body, ['createDate', 'creator']);
         p = _.assign(p, {
@@ -1146,7 +1212,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
     removeOutsideProcess: function (req, res, next) {
         medicalDAO.deleteOutsideProcess(req.params.id).then(function (result) {
             res.send({ret: 0, message: '删除成功。'});
@@ -1154,7 +1221,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
     getOutsideProcesses: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
@@ -1181,7 +1249,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
     getUnPaidOrders: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
@@ -1228,7 +1297,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
     chargeUnPaidOrder: function (req, res, next) {
         var referenceOrderNo = req.params.orderNo;
         var referenceOrder = {};
@@ -1260,7 +1330,8 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    },
+    }
+    ,
     removeOrder: function (req, res, next) {
         var orderNo = req.params.orderNo;
         if (req.body.all) {

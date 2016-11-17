@@ -908,6 +908,13 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "post",
+        path: "/api/orders/:orderNo/prescriptions",
+        handler: medicalHistoryController.addPrescriptionsForOrder,
+        secured: 'user'
+    },
+    
+    {
         method: "get",
         path: "/api/registrations/:id/prescriptions",
         handler: medicalHistoryController.getPrescriptions,
