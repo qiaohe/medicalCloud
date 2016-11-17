@@ -7,8 +7,8 @@ module.exports = {
     },
     removeOrder: function (orderNo) {
         return db.query(sqlMapping.order.removeOrder, orderNo);
-    }, 
-    
+    },
+
     removeOrderAll: function (orderNo) {
         return db.query(sqlMapping.order.removeOrderAll, [orderNo, orderNo]);
     },
@@ -88,6 +88,8 @@ module.exports = {
     },
     findSubOrders: function (referenceOrderNo) {
         return db.query(sqlMapping.order.findSubOrders, referenceOrderNo);
+    },
+    findAppendedPrescriptions: function (orderNo) {
+       return db.query(sqlMapping.order.findPrescriptionsByOrderNo + ' and p.isAppend = 1', orderNo);
     }
-
 }

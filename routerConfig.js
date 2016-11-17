@@ -913,7 +913,12 @@ module.exports = [
         handler: medicalHistoryController.addPrescriptionsForOrder,
         secured: 'user'
     },
-    
+    {
+        method: "get",
+        path: "/api/orders/:orderNo/appendPrescriptions",
+        handler: medicalHistoryController.getAppendedPrescriptionsForOrder,
+        secured: 'user'
+    },
     {
         method: "get",
         path: "/api/registrations/:id/prescriptions",

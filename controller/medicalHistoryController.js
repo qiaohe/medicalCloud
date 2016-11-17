@@ -347,9 +347,15 @@ module.exports = {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    }
+    },
+    getAppendedPrescriptionsForOrder: function (req, res, next) {
+        orderDAO.findAppendedPrescriptions(req.params.order).then(function (prescriptions) {
+            res.send({ret: 0, data: prescriptions});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+    },
 
-    ,
     getMedicalHistoriesByPatientId: function (req, res, next) {
         var patientId = req.params.id;
         var pageIndex = +req.query.pageIndex;
