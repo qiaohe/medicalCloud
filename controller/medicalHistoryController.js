@@ -305,7 +305,9 @@ module.exports = {
         orderDAO.findByOrderNo(req.user.hospitalId, orderNo).then(function (orders) {
             var order = orders[0];
             Promise.map(chargeItems, function (item, index) {
-                item.isAppend = true;
+                item.isAppend = 1;
+                item.operator = req.user.id;
+                item.operatorName = req.user.name;
                 return dictionaryDAO.findChargeItemById(+item.chargeItemId).then(function (items) {
                     item = _.assign(item, {
                         name: items[0].name,
@@ -316,7 +318,7 @@ module.exports = {
                         createDate: new Date(),
                         registrationId: order.registrationId,
                         unit: items[0].unit,
-                        hospitalId: hospitalId,
+                        hospitalId: req.user.hospitalId,
                         orderNo: orderNo
                     });
                     newItems.push(item);
@@ -326,10 +328,13 @@ module.exports = {
             }).then(function (result) {
                 amount = _.sum(newItems, 'totalPrice');
                 payableAmount = _.sum(newItems, 'receivable');
-                order.paymentAmount = order.paymentAmount + payableAmount;
-                order.amount = order.amount + amount;
-                order.unPaidAmount = order.unPaidAmount + order.payableAmount;
-                return orderDAO.update(order);
+                return orderDAO.update({
+                    orderNo: orderNo,
+                    paymentAmount: order.paymentAmount + payableAmount,
+                    amount: order.amount + amount,
+                    unPaidAmount: (!order.unPaidAmount ? 0.00 : order.unPaidAmount) + payableAmount,
+                    hasChanged: 1
+                });
             }).then(function (result) {
                 res.send({ret: 0, message: '追加订单成功。'})
             })
@@ -349,11 +354,18 @@ module.exports = {
         return next();
     },
     getAppendedPrescriptionsForOrder: function (req, res, next) {
-        orderDAO.findAppendedPrescriptions(req.params.order).then(function (prescriptions) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        orderDAO.findAppendedPrescriptions(req.params.orderNo, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (prescriptions) {
+            prescriptions.pageIndex = pageIndex;
             res.send({ret: 0, data: prescriptions});
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
+        return next();
     },
 
     getMedicalHistoriesByPatientId: function (req, res, next) {

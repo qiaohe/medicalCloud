@@ -89,7 +89,7 @@ module.exports = {
     findSubOrders: function (referenceOrderNo) {
         return db.query(sqlMapping.order.findSubOrders, referenceOrderNo);
     },
-    findAppendedPrescriptions: function (orderNo) {
-       return db.query(sqlMapping.order.findPrescriptionsByOrderNo + ' and p.isAppend = 1', orderNo);
+    findAppendedPrescriptions: function (orderNo, page) {
+        return db.queryWithCount(sqlMapping.medical.findPrescriptionsByOrderNoPageable, [orderNo, page.from, page.size]);
     }
 }
