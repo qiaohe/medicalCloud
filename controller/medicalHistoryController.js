@@ -313,14 +313,15 @@ module.exports = {
                         name: items[0].name,
                         code: items[0].code,
                         price: items[0].price,
-                        receivable: +items[0].price * +item.quantity * (item.discount ? +req.body.discountRate : 1.0),
-                        totalPrice: +items[0].price * +item.quantity,
+                        receivable: item.amount ? +item.amount : +items[0].price * +item.quantity * (item.discount ? +req.body.discountRate : 1.0),
+                        totalPrice: item.amount ? +item.amount : +items[0].price * +item.quantity,
                         createDate: new Date(),
                         registrationId: order.registrationId,
                         unit: items[0].unit,
                         hospitalId: req.user.hospitalId,
                         orderNo: orderNo
                     });
+                    delete item.amount;
                     newItems.push(item);
                     return medicalDAO.insertPrescription(item);
                 });
@@ -328,15 +329,120 @@ module.exports = {
             }).then(function (result) {
                 amount = _.sum(newItems, 'totalPrice');
                 payableAmount = _.sum(newItems, 'receivable');
-                return orderDAO.update({
-                    orderNo: orderNo,
-                    paymentAmount: order.paymentAmount + payableAmount,
-                    amount: order.amount + amount,
-                    unPaidAmount: (!order.unPaidAmount ? 0.00 : order.unPaidAmount) + payableAmount,
-                    hasChanged: 1
-                });
+                if (payableAmount < 0) {
+                    var referenceOrderNo = req.params.orderNo;
+                    var referenceOrder = {};
+                    orderDAO.findByOrderNo(req.user.hospitalId, referenceOrderNo).then(function (result) {
+                        referenceOrder = result[0];
+                        return redis.incrAsync('h:' + req.user.hospitalId + ':' + moment().format('YYYYMMDD') + ':2:incr');
+                    }).then(function (reply) {
+                        var orderNo = _.padLeft(req.user.hospitalId, 4, '0') + moment().format('YYYYMMDD') + '2' + _.padLeft(reply, 3, '0');
+                        var o = {
+                            orderNo: orderNo,
+                            discountRate: referenceOrder.discountRate,
+                            registrationId: referenceOrder.registrationId,
+                            hospitalId: req.user.hospitalId,
+                            amount: referenceOrder.amount,
+                            paidAmount: 0.00,
+                            paymentAmount: payableAmount,
+                            payableAmount: payableAmount,
+                            unPaidAmount: payableAmount,
+                            status: 0,
+                            createDate: new Date(),
+                            type: 2,
+                            referenceOrderNo: referenceOrderNo
+                        };
+                        return orderDAO.insert(o).then(function (result) {
+                            return orderDAO.update({
+                                orderNo: orderNo,
+                                paidAmount: order.paidAmount + payableAmount,
+                                unPaidAmount: (!order.unPaidAmount ? 0.00 : order.unPaidAmount) - payableAmount,
+                                hasChanged: 1
+                            });
+                        })
+                    })
+                } else {
+                    return orderDAO.update({
+                        orderNo: orderNo,
+                        paymentAmount: order.paymentAmount + payableAmount,
+                        amount: order.amount + amount,
+                        unPaidAmount: (!order.unPaidAmount ? 0.00 : order.unPaidAmount) + payableAmount,
+                        hasChanged: 1
+                    });
+                }
             }).then(function (result) {
                 res.send({ret: 0, message: '追加订单成功。'})
+            })
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+            return next();
+        });
+    },
+    refundOrder: function (req, res, next) {
+        var orderNo = req.params.orderNo;
+        var newOrderNo = {};
+        var chargeItems = req.body.chargeItems;
+        var newItems = [];
+        var order = [];
+        var amount = {};
+        var payableAmount = {};
+        orderDAO.findByOrderNo(req.user.hospitalId, orderNo).then(function (orders) {
+            order = orders[0];
+            return redis.incrAsync('h:' + req.user.hospitalId + ':' + moment().format('YYYYMMDD') + ':2:incr');
+        }).then(function (reply) {
+            newOrderNo = _.padLeft(req.user.hospitalId, 4, '0') + moment().format('YYYYMMDD') + '2' + _.padLeft(reply, 3, '0');
+        }).then(function (reuslt) {
+            Promise.map(chargeItems, function (item, index) {
+                item.isAppend = 1;
+                item.operator = req.user.id;
+                item.operatorName = req.user.name;
+                return dictionaryDAO.findChargeItemById(+item.chargeItemId).then(function (items) {
+                    item = _.assign(item, {
+                        name: items[0].name,
+                        code: items[0].code,
+                        price: items[0].price,
+                        receivable: item.amount ? +item.amount : +items[0].price * +item.quantity * (item.discount ? +req.body.discountRate : 1.0),
+                        totalPrice: item.amount ? +item.amount : +items[0].price * +item.quantity,
+                        createDate: new Date(),
+                        registrationId: order.registrationId,
+                        unit: items[0].unit,
+                        hospitalId: req.user.hospitalId,
+                        orderNo: newOrderNo
+                    });
+                    delete item.amount;
+                    newItems.push(item);
+                    return medicalDAO.insertPrescription(item);
+                });
+            }).then(function (result) {
+                amount = _.sum(newItems, 'totalPrice');
+                payableAmount = _.sum(newItems, 'receivable');
+                var o = {
+                    orderNo: newOrderNo,
+                    discountRate: order.discountRate,
+                    registrationId: order.registrationId,
+                    hospitalId: req.user.hospitalId,
+                    amount: order.amount,
+                    paidAmount: 0.00,
+                    paymentAmount: payableAmount,
+                    payableAmount: payableAmount,
+                    unPaidAmount: payableAmount,
+                    status: 0,
+                    createDate: new Date(),
+                    chargedBy: req.user.id,
+                    chargedByName: req.user.name,
+                    type: 2,
+                    referenceOrderNo: orderNo
+                };
+                return orderDAO.insert(o).then(function (result) {
+                    return orderDAO.update({
+                        orderNo: orderNo,
+                        paidAmount: order.paidAmount + payableAmount,
+                        unPaidAmount: (!order.unPaidAmount ? 0.00 : order.unPaidAmount) - payableAmount,
+                        hasChanged: 1
+                    });
+                })
+            }).then(function (result) {
+                res.send({ret: 0, message: '退费成功。'})
             })
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
@@ -638,8 +744,8 @@ module.exports = {
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
-    }
-    ,
+    },
+
     getOrdersByStatus: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
@@ -704,8 +810,95 @@ module.exports = {
             });
         });
         return next();
-    }
-    ,
+    },
+
+    getOrderList: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        var conditions = [];
+        if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.medicalRecordNo) conditions.push('p.medicalRecordNo like \'%' + req.query.medicalRecordNo + '%\'');
+        if (req.query.memberType) conditions.push('r.memberType=' + req.query.memberType);
+        if (req.query.paymentDate) conditions.push('m.paymentDate like \'%' + req.query.paymentDate + '%\'');
+        if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
+        if (req.query.orderNo) conditions.push('m.orderNo like \'%' + req.query.orderNo + '%\'');
+        if (req.query.doctorName) conditions.push('r.doctorName like \'%' + req.query.doctorName + '%\'');
+        if (req.query.patientId) conditions.push('r.patientId=' + req.query.patientId);
+        if (req.query.orderType) conditions.push('m.type=' + req.query.orderType);
+        if (req.query.chargedBy) conditions.push('m.chargedBy=' + req.query.chargedBy);
+        conditions.push('m.referenceOrderNo is  NULL');
+        conditions.push('m.type=2');
+        orderDAO.findOrdersByStatus(req.user.hospitalId, [1, 3, 4], conditions, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }).then(function (orders) {
+            if (!orders.rows.length) return res.send({ret: 0, data: {rows: [], pageIndex: pageIndex, count: 0}});
+            Promise.map(orders.rows, function (order) {
+                order.memberType = config.memberType[+order.memberType];
+                order.status = config.orderStatus[+order.status];
+                order.type = config.orderType[+order.type];
+                var paymentTypes = _.uniq([order.paymentType1, order.paymentType2, order.paymentType3]);
+                if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
+                var ps = [];
+                paymentTypes && paymentTypes.forEach(function (item) {
+                    if (item != null)
+                        ps.push(config.paymentType[+item]);
+                });
+                order.paymentType = ps.join(',');
+                order.payments = [];
+                if (order.paymentType1 != null) order.payments.push({
+                    paymentType: order.paymentType1,
+                    amount: order.paidAmount1
+                });
+                if (order.paymentType2 != null) order.payments.push({
+                    paymentType: order.paymentType2,
+                    amount: order.paidAmount2
+                });
+                if (order.paymentType3 != null) order.payments.push({
+                    paymentType: order.paymentType3,
+                    amount: order.paidAmount3
+                });
+                if (order.type == '药费') return medicalDAO.findRecipesByOrderNo(order.orderNo).then(function (items) {
+                    order.items = items;
+                });
+                if (order.type == '诊疗费') return medicalDAO.findPrescriptionsByOrderNo(order.orderNo).then(function (items) {
+                    order.items = items;
+                    if (order.status == '欠费') {
+                        return orderDAO.findSubOrders(order.orderNo).then(function (suborders) {
+                            order.subOrders = suborders;
+                            var arr = _.filter(suborders, {'status': 0});
+                            order.existsUnPaidOrder = (arr && arr.length > 0);
+                            order.paymentHistories && order.paymentHistories.length && order.paymentHistories.forEach(function (h) {
+                                var paymentTypes1 = _.uniq([h.paymentType1, h.paymentType2, h.paymentType3]);
+                                if (paymentTypes1.length < 1) paymentTypes1.push(h.paymentType);
+                                var ps1 = [];
+                                paymentTypes1 && paymentTypes1.forEach(function (item) {
+                                    if (item != null)
+                                        ps1.push(config.paymentType[+item]);
+                                });
+                                h.paymentType = ps1.join(',');
+                                h.status = config.orderStatus[+h.status];
+                                h.type = config.orderType[+h.type];
+                            });
+                            return order;
+                        })
+                    }
+                });
+                if (order.type == '挂号费') {
+                    order.items = [];
+                    order.items.push({name: '挂号费', amount: order.amount});
+                    if (order.cardCharge && +order.cardCharge > 0)
+                        order.items.push({name: '工本费', amount: +order.cardCharge});
+                }
+            }).then(function (result) {
+                orders.pageIndex = pageIndex;
+                res.send({ret: 0, data: orders});
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
+            });
+        });
+        return next();
+    },
 
     getOrderByOrderNos: function (req, res, next) {
         var orderNoArray = [];
@@ -1272,7 +1465,11 @@ module.exports = {
     getUnPaidOrders: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
-        orderDAO.findOrdersByStatus(req.user.hospitalId, 4, ['r.patientId=' + req.params.id], {
+        var conditions = [];
+        conditions.push('m.referenceOrderNo is  NULL');
+        conditions.push('m.type=2');
+        conditions.push('r.patientId=' + req.params.id);
+        orderDAO.findOrdersByStatus(req.user.hospitalId, [1,3,4], conditions, {
             from: (pageIndex - 1) * pageSize,
             size: pageSize
         }).then(function (orders) {

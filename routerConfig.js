@@ -915,6 +915,18 @@ module.exports = [
     },
     {
         method: "get",
+        path: "/api/orders",
+        handler: medicalHistoryController.getOrderList,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/orders/:orderNo/refund",
+        handler: medicalHistoryController.refundOrder,
+        secured: 'user'
+    },
+    {
+        method: "get",
         path: "/api/orders/:orderNo/appendPrescriptions",
         handler: medicalHistoryController.getAppendedPrescriptionsForOrder,
         secured: 'user'

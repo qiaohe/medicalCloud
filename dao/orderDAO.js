@@ -29,12 +29,22 @@ module.exports = {
     },
 
     findOrdersByStatus: function (hospitalId, status, conditions, page) {
-        var sql = sqlMapping.order.findOrdersByStatus + (status != 1 ? ' and m.status = ?' : ' and (m.status in(?, 3))');
+        var sql = sqlMapping.order.findOrdersByStatus;
+        if (status instanceof Array) {
+            sql = sql + 'and (m.status in(' + status.join(',') + '))';
+
+        } else {
+            sql = sql + (status != 1 ? ' and m.status = ?' : ' and (m.status in(?, 3))');
+        }
         if (conditions.length) {
             sql = sql + ' and ' + conditions.join(' and ');
         }
-        sql = sql + ' order by ' + (status == 0 || status ==4 ? 'm.createDate ' : 'm.paymentDate') + ' desc limit ?, ?';
-        return db.queryWithCount(sql, [hospitalId, status, page.from, page.size]);
+        sql = sql + ' order by ' + (status instanceof Array || status == 0 || status == 4 ? 'm.createDate ' : 'm.paymentDate') + ' desc limit ?, ?';
+        if (status instanceof Array) {
+            return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
+        } else {
+            return db.queryWithCount(sql, [hospitalId, status, page.from, page.size]);
+        }
     },
 
     findOrdersBy: function (hospitalId, conditions, page) {
