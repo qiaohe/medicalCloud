@@ -255,6 +255,11 @@ module.exports = {
     },
     findMyJobTitleAuthorities: function(jobTitleId) {
         return db.query(sqlMapping.dict.findMyJobTitleAuthorities, jobTitleId);
-
+    },
+    summaryChargeItems: function (hospitalId, page, conditions) {
+        var sql = sqlMapping.medical.summaryChargeItems;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and');
+        sql = sql + ' group by p.id limit ?, ?';
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
     }
 }

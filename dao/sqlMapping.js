@@ -298,6 +298,7 @@ module.exports = {
         addOutsideProcess: 'insert OutsideProcess set ?',
         updateOutsideProcess: 'update OutsideProcess set ? where id = ?',
         deleteOutsideProcess: 'delete from OutsideProcess where id = ?',
+        summaryChargeItems: 'select SQL_CALC_FOUND_ROWS p.id, p.name, p.price, sum(p.quantity) as totalQuantity, p.orderNo, p.createDate, sum(receivable) as totalAmount, r.doctorName, r.nurseName, r.patientName from Prescription p left join Registration r on r.id = p.registrationId  left join ChargeItem c on c.id = p.chargeItemId where p.hospitalId = ? ',
         findOutsideProcesses: 'select SQL_CALC_FOUND_ROWS o.*, p.medicalRecordNo, po.`name`, po.gender, po.realName, po.mobile from OutsideProcess o left JOIN Patient p on p.id = o.patientId left JOIN PatientBasicInfo po on po.id=p.patientBasicInfoId  where o.hospitalId =? '
     },
     order: {

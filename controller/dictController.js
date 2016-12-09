@@ -596,6 +596,41 @@ module.exports = {
         }
         return next();
     },
+    summaryChargeItems: function (req, res, next) {
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        var conditions = [];
+        if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
+        if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);
+        if (req.query.name) conditions.push('p.name like \'%' + req.query.name + '%\'');
+        if (req.query.orderNo) conditions.push('p.orderNo like \'%' + req.query.orderNo + '%\'');
+        if (req.query.startDate) conditions.push('p.createDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('p.createDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        if (req.query.category) {
+            dictionaryDAO.findDrugCategories(req.user.hospitalId, 1).then(function (categories) {
+                var idList = getChildren(+req.query.category, categories);
+                idList.push(+req.query.category);
+                conditions.push('c.category in (' + idList.join(',') + ')');
+                dictionaryDAO.summaryChargeItems(req.user.hospitalId, {
+                    from: (pageIndex - 1) * pageSize,
+                    size: pageSize
+                }, conditions);
+            }).then(function (summaries) {
+                summaries.pageIndex = pageIndex;
+                res.send({ret: 0, data: summaries});
+            })
+        } else {
+            dictionaryDAO.summaryChargeItems(req.user.hospitalId, {
+                from: (pageIndex - 1) * pageSize,
+                size: pageSize
+            }, conditions).then(function (summaries) {
+                summaries.pageIndex = pageIndex;
+                res.send({ret: 0, data: summaries});
+            })
+        }
+        return next();
+    },
+
     getDrugs: function (req, res, next) {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;

@@ -683,6 +683,12 @@ module.exports = [
         secured: 'user'
     },
     {
+        method: "get",
+        path: "/api/chargeItems/summary",
+        handler: dictController.summaryChargeItems,
+        secured: 'user'
+    },
+    {
         method: "del",
         path: "/api/chargeItems/:id",
         handler: dictController.removeChargeItem,
@@ -923,6 +929,12 @@ module.exports = [
         method: "post",
         path: "/api/orders/:orderNo/refund",
         handler: medicalHistoryController.refundOrder,
+        secured: 'user'
+    },
+    {
+        method: "post",
+        path: "/api/orders/:orderNo/discount",
+        handler: medicalHistoryController.discountOrder,
         secured: 'user'
     },
     {
