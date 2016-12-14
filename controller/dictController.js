@@ -600,6 +600,7 @@ module.exports = {
         var pageIndex = +req.query.pageIndex;
         var pageSize = +req.query.pageSize;
         var conditions = [];
+        var data = {}
         if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
         if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);
         if (req.query.name) conditions.push('p.name like \'%' + req.query.name + '%\'');
@@ -611,22 +612,34 @@ module.exports = {
                 var idList = getChildren(+req.query.category, categories);
                 idList.push(+req.query.category);
                 conditions.push('c.category in (' + idList.join(',') + ')');
-                dictionaryDAO.summaryChargeItems(req.user.hospitalId, {
+                return dictionaryDAO.summaryChargeItems(req.user.hospitalId, {
                     from: (pageIndex - 1) * pageSize,
                     size: pageSize
                 }, conditions);
             }).then(function (summaries) {
-                summaries.pageIndex = pageIndex;
-                res.send({ret: 0, data: summaries});
-            })
+                data = summaries;
+                data.pageIndex = pageIndex;
+                return dictionaryDAO.sumChargeItems(req.user.hospitalId, conditions);
+            }).then(function (sumResult) {
+                data.sum = (sumResult && sumResult.length > 0) ? sumResult[0] : {};
+                res.send({ret: 0, data: data});
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
+            });
         } else {
             dictionaryDAO.summaryChargeItems(req.user.hospitalId, {
                 from: (pageIndex - 1) * pageSize,
                 size: pageSize
             }, conditions).then(function (summaries) {
-                summaries.pageIndex = pageIndex;
-                res.send({ret: 0, data: summaries});
-            })
+                data = summaries;
+                data.pageIndex = pageIndex;
+                return dictionaryDAO.sumChargeItems(req.user.hospitalId, conditions);
+            }).then(function (sumResult) {
+                data.sum = (sumResult && sumResult.length > 0) ? sumResult[0] : {};
+                res.send({ret: 0, data: data});
+            }).catch(function (err) {
+                res.send({ret: 1, message: err.message});
+            });
         }
         return next();
     },

@@ -424,6 +424,7 @@ module.exports = {
                     createDate: new Date(),
                     chargedBy: req.user.id,
                     chargedByName: req.user.name,
+                    paymentDate: new Date(),
                     type: 2,
                     comment: req.body.comment,
                     referenceOrderNo: orderNo
@@ -472,6 +473,7 @@ module.exports = {
                 type: 2,
                 refundType: 1,
                 comment: req.body.comment,
+                paymentDate: new Date(),
                 referenceOrderNo: orderNo
             };
             return orderDAO.insert(o).then(function (result) {
@@ -1212,6 +1214,7 @@ module.exports = {
         var pageSize = +req.query.pageSize;
         var conditions = [];
         conditions.push('(m.status=1 or m.status=3)');
+        conditions.push('m.refundType <> 1');
         //if (req.query.patientMobile) conditions.push('r.patientMobile like \'%' + req.query.patientMobile + '%\'');
         if (req.query.patientName) conditions.push('r.patientName like \'%' + req.query.patientName + '%\'');
         if (req.query.chargedBy) conditions.push('m.chargedBy=' + req.query.chargedBy);
@@ -1310,6 +1313,8 @@ module.exports = {
                 });
                 orders.rows.length && orders.rows.forEach(function (order) {
                     order.memberType = config.memberType[+order.memberType];
+                    if (order.cardCharge)
+                        order.paymentAmount = order.paymentAmount + 1;
                     var paymentTypes = _.uniq([order.paymentType1, order.paymentType2, order.paymentType3]);
                     if (paymentTypes.length < 1) paymentTypes.push(order.paymentType);
                     var ps = [];

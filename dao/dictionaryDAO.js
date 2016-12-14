@@ -246,20 +246,25 @@ module.exports = {
     deleteAuthority: function (id) {
         return db.query(sqlMapping.dict.deleteAuthority, id);
     },
-    findAuthoritiesOfJobTitle: function(jobTitleId, authorityValue){
-        var sql =sqlMapping.dict.findAuthoritiesOfJobTitle;
+    findAuthoritiesOfJobTitle: function (jobTitleId, authorityValue) {
+        var sql = sqlMapping.dict.findAuthoritiesOfJobTitle;
         if (authorityValue) {
-            sql = sql  + ' and authorityValue = ' + authorityValue;
+            sql = sql + ' and authorityValue = ' + authorityValue;
         }
         return db.query(sql, [jobTitleId]);
     },
-    findMyJobTitleAuthorities: function(jobTitleId) {
+    findMyJobTitleAuthorities: function (jobTitleId) {
         return db.query(sqlMapping.dict.findMyJobTitleAuthorities, jobTitleId);
     },
     summaryChargeItems: function (hospitalId, page, conditions) {
         var sql = sqlMapping.medical.summaryChargeItems;
-        if (conditions.length) sql = sql + ' and ' + conditions.join(' and');
-        sql = sql + ' group by p.id limit ?, ?';
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' group by p.id, o.referenceOrderNo order by p.createDate desc limit ?, ?';
         return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
+    },
+    sumChargeItems: function (hospitalId, conditions) {
+        var sql = sqlMapping.medical.sumChargeItems;
+        if (conditions.length) sql = sql + ' and ' + conditions.join(' and ');
+        return db.query(sql, hospitalId);
     }
 }
