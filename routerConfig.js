@@ -1302,4 +1302,23 @@ module.exports = [
         handler: registrationController.getLatestDoctor,
         secured: 'user'
     },
+    {
+        method: "get",
+        path: "/api/statistics/outpatient",
+        handler: registrationController.statByOutPatient,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/statistics/doctor",
+        handler: registrationController.statByDoctor,
+        secured: 'user'
+    },
+
+    {
+        method: "get",
+        path: "/api/statistics/chargeByAndCategory",
+        handler: registrationController.statByChargeByCategory,
+        secured: 'user'
+    }
 ];

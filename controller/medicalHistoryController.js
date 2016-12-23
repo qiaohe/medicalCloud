@@ -1284,7 +1284,6 @@ module.exports = {
                                 return item.fieldName == config.paymentType[summary[field]];
                             });
                             var sum = (summary[amountFiled] ? summary[amountFiled] : 0.00);
-                            console.log('sum:' + sum);
                             if (summaryItem) {
                                 summaryItem.sum = _.round(summaryItem.sum + sum, 2);
                             } else {
@@ -1294,7 +1293,6 @@ module.exports = {
                                 });
                             }
                         }
-                        console.log(data.summaries);
                     }
                     if ((!hasPaymentType) && summary.paymentType) {
                         var summaryItem1 = _.find(data.summaries, function (item) {

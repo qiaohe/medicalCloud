@@ -74,5 +74,65 @@ module.exports = {
     },
     findLatestDoctor: function (patientId) {
         return db.query(sqlMapping.registration.findLatestDoctor, [patientId])
+    },
+    statByOutPatient: function (ds, conditions) {
+        var sql = sqlMapping.registration.statByOutPatient;
+        if (conditions.length > 0)
+            sql = sql + ' and ' + conditions.join(' and ');
+        if (ds.length > 0)
+            sql = sql + ' and doctorId in (' + ds.join(',') + ') ';
+        sql = sql + ' group by doctorId, doctorName, registrationType order by doctorId';
+        return db.query(sql)
+    },
+
+    findDoctorIdListOfOutPatient: function (hospitalId, page, conditions) {
+        var sql = sqlMapping.registration.findDoctorIdListOfOutPatient;
+        if (conditions.length > 0) {
+            sql = sql + ' and ' + conditions.join(' and ');
+        }
+        sql = sql + ' limit ?,?';
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
+    },
+
+    summaryOfOutPatient: function (hospitalId, conditions) {
+        var sql = sqlMapping.registration.summaryOfOutPatient;
+        if (conditions.length > 0) {
+            sql = sql + ' and ' + conditions.join(' and ');
+        }
+        sql = sql + ' group by registrationType order by registrationType';
+        return db.query(sql, hospitalId);
+    },
+    statByDoctor: function (hospitalId, page, conditions) {
+        var sql = sqlMapping.registration.statByDoctor;
+        if (conditions.length > 0)
+            sql = sql + ' and ' + conditions.join(' and ');
+        if (page)
+            sql = sql + ' group by doctorId, doctorName limit ?, ?';
+        return db.queryWithCount(sql, [hospitalId, page.from, page.size]);
+    },
+    statRefund: function (hospitalId, doctors, conditions) {
+        var sql = sqlMapping.registration.statRefund;
+        if (conditions.length > 0)
+            sql = sql + ' and ' + conditions.join(' and ');
+        if (doctors.length > 0)
+            sql = sql + ' and doctorId in(' + doctors.join(',') + ')';
+        sql = sql + ' group by r.doctorId, m.refundType';
+        return db.query(sql, hospitalId);
+    },
+    summaryByDoctor: function (hospitalId, conditions) {
+        var sql = sqlMapping.registration.summaryByDoctor;
+        if (conditions.length > 0)
+            sql = sql + ' and ' + conditions.join(' and ');
+        return db.query(sql, hospitalId);
+    },
+    summaryRefund: function (hospitalId, conditions) {
+        var sql = sqlMapping.registration.summaryRefund;
+        if (conditions.length > 0)
+            sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' group by refundType';
+        return db.query(sql, hospitalId);
+    },
+    findOrdersWithChargeBy: function(hospitalId) {
+        return db.query(sqlMapping.registration.findOrdersWithChargeBy, hospitalId);
     }
 }

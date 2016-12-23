@@ -168,7 +168,8 @@ module.exports = {
                     status: (opst[0].fee > 0 ? 0 : 1), creator: req.user.id
                 });
                 r.outpatientStatus = 5;
-                r.registrationType = (r.registrationType ? r.registrationType : 2);
+                if (r.outPatientType == 0) r.registrationType = 2;
+                if (r.outPatientType == 1) r.registrationType = 3;
                 if (!r.businessPeopleId) delete r.businessPeopleId;
                 r = _.omit(r, ['reason', 'counselor', 'medicalRecordNo', 'birthday', 'memberCardNo', 'source', 'address', 'idCard']);
                 if (r.status != 0) {
@@ -514,6 +515,150 @@ module.exports = {
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
+        return next();
+    },
+    statByOutPatient: function (req, res, next) {
+        var conditions = [];
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        if (req.query.startDate) conditions.push('registerDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('registerDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        if (req.query.doctorId) conditions.push('doctorId=' + req.query.doctorId);
+        var data = {};
+        registrationDAO.findDoctorIdListOfOutPatient(req.user.hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }, conditions).then(function (doctors) {
+            data = doctors;
+            data.pageIndex = pageIndex;
+            var ds = [];
+            doctors && doctors.rows.forEach(function (d) {
+                ds.push(d.doctorId);
+            });
+            registrationDAO.statByOutPatient(ds, conditions).then(function (result) {
+                if (result.length < 1) return res.send({ret: 0, data: []});
+                var rows = [];
+                result && result.forEach(function (item) {
+                    var r = _.filter(rows, {'doctorId': item.doctorId});
+                    if (r.length < 1) {
+                        if (item.registrationType == 2) {
+                            rows.push({
+                                doctorId: item.doctorId,
+                                doctorName: item.doctorName,
+                                firstOutPatient: item.count
+                            });
+                        }
+                        else {
+                            rows.push({
+                                doctorId: item.doctorId,
+                                doctorName: item.doctorName,
+                                subSequentOutPatient: item.count
+                            });
+                        }
+                    } else {
+                        if (item.registrationType == 3) {
+                            r[0].subSequentOutPatient = item.count;
+                        }
+                        else {
+
+                            r[0].firstOutPatient = item.count;
+                        }
+                    }
+                });
+                data.rows = rows;
+                registrationDAO.summaryOfOutPatient(req.user.hospitalId, conditions).then(function (summaries) {
+                    data.summary = {
+                        firstOutPatient: summaries && summaries.length > 0 ? summaries[0].count : 0,
+                        subSequentOutPatient: summaries && summaries.length > 1 ? summaries[1].count : 0
+                    };
+                    res.send({ret: 0, data: data});
+                });
+            });
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    statByDoctor: function (req, res, next) {
+        var conditions = [];
+        var doctors = [];
+        var pageIndex = +req.query.pageIndex;
+        var pageSize = +req.query.pageSize;
+        if (req.query.startDate) conditions.push('m.createDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('m.createDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        if (req.query.doctorId) conditions.push('r.doctorId=' + req.query.doctorId);
+        var data = {};
+        registrationDAO.statByDoctor(req.user.hospitalId, {
+            from: (pageIndex - 1) * pageSize,
+            size: pageSize
+        }, conditions).then(function (statResult) {
+            data = statResult;
+            data.pageIndex = pageIndex;
+            if (!req.query.doctorId) {
+                data && data.rows && data.rows.forEach(function (row) {
+                    doctors.push(row.doctorId);
+                })
+            }
+            return registrationDAO.statRefund(req.user.hospitalId, doctors, conditions);
+        }).then(function (result) {
+            if (result && result.length > 0) {
+                data && data.rows && data.rows.forEach(function (row) {
+                    var refundItems = _.filter(result, {doctorId: row.doctorId, refundType: 0});
+                    var couponItems = _.filter(result, {doctorId: row.doctorId, refundType: 1});
+                    row.refundAmount = refundItems && refundItems.length > 0 ? refundItems[0].amount : 0;
+                    row.couponAmount = couponItems && couponItems.length > 0 ? couponItems[0].amount : 0;
+                })
+            }
+            return registrationDAO.summaryByDoctor(req.user.hospitalId, conditions);
+        }).then(function (result) {
+            data.summary = result && result.length > 0 ? result[0] : {};
+            return registrationDAO.summaryRefund(req.user.hospitalId, conditions);
+        }).then(function (result) {
+            data.summary.refundAmount = result && result.length > 0 ? result[0].amount : 0;
+            data.summary.couponAmount = result && result.length > 1 ? result[1].amount : 0;
+            res.send({ret: 0, data: data});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    statByChargeByCategory: function (req, res, next) {
+        var data = {};
+        registrationDAO.findOrdersWithChargeBy(req.user.hospitalId).then(function (items) {
+            items && items.forEach(function (item) {
+                var fields = ['paymentType', 'paymentType1', 'paymentType2', 'paymentType3'];
+                for (var f in fields) {
+                    if (item[f]) {
+                        var fs = _.filter({chargeBy: item.chargeBy, paymentType: item[f]});
+                        data.push({
+                            chargeBy: item.chargeBy,
+                            chargeByName: item.chargeByName,
+                            paymentType: item[f],
+                            amount: fs && fs.length > 0 ? fs[0].amount + item.paidAmount : item.paidAmount
+                        }); 
+                    }
+                }
+                if (item.paymentType) {
+                    var fs = _.filter({chargeBy: item.chargeBy, paymentType: item.paymentType});
+                    data.push({
+                        chargeBy: item.chargeBy,
+                        chargeByName: item.chargeByName,
+                        paymentType: item.paymentType,
+                        amount: fs && fs.length > 0 ? fs[0].amount + item.paidAmount : item.paidAmount
+                    });
+                }
+                if (item.paymentType1) {
+                    var fs1 = _.filter({chargeBy: item.chargeBy, paymentType: item.paymentType1});
+                    data.push({
+                        chargeBy: item.chargeBy,
+                        chargeByName: item.chargeByName,
+                        paymentType: item.paymentType1,
+                        amount: fs1 && fs1.length > 0 ? fs1[0].amount + item.paidAmount1 : item.paidAmount
+                    });
+                }
+            })
+
+        })
         return next();
     }
 }

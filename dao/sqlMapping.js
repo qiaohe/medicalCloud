@@ -140,6 +140,7 @@ module.exports = {
     },
 
     registration: {
+        findOrdersWithChargeBy: 'select chargedBy, chargedByName, paidAmount, paidAmount1, paidAmount2, paidAmount3, paymentType, paymentType1, paymentType2, paymentType3 from MedicalOrder where chargedBy is not NULL and `status` in (1,3) and (paidAmount>0 or paidAmount1>0 or paidAmount2>0 or paidAmount3>0) order by chargedBy',
         findLatestDoctor: 'select doctorId, doctorName from Registration where patientId=? order by registerDate desc limit 0 , 1',
         updateRegistrationFee: 'update Registration set totalFee = totalFee + ?, ? where id =?',
         updateSalesManPerformanceByMonth: 'update Performance set actual = actual + ? where salesMan=? and yearMonth=?',
@@ -164,7 +165,14 @@ module.exports = {
         findAppointments: 'select  SQL_CALC_FOUND_ROWS a.*,sp.`name` as periodName, p.medicalRecordNo, p.memberCardNo, p.memberType, p.source, po.`name`, po.realName, po.gender,po.mobile from Appointment a left JOIN Patient p on p.id = a.patientId left join PatientBasicInfo po on po.id = p.patientBasicInfoId left join ShiftPeriod sp on sp.id = a.period left JOIN Doctor d on d.id = a.doctor where a.hospitalId=? ',
         addAppointment: 'insert Appointment set ?',
         updateAppointment: 'update Appointment set ? where id =?',
-        findPatientsOfDoctorPeriod: 'select distinct patientName from Registration where doctorId=? and shiftPeriod =? and registerDate=?'
+        findPatientsOfDoctorPeriod: 'select distinct patientName from Registration where doctorId=? and shiftPeriod =? and registerDate=?',
+        statByOutPatient: 'select SQL_CALC_FOUND_ROWS doctorId, doctorName, registrationType, count(*) as count from  Registration where doctorId is not null and registrationType in (2, 3) ',
+        statByDoctor: 'select SQL_CALC_FOUND_ROWS r.doctorId, r.doctorName, sum(m.paidAmount) as paidAmount,sum(m.paymentAmount) as paymentAmount, sum(m.amount) as amount from MedicalOrder m left join Registration r on r.id = m.registrationId where r.doctorId is not NULL and m.paymentAmount >0 and m.hospitalId = ? ',
+        summaryByDoctor: 'select SQL_CALC_FOUND_ROWS sum(m.paidAmount) as paidAmount,sum(m.paymentAmount) as paymentAmount, sum(m.amount) as amount from MedicalOrder m left join Registration r on r.id = m.registrationId where r.doctorId is not NULL and m.paymentAmount >0 and m.hospitalId = ? ',
+        statRefund: 'select r.doctorId, refundType, sum(m.paymentAmount) as amount from MedicalOrder m left join Registration r on r.id = m.registrationId where m.hospitalId = ? and paymentAmount < 0 ',
+        summaryRefund: 'select refundType, sum(m.paymentAmount) as amount from MedicalOrder m left join Registration r on r.id = m.registrationId where m.hospitalId = 1 and paymentAmount < 0 ',
+        findDoctorIdListOfOutPatient: 'select SQL_CALC_FOUND_ROWS distinct doctorId from  Registration where hospitalId = ? and doctorId is not null and registrationType in (2, 3) ',
+        summaryOfOutPatient: 'select registrationType, count(*) as count from  Registration where hospitalId = 1 and doctorId is not null and registrationType in (2, 3) '
     },
     patient: {
         sumUnPaidAmount: 'select sum(unPaidAmount) as amount from MedicalOrder m left join Registration r on r.id = m.registrationId and m.status=4 where r.patientId = ?',
