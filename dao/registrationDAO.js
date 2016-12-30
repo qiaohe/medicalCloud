@@ -132,7 +132,51 @@ module.exports = {
         sql = sql + ' group by refundType';
         return db.query(sql, hospitalId);
     },
-    findOrdersWithChargeBy: function(hospitalId) {
-        return db.query(sqlMapping.registration.findOrdersWithChargeBy, hospitalId);
-    }
+    findOrdersWithChargeBy: function (hospitalId, conditions) {
+        var sql = sqlMapping.registration.findOrdersWithChargeBy;
+        if (conditions.length > 0)
+            sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' order by chargedBy';
+        return db.query(sql, hospitalId);
+    },
+    sumPrePaidHistories(hospitalId){
+        return db.query(sqlMapping.registration.sumPrepaidHistories, hospitalId);
+    },
+    statByChargeItem: function (hospitalId, conditions) {
+        var sql = sqlMapping.registration.statByChargeItem;
+        if (conditions.length > 0)
+            sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' group by d.id, d.`name`, r.doctorId, r.doctorName';
+        return db.query(sql, hospitalId);
+    },
+
+    statByChargeItemByNurse: function (hospitalId, conditions) {
+        var sql = sqlMapping.registration.statByChargeItemByNurse;
+        if (conditions.length > 0)
+            sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' group by d.id, d.`name`, m.nurse, m.nurseName';
+        return db.query(sql, hospitalId);
+    },
+    statByDoctorAchievement: function (hospitalId, conditions) {
+        var sql = sqlMapping.registration.statByDoctorAchievement;
+        if (conditions.length > 0)
+            sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' GROUP BY r.doctorId, r.doctorName,  m.paymentType, paymentType1, paymentType2, paymentType3';
+        return db.query(sql, hospitalId);
+    },
+    statByNurseAchievement: function (hospitalId, conditions) {
+        var sql = sqlMapping.registration.statByNurseAchievement;
+        if (conditions.length > 0)
+            sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' group by m.nurse, m.nurseName, r.doctorId, r.doctorName';
+        return db.query(sql, hospitalId);
+    },
+    statByChargeItemSummary: function (hospitalId, conditions) {
+        var sql = sqlMapping.registration.statByChargeItemSummary;
+        if (conditions.length > 0)
+            sql = sql + ' and ' + conditions.join(' and ');
+        sql = sql + ' group by r.doctorId, r.doctorName, d.id, d.`name`';
+        return db.query(sql, hospitalId);
+    },
+
 }

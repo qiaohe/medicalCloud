@@ -623,42 +623,320 @@ module.exports = {
         return next();
     },
     statByChargeByCategory: function (req, res, next) {
-        var data = {};
-        registrationDAO.findOrdersWithChargeBy(req.user.hospitalId).then(function (items) {
+        var data = [];
+        var conditions = [];
+        if (req.query.startDate) conditions.push('createDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('createDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        registrationDAO.findOrdersWithChargeBy(req.user.hospitalId, conditions).then(function (items) {
             items && items.forEach(function (item) {
                 var fields = ['paymentType', 'paymentType1', 'paymentType2', 'paymentType3'];
-                for (var f in fields) {
-                    if (item[f]) {
-                        var fs = _.filter({chargeBy: item.chargeBy, paymentType: item[f]});
-                        data.push({
-                            chargeBy: item.chargeBy,
-                            chargeByName: item.chargeByName,
-                            paymentType: item[f],
-                            amount: fs && fs.length > 0 ? fs[0].amount + item.paidAmount : item.paidAmount
-                        }); 
+                for (var f = 0; f < fields.length; f++) {
+                    var amountField = f > 0 ? 'paidAmount' + f : 'paidAmount';
+                    if (item[fields[f]]) {
+                        var fs = _.filter(data, {chargedBy: item.chargedBy, paymentType: item[fields[f]]});
+                        if (fs && fs.length > 0) {
+                            fs[0].amount = fs[0].amount + item[amountField];
+                        } else {
+                            data.push({
+                                chargedBy: item.chargedBy,
+                                chargedByName: item.chargedByName,
+                                paymentType: item[fields[f]],
+                                amount: item[amountField]
+                            });
+                        }
                     }
                 }
-                if (item.paymentType) {
-                    var fs = _.filter({chargeBy: item.chargeBy, paymentType: item.paymentType});
-                    data.push({
-                        chargeBy: item.chargeBy,
-                        chargeByName: item.chargeByName,
-                        paymentType: item.paymentType,
-                        amount: fs && fs.length > 0 ? fs[0].amount + item.paidAmount : item.paidAmount
-                    });
-                }
-                if (item.paymentType1) {
-                    var fs1 = _.filter({chargeBy: item.chargeBy, paymentType: item.paymentType1});
-                    data.push({
-                        chargeBy: item.chargeBy,
-                        chargeByName: item.chargeByName,
-                        paymentType: item.paymentType1,
-                        amount: fs1 && fs1.length > 0 ? fs1[0].amount + item.paidAmount1 : item.paidAmount
-                    });
-                }
-            })
-
-        })
+            });
+            return dictionaryDAO.findDictItems(req.user.hospitalId, 3, {from: 0, size: 1000});
+        }).then(function (dictItems) {
+            var paymentTypes = [];
+            for (var i = 0; i < config.paymentType.length; i++) {
+                paymentTypes.push({id: i, name: config.paymentType[i]});
+            }
+            dictItems.rows.forEach(function (row) {
+                paymentTypes.push({id: row.id, name: row.value});
+            });
+            data && data.forEach(function (item) {
+                item.paymentType = _.filter(paymentTypes, {id: item.paymentType})[0];
+            });
+            return registrationDAO.sumPrePaidHistories(req.user.hospitalId);
+        }).then(function (prepaidHistories) {
+            res.send({ret: 0, data: {data: data, prePaidHistoryTotalAmount: prepaidHistories[0].amount}});
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
         return next();
-    }
+    },
+    statByChargeItem: function (req, res, next) {
+        var conditions = [];
+        if (req.query.startDate) conditions.push('p.createDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('p.createDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        registrationDAO.statByChargeItem(req.user.hospitalId, conditions).then(function (items) {
+            var grpItems = _.groupBy(items, 'name');
+            var data = []
+            for (var d in grpItems) {
+                data.push({
+                    name: d, data: _.map(grpItems[d], function (item) {
+                        return {
+                            doctorId: item.doctorId,
+                            doctorName: item.doctorName,
+                            quantity: item.quantity,
+                            amount: item.amount
+                        }
+                    }),
+                    sumQuantity: _.sum(grpItems[d], function (item) {
+                        return item.quantity;
+                    }),
+                    sumAmount: _.sum(grpItems[d], function (item) {
+                        return item.amount;
+                    })
+                })
+            }
+            var groupByDoctorData = _.groupBy(items, 'doctorName');
+            var summaries = [];
+            for (var doctor in groupByDoctorData) {
+                summaries.push({
+                    doctorId: groupByDoctorData[doctor][0].doctorId,
+                    doctorName: doctor, sumQuantity: _.sum(groupByDoctorData[doctor], function (item) {
+                        return item.quantity;
+                    }),
+                    sumAmount: _.sum(groupByDoctorData[doctor], function (item) {
+                        return item.amount;
+                    })
+                })
+            }
+            res.send({
+                ret: 0, data: {
+                    rows: data, summaries: {
+                        data: summaries, totalQuantity: _.sum(summaries, function (item) {
+                            return item.sumQuantity;
+                        }), totalAmount: _.sum(summaries, function (item) {
+                            return item.sumAmount;
+                        })
+                    }
+                }
+            });
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    statByChargeItemByNurse: function (req, res, next) {
+        var conditions = [];
+        if (req.query.startDate) conditions.push('m.createDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('m.createDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        registrationDAO.statByChargeItemByNurse(req.user.hospitalId, conditions).then(function (items) {
+            var grpItems = _.groupBy(items, 'name');
+            var data = []
+            for (var d in grpItems) {
+                data.push({
+                    name: d, data: _.map(grpItems[d], function (item) {
+                        return {
+                            nurse: item.nurse,
+                            nurseName: item.nurseName,
+                            quantity: item.quantity,
+                            amount: item.amount
+                        }
+                    }),
+                    sumQuantity: _.sum(grpItems[d], function (item) {
+                        return item.quantity;
+                    }),
+                    sumAmount: _.sum(grpItems[d], function (item) {
+                        return item.amount;
+                    })
+                })
+            }
+            var groupByDoctorData = _.groupBy(items, 'nurseName');
+            var summaries = [];
+            for (var doctor in groupByDoctorData) {
+                summaries.push({
+                    nurse: groupByDoctorData[doctor][0].nurse,
+                    nurseName: doctor, sumQuantity: _.sum(groupByDoctorData[doctor], function (item) {
+                        return item.quantity;
+                    }),
+                    sumAmount: _.sum(groupByDoctorData[doctor], function (item) {
+                        return item.amount;
+                    })
+                })
+            }
+            res.send({
+                ret: 0, data: {
+                    rows: data, summaries: {
+                        data: summaries, totalQuantity: _.sum(summaries, function (item) {
+                            return item.sumQuantity;
+                        }), totalAmount: _.sum(summaries, function (item) {
+                            return item.sumAmount;
+                        })
+                    }
+                }
+            });
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
+    statByDoctorAchievement: function (req, res, next) {
+        var data = [];
+        var conditions = [];
+        var fields = ['paymentType', 'paymentType1', 'paymentType2', 'paymentType3'];
+        if (req.query.startDate) conditions.push('m.createDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('m.createDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        registrationDAO.statByDoctorAchievement(req.user.hospitalId, conditions).then(function (archievements) {
+            var grpArch = _.groupBy(archievements, 'doctorName');
+            for (var item in grpArch) {
+                var paymentTypes = [];
+                grpArch[item] && grpArch[item].forEach(function (rec) {
+                    for (var i = 0; i < fields.length; i++) {
+                        if (rec[fields[i]]) {
+                            var amountField = i > 0 ? 'paidAmount' + i : 'paidAmount';
+                            var p = _.filter(paymentTypes, {paymentType: rec[fields[i]]});
+                            if (p && p.length > 0) {
+                                p[0].count = p[0].count + rec.count;
+                                p[0].amount = p[0].amount + rec[amountField];
+                            } else {
+                                paymentTypes.push({
+                                    paymentType: rec[fields[i]],
+                                    amount: rec[amountField],
+                                    count: rec.count
+                                })
+                            }
+                        }
+                    }
+                });
+                if (paymentTypes && paymentTypes.length > 0)
+                    data.push({
+                        doctorName: item, doctorId: grpArch[item][0].doctorId, data: paymentTypes
+                    });
+            }
+            return dictionaryDAO.findDictItems(req.user.hospitalId, 3, {from: 0, size: 1000});
+        }).then(function (dictItems) {
+            var ps = [];
+            for (var i = 0; i < config.paymentType.length; i++) {
+                ps.push({id: i, name: config.paymentType[i]});
+            }
+            dictItems.rows.forEach(function (row) {
+                ps.push({id: row.id, name: row.value});
+            });
+            data && data.forEach(function (item) {
+                item.data && item.data.forEach(function (d) {
+                    d.paymentType = _.filter(ps, {id: d.paymentType})[0];
+                });
+            });
+            var summaries = [];
+            data && data.forEach(function (item) {
+                item.sumCount = _.sum(item.data, function (d) {
+                    return d.count;
+                });
+                item.sumAmount = _.sum(item.data, function (d) {
+                    return d.amount;
+                });
+                item.data && item.data.length > 0 && item.data.forEach(function (e) {
+                    summaries.push(e);
+                })
+            });
+            var grpSummary = _.groupBy(summaries, function (item) {
+                return JSON.stringify(item.paymentType);
+            });
+            var summaryData = [];
+            for (var s in grpSummary) {
+                summaryData.push({
+                    paymentType: JSON.parse(s), sumAmount: _.sum(grpSummary[s], function (y) {
+                        return y.amount;
+                    }), sumCount: _.sum(grpSummary[s], function (y) {
+                        return y.count;
+                    })
+                })
+            }
+            res.send({
+                ret: 0, data: {
+                    data: data, summary: {
+                        data: summaryData, totalCount: _.sum(summaryData, function (item) {
+                            return item.sumCount;
+                        }), totalAmount: _.sum(summaryData, function (item) {
+                            return item.sumAmount;
+                        })
+                    }
+                }
+            });
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    statByNurseAchievement: function (req, res, next) {
+        var conditions = [];
+        if (req.query.startDate) conditions.push('m.createDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('m.createDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        registrationDAO.statByNurseAchievement(req.user.hospitalId, conditions).then(function (archievements) {
+            var grpArch = _.groupBy(archievements, 'nurseName');
+            var data = [];
+            for (var arch in grpArch) {
+                data.push({
+                    nurse: grpArch[arch][0].nurse, nurseName: arch, data: _.map(grpArch[arch], function (item) {
+                        return {doctorId: item.doctorId, doctorName: item.doctorName, paidAmount: item.paidAmount}
+                    }),
+                    sumPaidAmount: _.sum(grpArch[arch], 'paidAmount')
+                });
+            }
+            var grpArchByDoctorId = _.groupBy(archievements, 'doctorName');
+            var summaries = [];
+            for (var d in grpArchByDoctorId) {
+                summaries.push({
+                    doctorId: grpArchByDoctorId[d][0].doctorId, doctorName: d,
+                    sumPaidAmount: _.sum(grpArchByDoctorId[d], 'paidAmount')
+                });
+            }
+            res.send({
+                ret: 0, data: {
+                    data: data, summaries: {
+                        data: summaries, totalPaidAmount: _.sum(summaries, function (item) {
+                            return item.sumPaidAmount;
+                        })
+                    }
+                }
+            });
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+    statByChargeItemSummary: function (req, res, next) {
+        var conditions = [];
+        if (req.query.startDate) conditions.push('p.createDate>=\'' + req.query.startDate + ' 00:00:00\'');
+        if (req.query.endDate) conditions.push('p.createDate<=\'' + req.query.endDate + ' 23:59:59\'');
+        registrationDAO.statByChargeItemSummary(req.user.hospitalId, conditions).then(function (feeItems) {
+            var grpArch = _.groupBy(feeItems, 'doctorName');
+            var data = [];
+            for (var arch in grpArch) {
+                data.push({
+                    nurse: grpArch[arch][0].doctorId, doctorName: arch, data: _.map(grpArch[arch], function (item) {
+                        return {id: item.id, name: item.name, paidAmount: item.amount}
+                    }),
+                    sumAmount: _.sum(grpArch[arch], 'amount')
+                });
+            }
+            var grpArchByDoctorId = _.groupBy(feeItems, 'name');
+            var summaries = [];
+            for (var d in grpArchByDoctorId) {
+                summaries.push({
+                    id: grpArchByDoctorId[d][0].id, name: d,
+                    sumAmount: _.sum(grpArchByDoctorId[d], 'amount')
+                });
+            }
+            res.send({
+                ret: 0, data: {
+                    data: data, summaries: {
+                        data: summaries, totalAmount: _.sum(summaries, function (item) {
+                            return item.amount;
+                        })
+                    }
+                }
+            });
+        }).catch(function (err) {
+            res.send({ret: 1, message: err.message});
+        });
+        return next();
+    },
+
 }

@@ -1314,11 +1314,40 @@ module.exports = [
         handler: registrationController.statByDoctor,
         secured: 'user'
     },
-
     {
         method: "get",
         path: "/api/statistics/chargeByAndCategory",
         handler: registrationController.statByChargeByCategory,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/statistics/chargeItemForDoctor",
+        handler: registrationController.statByChargeItem,
+        secured: 'user'
+    },    
+    {
+        method: "get",
+        path: "/api/statistics/doctorAchievement",
+        handler: registrationController.statByDoctorAchievement,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/statistics/nurseAchievement",
+        handler: registrationController.statByNurseAchievement,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/statistics/chargeItemForNurse",
+        handler: registrationController.statByChargeItemByNurse,
+        secured: 'user'
+    },
+    {
+        method: "get",
+        path: "/api/statistics/chargeItemSummary",
+        handler: registrationController.statByChargeItemSummary,
         secured: 'user'
     }
 ];

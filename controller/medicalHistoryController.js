@@ -134,7 +134,9 @@ module.exports = {
                     payableAmount: amount,
                     status: amount > 0 ? 0 : 1,
                     createDate: new Date(),
-                    type: 1
+                    type: 1,
+                    nurse: req.body.nurse,
+                    nurseName: req.body.nurseName
                 });
             }).then(function (result) {
 
@@ -226,6 +228,8 @@ module.exports = {
                     payableAmount: payableAmount,
                     unPaidAmount: payableAmount,
                     status: status,
+                    nurse: req.body.nurse,
+                    nurseName: req.body.nurseName,
                     //paymentType: 1,
                     createDate: new Date(),
                     type: 2
@@ -245,6 +249,8 @@ module.exports = {
                             paymentAmount: +req.body.paymentAmount,
                             payableAmount: +req.body.paymentAmount,
                             unPaidAmount: +req.body.paymentAmount,
+                            nurse: req.body.nurse,
+                            nurseName: req.body.nurseName,
                             status: amount > 0 ? 0 : 1,
                             createDate: new Date(),
                             type: 2,
@@ -350,6 +356,8 @@ module.exports = {
                             status: 0,
                             createDate: new Date(),
                             type: 2,
+                            nurse: req.body.nurse,
+                            nurseName: req.body.nurseName,
                             referenceOrderNo: referenceOrderNo
                         };
                         return orderDAO.insert(o).then(function (result) {
@@ -566,22 +574,25 @@ module.exports = {
 
     updateRecipes: function (req, res, next) {
         var recipes = req.body.data;
+        var orderNo = {};
         Promise.map(recipes, function (recipe) {
             var oldRecipe = {};
             return medicalDAO.findRecipe(recipe.id).then(function (recipes) {
                 var oldRecipe = recipes[0];
-                return orderDAO.updateTotalPrice(oldRecipe.orderNo, recipe.totalPrice - oldRecipe.totalPrice)
+                orderNo = oldRecipe.orderNo;
+                return orderDAO.updateTotalPrice(orderNo, recipe.totalPrice - oldRecipe.totalPrice)
             }).then(function (result) {
                 return medicalDAO.updateRecipe(recipe);
             });
+        }).then(function (result) {
+            return orderDAO.update({orderNo: orderNo, nurse: req.body.nurse, nurseName: req.body.nurseName});
         }).then(function (result) {
             res.send({ret: 0, message: '更新成功。'})
         }).catch(function (err) {
             res.send({ret: 1, message: err.message});
         });
         return next();
-    }
-    ,
+    },
 
     removeRecipe: function (req, res, next) {
         var rid = req.params.id;
@@ -1576,6 +1587,8 @@ module.exports = {
                 payableAmount: +req.body.amount,
                 unPaidAmount: +req.body.amount,
                 comment: req.body.comment,
+                nurse: req.body.nurse,
+                nurseName: req.body.nurseName,
                 status: 0,
                 createDate: new Date(),
                 type: 2,
